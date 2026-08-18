@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>The Universe Game — Mechanics Test Suite</title>
+<style>
+    body {
+        background: #000;
+        color: #00ff00;
+        font-family: 'Courier New', monospace;
+        padding: 20px;
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+    h1 { color: #00ff00; text-shadow: 0 0 8px #00ff00; }
+    h2 { color: #ffff00; border-bottom: 1px solid #333; padding-bottom: 4px; margin-top: 30px; }
+    p.sub { color: #888; }
+    #summary {
+        font-size: 20px;
+        padding: 14px;
+        border: 2px solid #00ff00;
+        margin: 16px 0;
+        background: #001100;
+    }
+    #summary.hasFail { border-color: #ff0000; color: #ff5555; }
+    .row {
+        padding: 6px 10px;
+        border-bottom: 1px solid #222;
+        display: flex;
+        gap: 10px;
+        align-items: baseline;
+    }
+    .row.pass { color: #6f6; }
+    .row.fail { color: #f66; background: #220000; }
+    .badge { width: 22px; display: inline-block; }
+    .detail { color: #888; font-size: 12px; margin-left: 30px; }
+    button {
+        background: #001a00;
+        color: #00ff00;
+        border: 1px solid #00ff00;
+        padding: 10px 18px;
+        font-family: inherit;
+        font-size: 14px;
+        cursor: pointer;
+        margin-right: 10px;
+    }
+    button:hover { background: #003300; }
+    button:disabled { opacity: 0.4; cursor: default; }
+    iframe {
+        width: 100%;
+        height: 520px;
+        border: 2px solid #00ff00;
+        margin-top: 20px;
+        background: #000;
+    }
+    #progress { color: #888; margin-top: 10px; }
+</style>
+</head>
+<body>
+
+<h1>🧪 The Universe Game — Mechanics Test Suite</h1>
+<p class="sub">Loads the live <code>index.html</code> in the iframe below and drives it directly (real game
+code, no mocks) to check: every planet/structure/ship image is actually wired up and loads, no duplicate
+planets among your 12 player worlds, buildings render on all 12 player planets, and — the big one — enemy
+units actually hunt the player down instead of standing still.</p>
+
+<button id="runBtn" onclick="runAllTests()">▶ Run All Tests</button>
+<span id="progress"></span>
+
+<div id="summary" style="display:none;"></div>
+<div id="results"></div>
+
+<h2>Live Game (used by the tests above)</h2>
+<iframe id="gameFrame" src="index.html"></iframe>
+
+<script>
+let iframeReady = false;
+const gameFrame = document.getElementById('gameFrame');
+gameFrame.addEventListener('load', () => { iframeReady = true; });
+
+function renderResults(results) {
+    const resultsDiv = document.getElementById('results');
+    resultsDiv.innerHTML = '';
+    const byGroup = {};
+    results.forEach(r => {
+        byGroup[r.group] = byGroup[r.group] || [];
+        byGroup[r.group].push(r);
+    });
+    Object.keys(byGroup).forEach(group => {
+        const h = document.createElement('h2');
+        h.textContent = group;
+        resultsDiv.appendChild(h);
+        byGroup[group].forEach(r => {
+            const row = document.createElement('div');
+            row.className = 'row ' + (r.pass ? 'pass' : 'fail');
+            row.innerHTML = `<span class="badge">${r.pass ? '✅' : '❌'}</span><span>${r.name}</span>`;
+            resultsDiv.appendChild(row);
+            if (r.detail) {
+                const d = document.createElement('div');
+                d.className = 'detail';
+                d.textContent = r.detail;
+                resultsDiv.appendChild(d);
+            }
+        });
+    });
+
+    const passCount = results.filter(r => r.pass).length;
+    const summary = document.getElementById('summary');
+    summary.style.display = 'block';
+    summary.className = passCount === results.length ? '' : 'hasFail';
+    summary.textContent = `${passCount} / ${results.length} checks passed`;
+}
+
+async function waitFor(fn, timeoutMs) {
+    const start = Date.now();
+    while (Date.now() - start < timeoutMs) {
+        if (fn()) return true;
+        await new Promise(r => setTimeout(r, 50));
+    }
+    return false;
+}
+
+async function runAllTests() {
+    const runBtn = document.getElementById('runBtn');
+    const progress = document.getElementById('progress');
+    runBtn.disabled = true;
+    progress.textContent = 'reloading game...';
+
+    // Always start from a clean reload so tests are repeatable.
+    iframeReady = false;
+    gameFrame.src = 'index.html?t=' + Date.now();
+    await waitFor(() => iframeReady, 10000);
+
+    const win = gameFrame.contentWindow;
+    const doc = gameFrame.contentDocument;
+
+    // let/const top-level bindings (gameState, SPRITE_URLS, ISLAND_IMAGES, CUSTOM_ISLANDS, SPRITES,
+    // camera) live in the iframe's script scope and are NOT exposed as window properties, so we
+    // inject the actual test body as a <script> into that document - it then shares that scope.
+    progress.textContent = 'running tests inside the game...';
+
+    await new Promise((resolve) => {
+        win.__reportTestResults = (results) => {
+            renderResults(results);
+            runBtn.disabled = false;
+            progress.textContent = 'done.';
+            resolve();
+        };
+        win.__reportTestError = (msg) => {
+            renderResults([{ group: 'Test Harness', name: 'Test script ran to completion', pass: false, detail: msg }]);
+            runBtn.disabled = false;
+            progress.textContent = 'error.';
+            resolve();
+        };
+
+        const script = doc.createElement('script');
+        script.textContent = TEST_BODY_SOURCE;
+        doc.body.appendChild(script);
+    });
+}
+
+// ---------------------------------------------------------------------------
+// This entire function's SOURCE (via toString) is injected into the game's
+// iframe and executed there, so it can see gameState/SPRITE_URLS/ISLAND_IMAGES/
+// CUSTOM_ISLANDS/SPRITES/camera and call initGame()/startGame()/nextTurn() etc.
+// directly, exactly as the real game does.
+// ---------------------------------------------------------------------------
+function __universeGameTests() {
+    (async function () {
+        const results = [];
+        function record(group, name, pass, detail) {
+            results.push({ group, name, pass: !!pass, detail: detail || '' });
+        }
+
+        function loadImage(url, timeoutMs) {
+            return new Promise(resolve => {
+                const img = new Image();
+                const t = setTimeout(() => resolve(false), timeoutMs || 8000);
+                img.onload = () => { clearTimeout(t); resolve(img.naturalWidth > 0); };
+                img.onerror = () => { clearTimeout(t); resolve(false); };
+                img.src = url;
+            });
+        }
+
+        try {
+            // ===== 1. Planet wiring =====
+            const GROUP1 = 'Planet Images';
+            const playerUrls = [];
+            for (let i = 0; i < 12; i++) {
+                const url = ISLAND_IMAGES[i];
+                record(GROUP1, `Player planet ${i} (${COUNTRY_NAMES[i]}) has an image assigned`, !!url, url || 'MISSING - will render as the fallback brown island');
+                if (url) playerUrls.push(url);
+            }
+            const uniquePlayerUrls = new Set(playerUrls);
+            record(GROUP1, 'No duplicate images across the 12 player planets', uniquePlayerUrls.size === playerUrls.length,
+                `${uniquePlayerUrls.size} unique image(s) across ${playerUrls.length} player planet(s)`);
+
+            for (let i = 12; i <= 16; i++) {
+                record(GROUP1, `System planet ${i} has an image assigned`, !!ISLAND_IMAGES[i], ISLAND_IMAGES[i] || 'MISSING');
+            }
+
+            CUSTOM_ISLANDS.forEach((c, i) => {
+                const placeholder = !c.imageUrl || c.imageUrl.includes('YourUser') || c.imageUrl.includes('YOUR-');
+                record(GROUP1, `Custom island ${i + 1} ("${c.name}") has a real image, not a placeholder`, !placeholder, c.imageUrl || 'MISSING');
+            });
+
+            // ===== 2. Unit + structure sprite wiring =====
+            const GROUP2 = 'Unit & Structure Sprites';
+            const neededSprites = ['deepglider', 'stormbreaker', 'wavecrusher', 'skyfortress', 'cargohauler',
+                'radar', 'thunderwing', 'blazefalcon', 'skyripper', 'vortexhawk', 'razorwing', 'shadowglider',
+                'tidebreaker', 'whisperwind', 'stormbreakerbomber', 'frostwing', 'roufestreal'];
+            neededSprites.forEach(key => {
+                record(GROUP2, `Sprite wired for buildable unit "${key}"`, !!SPRITE_URLS[key], SPRITE_URLS[key] || 'MISSING');
+            });
+            ['struct0', 'struct1', 'struct2', 'struct3', 'struct4', 'struct5'].forEach((key, idx) => {
+                record(GROUP2, `Structure image wired for building slot ${idx}`, !!SPRITE_URLS[key], SPRITE_URLS[key] || 'MISSING');
+            });
+
+            // ===== 3. Every wired image actually loads over the network =====
+            const GROUP3 = 'Asset Loading (network)';
+            const allUrls = Array.from(new Set([
+                ...Object.values(ISLAND_IMAGES).filter(Boolean),
+                ...CUSTOM_ISLANDS.map(c => c.imageUrl).filter(Boolean),
+                ...neededSprites.map(k => SPRITE_URLS[k]).filter(Boolean),
+                ...['struct0', 'struct1', 'struct2', 'struct3', 'struct4', 'struct5'].map(k => SPRITE_URLS[k]).filter(Boolean)
+            ]));
+            // Load in small batches rather than all at once - GitHub's raw redirect plus the
+            // browser's per-host connection cap means firing 40 requests simultaneously just
+            // queues most of them and makes slow ones look like failures.
+            const loadOutcomes = [];
+            const BATCH_SIZE = 6;
+            for (let i = 0; i < allUrls.length; i += BATCH_SIZE) {
+                const batch = allUrls.slice(i, i + BATCH_SIZE);
+                const batchResults = await Promise.all(batch.map(async url => ({ url, ok: await loadImage(url, 15000) })));
+                loadOutcomes.push(...batchResults);
+            }
+            loadOutcomes.filter(o => !o.ok).forEach(o => record(GROUP3, `Loads: ${o.url}`, false, 'request failed or timed out'));
+            const loadedCount = loadOutcomes.filter(o => o.ok).length;
+            record(GROUP3, `All wired images load successfully (${loadedCount}/${allUrls.length})`, loadedCount === allUrls.length);
+
+            // ===== 4. Game boot =====
+            // NOTE: index.html already calls initGame() once itself when the page loads (it's the
+            // last line of its script), so gameState.countries is already populated - calling it
+            // again here would double every country. We only need to pick a player and enter play.
+            const GROUP4 = 'Game Boot';
+            let booted = true;
+            try {
+                startGame(0);
+                gameState.gameStarted = true;
+                camera.x = gameState.playerCountry.island.x;
+                camera.y = gameState.playerCountry.island.y;
+            } catch (e) {
+                booted = false;
+                record(GROUP4, 'startGame() runs without throwing', false, e.message);
+            }
+            if (booted) record(GROUP4, 'startGame() runs without throwing', true);
+
+            if (!booted) { finish(); return; }
+
+            record(GROUP4, 'All 27 planets created (12 nations + 4 Cyborg + 1 Zoonester + 10 custom)',
+                gameState.countries.length === 27, `actual: ${gameState.countries.length}`);
+
+            const player = gameState.playerCountry;
+
+            // ===== 5. Structures on all 12 player planets =====
+            const GROUP5 = 'Structures On Player Planets';
+            for (let i = 0; i < 12; i++) {
+                const country = gameState.countries[i];
+                const buildingsOk = country.island.buildings.length === 6;
+                record(GROUP5, `${country.name} planet has all 6 buildings placed`, buildingsOk,
+                    `buildings: ${country.island.buildings.map(b => b.name).join(', ')}`);
+            }
+            const structKeysUsed = ['struct0', 'struct1', 'struct2', 'struct3', 'struct4', 'struct5'];
+            record(GROUP5, 'Every building slot (0-5) has a structure image configured',
+                structKeysUsed.every(k => !!SPRITE_URLS[k]));
+
+            // ===== 6. Resource & build mechanics =====
+            const GROUP6 = 'Resource & Build Mechanics';
+            const beforeRes = player.resources;
+            player.collectResources();
+            record(GROUP6, 'collectResources() increases resources', player.resources > beforeRes,
+                `${beforeRes} -> ${player.resources}`);
+
+            const beforeUnitCount = player.units.length;
+            player.resources = 1000;
+            const built = player.buildUnit('thunderwing');
+            record(GROUP6, 'buildUnit() adds a unit and deducts resources', built && player.units.length === beforeUnitCount + 1 && player.resources < 1000);
+
+            // ===== 7. Combat mechanics (run on a still-pristine planet, before any AI simulation) =====
+            const GROUP7 = 'Combat Mechanics';
+            const combatRival = gameState.countries.find(c => !c.isPlayer && c.id < 12);
+            if (combatRival) {
+                const attacker = new Unit(player.island.x + 50, player.island.y + 50, 'thunderwing', combatRival.id);
+                combatRival.units.push(attacker);
+                const defenseGun = player.island.getDefenseGun();
+                const beforeHp = attacker.hp;
+                if (defenseGun) {
+                    player.defenseGunAttack();
+                    record(GROUP7, "Player's Defense Gun fires on an enemy unit within range", attacker.hp < beforeHp,
+                        `HP ${beforeHp} -> ${attacker.hp}`);
+                } else {
+                    record(GROUP7, "Player's Defense Gun fires on an enemy unit within range", false, 'no defense gun building found');
+                }
+
+                const targetBuilding = player.island.buildings.find(b => !b.destroyed);
+                if (targetBuilding) {
+                    const beforeBHp = targetBuilding.hp;
+                    targetBuilding.takeDamage(attacker.getAttackPower());
+                    record(GROUP7, 'Building.takeDamage() reduces building HP', targetBuilding.hp < beforeBHp, `HP ${beforeBHp} -> ${targetBuilding.hp}`);
+                }
+                combatRival.units = combatRival.units.filter(u => u !== attacker);
+            }
+
+            // ===== 8. Enemy AI actually hunts (deterministic - synthetic units in open space,
+            // isolated from the player's real planet so this can't be muddied by combat outcomes) =====
+            const GROUP8 = 'Enemy AI Behavior';
+            record(GROUP8, 'AI_MOVEMENT_CHANCE is high enough that units get orders almost every turn',
+                typeof AI_MOVEMENT_CHANCE !== 'undefined' && AI_MOVEMENT_CHANCE >= 0.8,
+                `AI_MOVEMENT_CHANCE = ${typeof AI_MOVEMENT_CHANCE !== 'undefined' ? AI_MOVEMENT_CHANCE : 'undefined'}`);
+            record(GROUP8, 'AI_ATTACK_CHANCE is high enough that units fire when a target is in range',
+                typeof AI_ATTACK_CHANCE !== 'undefined' && AI_ATTACK_CHANCE >= 0.7,
+                `AI_ATTACK_CHANCE = ${typeof AI_ATTACK_CHANCE !== 'undefined' ? AI_ATTACK_CHANCE : 'undefined'}`);
+
+            const hunter = gameState.countries.find(c => !c.isPlayer && c.id < 12);
+            if (hunter) {
+                const decoy = new Unit(20000, 20000, 'thunderwing', player.id);
+                player.units.push(decoy);
+                const chaser = new Unit(20000 - 2000, 20000, 'thunderwing', hunter.id);
+                hunter.units.push(chaser);
+
+                const distToDecoy = () => Math.hypot(chaser.x - decoy.x, chaser.y - decoy.y);
+                const startDist = distToDecoy();
+
+                for (let t = 0; t < 10 && chaser.hp > 0; t++) {
+                    hunter.resetAttacks();
+                    hunter.aiTurn();
+                    for (let f = 0; f < 200; f++) chaser.update();
+                }
+
+                const endDist = chaser.hp > 0 ? distToDecoy() : 0;
+                record(GROUP8, 'A rival unit with a visible enemy in range actively closes in and engages it (hunts, does not idle)',
+                    endDist < startDist, `distance to target: ${Math.round(startDist)} -> ${chaser.hp > 0 ? Math.round(endDist) : '0 (target engaged/destroyed)'}`);
+
+                player.units = player.units.filter(u => u !== decoy);
+                hunter.units = hunter.units.filter(u => u !== chaser);
+            } else {
+                record(GROUP8, 'Found a regular rival nation to test hunting behavior on', false);
+            }
+
+            // ===== 9. Long-run stability (full, unscripted AI simulation across every country) =====
+            const GROUP9 = 'Stability';
+            let crashed = false, crashMsg = '';
+            try {
+                for (let t = 0; t < 40; t++) { nextTurn(); }
+            } catch (e) {
+                crashed = true;
+                crashMsg = e.message;
+            }
+            record(GROUP9, 'Game survives 40 consecutive turns of full AI simulation without throwing', !crashed, crashMsg);
+
+            // ===== 10. Game-over detection (destructive - runs last) =====
+            const GROUP10 = 'Win/Loss Detection';
+            gameState.paused = false; // reset regardless of what the 40-turn stability run above resulted in
+            player.island.buildings.forEach(b => { b.hp = 0; b.destroyed = true; });
+            try {
+                checkGameOver();
+                record(GROUP10, 'Destroying all player buildings triggers defeat (checkGameOver)', gameState.paused === true);
+            } catch (e) {
+                record(GROUP10, 'checkGameOver() runs without throwing', false, e.message);
+            }
+
+        } catch (fatalErr) {
+            window.__reportTestError(fatalErr.message + '\n' + (fatalErr.stack || ''));
+            return;
+        }
+
+        finish();
+        function finish() {
+            window.__reportTestResults(results);
+        }
+    })();
+}
+
+const TEST_BODY_SOURCE = '(' + __universeGameTests.toString() + ')();';
+</script>
+
+</body>
+</html>
