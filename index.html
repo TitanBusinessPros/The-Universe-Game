@@ -90,6 +90,25 @@
             background: #00cc00;
             transform: scale(1.05);
         }
+        .difficultyBtn {
+            background: #111;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .difficultyBtn:hover {
+            background: #003300;
+        }
+        .difficultyBtn.active {
+            background: #00ff00;
+            color: #000;
+        }
         #unitInspector {
             position: fixed;
             background: rgba(0, 0, 0, 0.95);
@@ -394,6 +413,12 @@
         
         <div id="startScreen">
             <h1>🌊 NAVAL WARFARE 🌊</h1>
+            <p style="margin-bottom: 10px;">Difficulty:</p>
+            <div id="difficultySelect" style="display:flex; gap:10px; justify-content:center; margin-bottom:20px;">
+                <button id="diffBtn-easy" class="difficultyBtn" onclick="chooseDifficulty('easy')">Easy</button>
+                <button id="diffBtn-normal" class="difficultyBtn" onclick="chooseDifficulty('normal')">Normal</button>
+                <button id="diffBtn-hard" class="difficultyBtn" onclick="chooseDifficulty('hard')">Hard</button>
+            </div>
             <p style="margin-bottom: 20px;">Select Your Country:</p>
             <div id="countrySelect"></div>
         </div>
@@ -613,12 +638,43 @@
         const HARBOR_UNLOAD_RANGE = 100;
         const TROOP_PICKUP_RANGE = 400;
 
-        const AI_BUILD_CHANCE = 0.8;
-        const AI_MOVEMENT_CHANCE = 0.95;
-        const AI_ATTACK_CHANCE = 0.9;
-        const AI_BUILDING_ATTACK_CHANCE = 0.7;
+        // Difficulty presets - "normal" matches the tuned defaults from tonight's AI fix.
+        // setDifficulty() below reassigns the `let` values everyone reads from at runtime.
+        const DIFFICULTY_PRESETS = {
+            easy:   { build: 0.5, movement: 0.6,  attack: 0.5, buildingAttack: 0.4, specialMult: 0.6 },
+            normal: { build: 0.8, movement: 0.95, attack: 0.9, buildingAttack: 0.7, specialMult: 1.0 },
+            hard:   { build: 1.0, movement: 1.0,  attack: 1.0, buildingAttack: 0.9, specialMult: 1.4 }
+        };
+        let currentDifficulty = 'normal';
+        let AI_BUILD_CHANCE = DIFFICULTY_PRESETS.normal.build;
+        let AI_MOVEMENT_CHANCE = DIFFICULTY_PRESETS.normal.movement;
+        let AI_ATTACK_CHANCE = DIFFICULTY_PRESETS.normal.attack;
+        let AI_BUILDING_ATTACK_CHANCE = DIFFICULTY_PRESETS.normal.buildingAttack;
+        // How much more (or less) aggressive the Cyborg/Zoonester/Roufestreal "special" enemies
+        // are than their own tuned baseline - keeps them scarier than regular nations at every
+        // difficulty without needing separate presets for each one.
+        let AI_SPECIAL_AGGRESSION_MULT = DIFFICULTY_PRESETS.normal.specialMult;
         const AI_HUNT_RADIUS = 2500;      // how far a unit can "see" an enemy to chase it
         const AI_HUNT_PLAYER_BIAS = 0.7;  // chance to head for the player instead of a random rival when nothing is in sight
+
+        function setDifficulty(name) {
+            const preset = DIFFICULTY_PRESETS[name];
+            if (!preset) return;
+            currentDifficulty = name;
+            AI_BUILD_CHANCE = preset.build;
+            AI_MOVEMENT_CHANCE = preset.movement;
+            AI_ATTACK_CHANCE = preset.attack;
+            AI_BUILDING_ATTACK_CHANCE = preset.buildingAttack;
+            AI_SPECIAL_AGGRESSION_MULT = preset.specialMult;
+        }
+
+        // Called from the start-screen buttons - updates the AI constants AND the button highlight.
+        function chooseDifficulty(name) {
+            setDifficulty(name);
+            document.querySelectorAll('.difficultyBtn').forEach(btn => btn.classList.remove('active'));
+            const btn = document.getElementById('diffBtn-' + name);
+            if (btn) btn.classList.add('active');
+        }
 
         const UNIT_SIGHT_RANGE = 25;
 
@@ -904,7 +960,7 @@
                 yOffset: 0,
                 imageUrl: 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Planets/Threnfall.png',
                 color: "#00ffff",
-                type: "zoonester",
+                type: "nation",
                 size: 350
             },
 
@@ -915,7 +971,7 @@
                 yOffset: 50000,
                 imageUrl: 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Planets/Nimbrase.png',
                 color: "#9d00ff",
-                type: "zoonester",
+                type: "nation",
                 size: 350
             },
 
@@ -926,7 +982,7 @@
                 yOffset: -50000,
                 imageUrl: 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Planets/Ashkarel.png',
                 color: "#9d00ff",
-                type: "zoonester",
+                type: "nation",
                 size: 350
             },
 
@@ -937,7 +993,7 @@
                 yOffset: 30000,
                 imageUrl: 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Planets/Drovannis.png',
                 color: "#ff0000",
-                type: "zoonester",
+                type: "nation",
                 size: 350
             },
 
@@ -948,7 +1004,7 @@
                 yOffset: 30000,
                 imageUrl: 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Planets/Sylquorin.png',
                 color: "#ff0000",
-                type: "zoonester",
+                type: "nation",
                 size: 350
             },
 
@@ -959,7 +1015,7 @@
                 yOffset: -30000,
                 imageUrl: 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Planets/Merrowdusk.png',
                 color: "#00ff00",
-                type: "zoonester",
+                type: "nation",
                 size: 350
             },
 
@@ -970,7 +1026,7 @@
                 yOffset: -30000,
                 imageUrl: 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Planets/Talvorin.png',
                 color: "#00ff00",
-                type: "zoonester",
+                type: "nation",
                 size: 350
             },
 
@@ -992,7 +1048,7 @@
                 yOffset: -40000,
                 imageUrl: 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Planets/Ornathis.png',
                 color: "#ffff00",
-                type: "zoonester",
+                type: "nation",
                 size: 350
             },
 
@@ -1251,6 +1307,8 @@
                 this.frozenTurns = 0;
                 this.frozenBy = null;
                 this.isInHarbor = this.isGroundUnit();
+                this.turnsSinceLastMine = 0;      // roufestreal mine-layer cooldown
+                this.turnsSinceLastMissile = 5;   // phantomstrike missile cooldown (starts ready)
             }
 
             isGroundUnit() {
@@ -1768,7 +1826,7 @@
                     
                     // Highly aggressive movement (3x more likely than average)
                     this.units.forEach(unit => {
-                        if (Math.random() < 0.9) { // 3x AI_MOVEMENT_CHANCE (0.3 * 3 = 0.9)
+                        if (Math.random() < Math.min(1, 0.9 * AI_SPECIAL_AGGRESSION_MULT)) { // highly aggressive baseline, scaled by difficulty
                             const targetCountry = gameState.countries[Math.floor(Math.random() * gameState.countries.length)];
                             if (targetCountry.id !== this.id) {
                                 unit.moveTo(
@@ -1781,7 +1839,7 @@
                     
                     // Freeze units within range (highly aggressive - 3x more likely)
                     this.units.forEach(parasite => {
-                        if (parasite.type === 'zoonparasite' && !parasite.hasAttacked && Math.random() < 1.2) { // 3x AI_ATTACK_CHANCE
+                        if (parasite.type === 'zoonparasite' && !parasite.hasAttacked && Math.random() < Math.min(1, 0.4 * AI_SPECIAL_AGGRESSION_MULT)) { // highly aggressive baseline, scaled by difficulty
                             let targetFound = false;
                             
                             gameState.countries.forEach(country => {
@@ -1890,7 +1948,7 @@
                     }
                     
                     this.units.forEach(unit => {
-                        if (Math.random() < 0.5) {
+                        if (Math.random() < Math.min(1, 0.5 * AI_SPECIAL_AGGRESSION_MULT)) {
                             const targetCountry = gameState.countries[Math.floor(Math.random() * 12)];
                             if (targetCountry.id !== this.id) {
                                 unit.moveTo(
@@ -1902,7 +1960,7 @@
                     });
                     
                     this.units.forEach(attacker => {
-                        if (!attacker.hasAttacked && Math.random() < 0.6) {
+                        if (!attacker.hasAttacked && Math.random() < Math.min(1, 0.6 * AI_SPECIAL_AGGRESSION_MULT)) {
                             let targetFound = false;
                             
                             gameState.countries.forEach(country => {
@@ -2203,10 +2261,29 @@
             // =====================================================================
             // LOAD CUSTOM ISLANDS from configuration
             // =====================================================================
+            // Building name flavor for "nation"-type custom islands, so they read as real
+            // rival powers rather than generic filler - cycles if there are ever more of them.
+            const NATION_STRUCTURE_FLAVORS = [
+                ['Outpost Command', 'Sentry Post'],
+                ['Frontier Bunker', 'Signal Relay'],
+                ['Border Garrison', 'Listening Post'],
+                ['Rally Point', 'Watch Station'],
+                ['Forward Base', 'Relay Tower'],
+                ['Colonial HQ', 'Picket Line'],
+                ['Expedition Camp', 'Beacon Array'],
+                ['Reclamation Site', 'Sensor Array']
+            ];
             let nextCustomId = 17;
+            let nationFlavorIdx = 0;
             CUSTOM_ISLANDS.forEach(customIsland => {
-                ISLAND_STRUCTURES[nextCustomId] = ['Custom Structure 1', 'Custom Structure 2', 'Harbor', 'Marine Base', 'War Factory', 'Defense Gun'];
-                
+                if (customIsland.type === "nation") {
+                    const flavor = NATION_STRUCTURE_FLAVORS[nationFlavorIdx % NATION_STRUCTURE_FLAVORS.length];
+                    nationFlavorIdx++;
+                    ISLAND_STRUCTURES[nextCustomId] = [flavor[0], flavor[1], 'Harbor', 'Marine Base', 'War Factory', 'Defense Gun'];
+                } else {
+                    ISLAND_STRUCTURES[nextCustomId] = ['Custom Structure 1', 'Custom Structure 2', 'Harbor', 'Marine Base', 'War Factory', 'Defense Gun'];
+                }
+
                 const customX = centerX + customIsland.xOffset;
                 const customY = centerY + customIsland.yOffset;
                 const island = new Island(customX, customY, nextCustomId);
@@ -2230,6 +2307,9 @@
                     country.isRoufestreal = true;
                     country.roufestrealTurnCounter = 0;
                 }
+                // customIsland.type === "nation" leaves every special flag false, so
+                // Country.aiTurn() falls through to the same balanced build/hunt/attack
+                // logic the 11 regular nations use, instead of a rushing spawner.
                 
                 gameState.countries.push(country);
                 nextCustomId++;
@@ -2237,6 +2317,28 @@
             // =====================================================================
 
             const selectDiv = document.getElementById('countrySelect');
+
+            // Offer to resume an in-progress game if the browser has an autosave from last time.
+            let autosaveRaw = null;
+            try { autosaveRaw = localStorage.getItem(AUTOSAVE_KEY); } catch (e) { /* private browsing etc. */ }
+            if (autosaveRaw) {
+                try {
+                    const autosave = JSON.parse(autosaveRaw);
+                    const continueBtn = document.createElement('button');
+                    continueBtn.className = 'countryBtn';
+                    continueBtn.textContent = `▶ CONTINUE (Turn ${autosave.turn})`;
+                    continueBtn.style.background = '#00ff00';
+                    continueBtn.style.borderColor = '#00ff00';
+                    continueBtn.style.color = '#000';
+                    continueBtn.style.width = '100%';
+                    continueBtn.style.marginBottom = '15px';
+                    continueBtn.onclick = () => continueFromAutosave(autosave);
+                    selectDiv.appendChild(continueBtn);
+                } catch (e) {
+                    clearAutosave(); // corrupted autosave - don't keep offering a broken continue
+                }
+            }
+
             COUNTRY_NAMES.forEach((name, idx) => {
                 const btn = document.createElement('button');
                 btn.className = 'countryBtn';
@@ -2247,6 +2349,9 @@
                 btn.onclick = () => startGame(idx);
                 selectDiv.appendChild(btn);
             });
+
+            const defaultDiffBtn = document.getElementById('diffBtn-' + currentDifficulty);
+            if (defaultDiffBtn) defaultDiffBtn.classList.add('active');
         }
 
         function startGame(countryIdx) {
@@ -2267,11 +2372,32 @@
         
         function closeVideo() {
             document.getElementById('videoScreen').style.display = 'none';
-            
+
             // Now actually start the game
             gameState.gameStarted = true;
             camera.x = gameState.playerCountry.island.x;
             camera.y = gameState.playerCountry.island.y;
+            startMusic();
+            createSpaceElements();
+            updateUI();
+            gameLoop();
+        }
+
+        function continueFromAutosave(autosave) {
+            try {
+                applySaveData(autosave);
+            } catch (e) {
+                alert('That autosave looks corrupted, starting a new game instead: ' + e.message);
+                clearAutosave();
+                return;
+            }
+
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('videoScreen').style.display = 'none';
+
+            gameState.gameStarted = true;
+            gameState.paused = false;
+            // camera.x/y/zoom already restored by applySaveData()
             startMusic();
             createSpaceElements();
             updateUI();
@@ -2485,6 +2611,7 @@
             
             checkGameOver();
             updateUI();
+            if (!gameState.paused) autoSaveGame();
         }
 
         function checkGameOver() {
@@ -2511,6 +2638,7 @@
 
         function showGameOver(victory, message) {
             gameState.paused = true;
+            clearAutosave(); // don't offer "Continue" into a game that's already over
             const screen = document.getElementById('gameOverScreen');
             const title = document.getElementById('gameOverTitle');
             const msg = document.getElementById('gameOverMessage');
@@ -2527,50 +2655,144 @@
             screen.style.display = 'block';
         }
 
+        const AUTOSAVE_KEY = 'universeGameAutosave';
+
+        // Single source of truth for what a save contains, shared by the file-based
+        // save/load buttons and the localStorage autosave safety net below.
+        function buildSaveData() {
+            return {
+                version: 2,
+                turn: gameState.turn,
+                difficulty: currentDifficulty,
+                playerCountryId: gameState.playerCountry.id,
+                camera: { x: camera.x, y: camera.y, zoom: camera.zoom },
+                spaceMines: spaceMines.map(m => ({ x: m.x, y: m.y, countryId: m.countryId, hp: m.hp })),
+                countries: gameState.countries.map(c => ({
+                    id: c.id,
+                    resources: c.resources,
+                    cyborgTurnCounter: c.cyborgTurnCounter,
+                    zoonesterTurnCounter: c.zoonesterTurnCounter,
+                    roufestrealTurnCounter: c.roufestrealTurnCounter,
+                    units: c.units.map(u => ({
+                        x: u.x,
+                        y: u.y,
+                        type: u.type,
+                        hp: u.hp,
+                        hasAttacked: u.hasAttacked,
+                        isInHarbor: u.isInHarbor,
+                        frozenTurns: u.frozenTurns,
+                        frozenBy: u.frozenBy,
+                        turnsSinceLastMissile: u.turnsSinceLastMissile,
+                        turnsSinceLastMine: u.turnsSinceLastMine,
+                        cargo: u.cargo.map(cu => ({
+                            type: cu.type,
+                            hp: cu.hp
+                        }))
+                    })),
+                    buildings: c.island.buildings.map(b => ({
+                        name: b.name,
+                        hp: b.hp,
+                        destroyed: b.destroyed
+                    }))
+                }))
+            };
+        }
+
+        function applySaveData(saveData) {
+            gameState.turn = saveData.turn;
+            gameState.turnTimeRemaining = TURN_TIME_SECONDS;
+            setDifficulty(saveData.difficulty || 'normal');
+
+            if (saveData.camera) {
+                camera.x = saveData.camera.x;
+                camera.y = saveData.camera.y;
+                camera.zoom = saveData.camera.zoom;
+            }
+
+            spaceMines.length = 0;
+            if (saveData.spaceMines) {
+                saveData.spaceMines.forEach(m => {
+                    const mine = new SpaceMine(m.x, m.y, m.countryId);
+                    mine.hp = m.hp;
+                    spaceMines.push(mine);
+                });
+            }
+
+            saveData.countries.forEach((savedCountry, idx) => {
+                const country = gameState.countries[idx];
+                if (!country) return;
+                country.resources = savedCountry.resources;
+                country.cyborgTurnCounter = savedCountry.cyborgTurnCounter || 0;
+                country.zoonesterTurnCounter = savedCountry.zoonesterTurnCounter || 0;
+                country.roufestrealTurnCounter = savedCountry.roufestrealTurnCounter || 0;
+
+                savedCountry.buildings.forEach((savedBuilding, bIdx) => {
+                    if (country.island.buildings[bIdx]) {
+                        country.island.buildings[bIdx].hp = savedBuilding.hp;
+                        country.island.buildings[bIdx].destroyed = savedBuilding.destroyed;
+                    }
+                });
+
+                country.units = savedCountry.units.map(savedUnit => {
+                    const unit = new Unit(savedUnit.x, savedUnit.y, savedUnit.type, idx);
+                    unit.hp = savedUnit.hp;
+                    unit.hasAttacked = savedUnit.hasAttacked;
+                    unit.isInHarbor = savedUnit.isInHarbor;
+                    unit.frozenTurns = savedUnit.frozenTurns || 0;
+                    unit.frozenBy = savedUnit.frozenBy || null;
+                    if (typeof savedUnit.turnsSinceLastMissile === 'number') unit.turnsSinceLastMissile = savedUnit.turnsSinceLastMissile;
+                    if (typeof savedUnit.turnsSinceLastMine === 'number') unit.turnsSinceLastMine = savedUnit.turnsSinceLastMine;
+
+                    if (savedUnit.cargo) {
+                        unit.cargo = savedUnit.cargo.map(savedCargo => {
+                            const cargoUnit = new Unit(0, 0, savedCargo.type, idx);
+                            cargoUnit.hp = savedCargo.hp;
+                            cargoUnit.isInHarbor = false;
+                            return cargoUnit;
+                        });
+                    }
+
+                    return unit;
+                });
+            });
+
+            gameState.countries.forEach(c => { c.isPlayer = false; });
+            const restoredPlayer = gameState.countries[saveData.playerCountryId];
+            if (restoredPlayer) restoredPlayer.isPlayer = true;
+            gameState.playerCountry = restoredPlayer;
+        }
+
+        function autoSaveGame() {
+            try {
+                localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(buildSaveData()));
+            } catch (e) {
+                // Autosave is a convenience, not critical - private browsing/quota can throw here.
+                console.warn('Autosave failed:', e.message);
+            }
+        }
+
+        function clearAutosave() {
+            try { localStorage.removeItem(AUTOSAVE_KEY); } catch (e) {}
+        }
+
         function newGame() {
             if (confirm('Start a new game? Current progress will be lost.')) {
+                clearAutosave();
                 location.reload();
             }
         }
 
         function saveGame() {
             try {
-                const saveData = {
-                    turn: gameState.turn,
-                    playerCountryId: gameState.playerCountry.id,
-                    countries: gameState.countries.map(c => ({
-                        id: c.id,
-                        resources: c.resources,
-                        cyborgTurnCounter: c.cyborgTurnCounter,
-                        units: c.units.map(u => ({
-                            x: u.x,
-                            y: u.y,
-                            type: u.type,
-                            hp: u.hp,
-                            hasAttacked: u.hasAttacked,
-                            isInHarbor: u.isInHarbor,
-                            cargo: u.cargo.map(cu => ({
-                                type: cu.type,
-                                hp: cu.hp
-                            }))
-                        })),
-                        buildings: c.island.buildings.map(b => ({
-                            name: b.name,
-                            hp: b.hp,
-                            destroyed: b.destroyed
-                        }))
-                    }))
-                };
-                
-                const saveString = JSON.stringify(saveData);
+                const saveString = JSON.stringify(buildSaveData());
                 const blob = new Blob([saveString], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `naval_warfare_save_turn${gameState.turn}.json`;
+                a.download = `universe_game_save_turn${gameState.turn}.json`;
                 a.click();
                 URL.revokeObjectURL(url);
-                
+
                 alert('Game saved! Download the file and keep it safe.');
             } catch (e) {
                 alert('Failed to save game: ' + e.message);
@@ -2587,40 +2809,7 @@
                 reader.onload = (event) => {
                     try {
                         const saveData = JSON.parse(event.target.result);
-                        
-                        gameState.turn = saveData.turn;
-                        gameState.turnTimeRemaining = TURN_TIME_SECONDS;
-                        
-                        saveData.countries.forEach((savedCountry, idx) => {
-                            const country = gameState.countries[idx];
-                            country.resources = savedCountry.resources;
-                            country.cyborgTurnCounter = savedCountry.cyborgTurnCounter || 0;
-                            
-                            savedCountry.buildings.forEach((savedBuilding, bIdx) => {
-                                country.island.buildings[bIdx].hp = savedBuilding.hp;
-                                country.island.buildings[bIdx].destroyed = savedBuilding.destroyed;
-                            });
-                            
-                            country.units = savedCountry.units.map(savedUnit => {
-                                const unit = new Unit(savedUnit.x, savedUnit.y, savedUnit.type, idx);
-                                unit.hp = savedUnit.hp;
-                                unit.hasAttacked = savedUnit.hasAttacked;
-                                unit.isInHarbor = savedUnit.isInHarbor;
-                                
-                                if (savedUnit.cargo) {
-                                    unit.cargo = savedUnit.cargo.map(savedCargo => {
-                                        const cargoUnit = new Unit(0, 0, savedCargo.type, idx);
-                                        cargoUnit.hp = savedCargo.hp;
-                                        cargoUnit.isInHarbor = false;
-                                        return cargoUnit;
-                                    });
-                                }
-                                
-                                return unit;
-                            });
-                        });
-                        
-                        gameState.playerCountry = gameState.countries[saveData.playerCountryId];
+                        applySaveData(saveData);
                         updateUI();
                         alert('Game loaded successfully!');
                     } catch (e) {

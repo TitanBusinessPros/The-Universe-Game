@@ -347,6 +347,76 @@ function __universeGameTests() {
                 record(GROUP8, 'Found a regular rival nation to test hunting behavior on', false);
             }
 
+            // ===== 8b. Balance pass - custom islands act as real rival nations, not spawners =====
+            const GROUP8B = 'Custom Island Balance';
+            const customCountries = gameState.countries.filter(c => c.id >= 17);
+            record(GROUP8B, 'All 10 custom islands were created', customCountries.length === 10, `actual: ${customCountries.length}`);
+
+            const nationCustoms = customCountries.filter(c => !c.isZoonester && !c.isCyborg && !c.isRoufestreal);
+            record(GROUP8B, '8 of the 10 custom islands are plain "nation"-type rivals (no special-enemy flags)', nationCustoms.length === 8, `actual: ${nationCustoms.length}`);
+
+            const specialCustoms = customCountries.filter(c => c.isZoonester || c.isRoufestreal);
+            record(GROUP8B, 'The other 2 custom islands kept their special-enemy behavior (1 Zoonester + 1 Roufestreal)',
+                specialCustoms.length === 2 && customCountries.filter(c => c.isZoonester).length === 1 && customCountries.filter(c => c.isRoufestreal).length === 1);
+
+            const nationSample = nationCustoms[0];
+            if (nationSample) {
+                record(GROUP8B, `A "nation"-type custom island ("${nationSample.name}") has all 6 real buildings, not placeholder names`,
+                    nationSample.island.buildings.length === 6 && !nationSample.island.buildings.some(b => b.name.startsWith('Custom Structure')),
+                    `buildings: ${nationSample.island.buildings.map(b => b.name).join(', ')}`);
+
+                nationSample.resources = 1000;
+                const beforeCustomUnits = nationSample.units.length;
+                const customBuilt = nationSample.buildUnit('thunderwing');
+                record(GROUP8B, 'A "nation"-type custom island can build units through the normal economy (buildUnit)',
+                    customBuilt && nationSample.units.length === beforeCustomUnits + 1);
+            } else {
+                record(GROUP8B, 'Found a "nation"-type custom island to sanity-check', false);
+            }
+
+            // ===== 8c. Save / load round-trips live state =====
+            const GROUP8C = 'Save / Load';
+            const preSaveTurn = gameState.turn;
+            const preSaveDifficulty = currentDifficulty;
+            player.resources = 4242;
+            // Pin this building to a known-good state before snapshotting - earlier tests
+            // (Combat Mechanics) may have already damaged/destroyed buildings[0], and this
+            // check cares about round-tripping hp/destroyed, not what state it starts in.
+            const testBuilding = player.island.buildings[0];
+            testBuilding.hp = testBuilding.maxHp;
+            testBuilding.destroyed = false;
+            const saveSnapshot = buildSaveData();
+            record(GROUP8C, 'buildSaveData() captures the current turn/resources/difficulty', saveSnapshot.turn === preSaveTurn && saveSnapshot.countries[player.id].resources === 4242 && saveSnapshot.difficulty === preSaveDifficulty);
+
+            // Mutate live state, then restore from the snapshot and confirm it comes back.
+            gameState.turn = 999;
+            player.resources = 1;
+            setDifficulty('hard');
+            testBuilding.hp = -50;
+            testBuilding.destroyed = true;
+
+            try {
+                applySaveData(saveSnapshot);
+                record(GROUP8C, 'applySaveData() restores turn, resources, difficulty, and building state from a snapshot',
+                    gameState.turn === preSaveTurn &&
+                    gameState.playerCountry.resources === 4242 &&
+                    currentDifficulty === preSaveDifficulty &&
+                    gameState.playerCountry.island.buildings[0].hp === testBuilding.maxHp &&
+                    gameState.playerCountry.island.buildings[0].destroyed === false,
+                    `turn ${gameState.turn}, resources ${gameState.playerCountry.resources}, difficulty ${currentDifficulty}, building hp ${gameState.playerCountry.island.buildings[0].hp}`);
+            } catch (e) {
+                record(GROUP8C, 'applySaveData() runs without throwing', false, e.message);
+            }
+
+            const beforeAutosave = (() => { try { return localStorage.getItem(AUTOSAVE_KEY); } catch (e) { return null; } })();
+            nextTurn();
+            const afterAutosave = (() => { try { return localStorage.getItem(AUTOSAVE_KEY); } catch (e) { return null; } })();
+            let autosaveTurnMatches = false;
+            try { autosaveTurnMatches = afterAutosave && JSON.parse(afterAutosave).turn === gameState.turn; } catch (e) {}
+            record(GROUP8C, 'nextTurn() writes an autosave to localStorage matching the current turn',
+                !!afterAutosave && afterAutosave !== beforeAutosave && autosaveTurnMatches,
+                `turn ${gameState.turn}, autosave present: ${!!afterAutosave}`);
+
             // ===== 9. Long-run stability (full, unscripted AI simulation across every country) =====
             const GROUP9 = 'Stability';
             let crashed = false, crashMsg = '';
