@@ -76,6 +76,8 @@
             border-radius: 12px;
             text-align: center;
             max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
             z-index: 1000;
         }
         #gameOverScreen {
@@ -108,11 +110,18 @@
             font-size: 18px;
             margin: 20px 0;
         }
-        #countrySelect {
+        #countrySelect, #campaignCountrySelect {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 10px;
             margin: 20px 0;
+        }
+        .countryBtn .bonusText {
+            display: block;
+            font-size: 10px;
+            font-weight: normal;
+            margin-top: 4px;
+            opacity: 0.85;
         }
         .countryBtn {
             background: #00ff00;
@@ -469,20 +478,20 @@
             <div id="countrySelect"></div>
         </div>
 
-        <div id="campaignNationSelect" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.95); color:#00ff00; padding:30px; border-radius:12px; text-align:center; max-width:600px; z-index:1000;">
+        <div id="campaignNationSelect" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.95); color:#00ff00; padding:30px; border-radius:12px; text-align:center; max-width:700px; max-height:90vh; overflow-y:auto; z-index:1000;">
             <h1>🎖️ CAMPAIGN MODE 🎖️</h1>
             <p style="margin-bottom:20px; max-width:520px;">Choose the nation you'll lead. You'll fight the other eleven, one at a time, with alien threats mixed into every stage - then face what's really out there.</p>
             <div id="campaignCountrySelect"></div>
             <button class="countryBtn" style="margin-top:20px; background:#888; border-color:#888;" onclick="closeCampaignNationSelect()">← Back</button>
         </div>
 
-        <div id="campaignBriefingScreen" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.95); color:#00ff00; padding:30px; border-radius:12px; text-align:center; max-width:600px; z-index:1000;">
+        <div id="campaignBriefingScreen" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.95); color:#00ff00; padding:30px; border-radius:12px; text-align:center; max-width:600px; max-height:90vh; overflow-y:auto; z-index:1000;">
             <h1 id="campaignBriefingTitle"></h1>
             <p id="campaignBriefingText" style="margin:20px 0; line-height:1.5;"></p>
             <button class="countryBtn" style="background:#00ff00;" onclick="beginCampaignFromBriefing()">▶ BEGIN</button>
         </div>
 
-        <div id="campaignStageScreen" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.98); color:#00ff00; padding:40px; border-radius:12px; text-align:center; max-width:600px; z-index:2000; border:4px solid #ffff00;">
+        <div id="campaignStageScreen" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.98); color:#00ff00; padding:40px; border-radius:12px; text-align:center; max-width:600px; max-height:90vh; overflow-y:auto; z-index:2000; border:4px solid #ffff00;">
             <h1 id="campaignStageTitle"></h1>
             <p id="campaignStageBriefing" style="margin:20px 0; line-height:1.5;"></p>
             <button id="campaignStageContinueBtn" style="width:200px; padding:15px; font-size:16px; margin:10px;"></button>
@@ -2422,10 +2431,10 @@
             COUNTRY_NAMES.forEach((name, idx) => {
                 const btn = document.createElement('button');
                 btn.className = 'countryBtn';
-                btn.textContent = name;
                 btn.style.background = COUNTRY_COLORS[idx];
                 btn.style.borderColor = COUNTRY_COLORS[idx];
                 btn.style.color = '#000';
+                btn.innerHTML = `${name}<span class="bonusText">${describeCountryBonus(idx)}</span>`;
                 btn.onclick = () => startGame(idx);
                 selectDiv.appendChild(btn);
             });
@@ -2714,7 +2723,7 @@
 
             if (gameState.campaignActive) {
                 const stage = gameState.campaignStages[gameState.campaignStageIndex];
-                const targetIds = [...stage.enemyCountryIds, ...stage.alienCountryIds];
+                const targetIds = stage.objectives.map(o => o.id);
                 const anyTargetAlive = gameState.countries.some(c =>
                     targetIds.includes(c.id) && c.island.buildings.some(b => !b.destroyed));
                 if (!anyTargetAlive) {
@@ -2898,33 +2907,81 @@
         // then face what's really out there.
         // =====================================================================
         const CAMPAIGN_KEY = 'universeGameCampaign';
+        // Escalating alien presence mixed into each of the 11 nation stages.
         const CAMPAIGN_ALIEN_WAVES = [
             [12], [12], [12, 16],
             [16], [16], [16, 13],
             [13], [13], [13, 14],
             [14, 15]
-        ]; // escalating alien presence across the 11 nation stages
+        ];
+        // How many guarded outpost planets stand between you and the rival's homeworld each
+        // stage - ramps up from a single outpost early on to a full 7-planet gauntlet late game.
+        const CAMPAIGN_OUTPOST_COUNTS = [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 7];
+        const CAMPAIGN_OUTPOST_NAMES = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta', 'Eta'];
+
+        function describeCountryBonus(id) {
+            const b = COUNTRY_BONUSES[id];
+            if (!b) return 'Balanced - no standout bonuses.';
+            const label = { skyfortress: 'Skyfortress', stormbreaker: 'Stormbreaker', wavecrusher: 'Wavecrusher',
+                blazefalcon: 'Blazefalcon', thunderwing: 'Thunderwing', ironbeast: 'Ironbeast', boomcannon: 'Boomcannon',
+                groundpounders: 'Groundpounders', deepglider: 'Deepglider' };
+            const perks = [];
+            const addAll = (map, suffix) => Object.entries(map).forEach(([u, v]) => {
+                if (v > 1) perks.push(`+${Math.round((v - 1) * 100)}% ${label[u] || u} ${suffix}`);
+                else if (v < 1) perks.push(`-${Math.round((1 - v) * 100)}% ${label[u] || u} ${suffix}`);
+            });
+            addAll(b.hpMultiplier, 'HP');
+            addAll(b.attackMultiplier, 'ATK');
+            addAll(b.speedMultiplier, 'speed');
+            addAll(b.rangeMultiplier, 'range');
+            return perks.length ? perks.slice(0, 3).join(', ') : 'Balanced - no standout bonuses.';
+        }
+
+        function buildStageObjectives(stageIdx, rivalId) {
+            const objectives = [];
+            const outpostCount = CAMPAIGN_OUTPOST_COUNTS[stageIdx] || 1;
+            for (let i = 0; i < outpostCount; i++) {
+                const outpostName = CAMPAIGN_OUTPOST_NAMES[i % CAMPAIGN_OUTPOST_NAMES.length];
+                objectives.push({
+                    id: 2000 + stageIdx * 20 + i,
+                    kind: 'outpost',
+                    outpostIdx: i,
+                    label: `Take out ${COUNTRY_NAMES[rivalId]}'s outpost "${outpostName}"`
+                });
+            }
+            (CAMPAIGN_ALIEN_WAVES[stageIdx] || [12]).forEach(alienId => {
+                objectives.push({ id: alienId, kind: 'alien', label: `Destroy the alien base on the way in - ${campaignCountryName(alienId)}` });
+            });
+            objectives.push({ id: rivalId, kind: 'homeworld', label: `Take out ${COUNTRY_NAMES[rivalId]}'s homeworld` });
+            return objectives;
+        }
 
         function buildCampaignStages(playerNationId) {
             const rivals = [];
             for (let i = 0; i < 12; i++) if (i !== playerNationId) rivals.push(i);
 
-            const stages = rivals.map((rivalId, idx) => ({
-                number: idx + 1,
-                title: `Stage ${idx + 1}: ${COUNTRY_NAMES[rivalId]}`,
-                briefing: `${COUNTRY_NAMES[playerNationId]} forces engage ${COUNTRY_NAMES[rivalId]}. `
-                    + `Alien contacts detected in the sector - destroy every hostile structure to clear the stage.`,
-                enemyCountryIds: [rivalId],
-                alienCountryIds: CAMPAIGN_ALIEN_WAVES[idx] || [12]
-            }));
+            const stages = rivals.map((rivalId, idx) => {
+                const objectives = buildStageObjectives(idx, rivalId);
+                const outpostCount = objectives.filter(o => o.kind === 'outpost').length;
+                return {
+                    number: idx + 1,
+                    rivalId,
+                    title: `Stage ${idx + 1}: ${COUNTRY_NAMES[rivalId]}`,
+                    briefing: `${COUNTRY_NAMES[playerNationId]} forces push into ${COUNTRY_NAMES[rivalId]} territory. `
+                        + `${outpostCount} guarded outpost${outpostCount === 1 ? '' : 's'} stand between you and their homeworld, `
+                        + `with alien contacts mixed in along the way. Remember: every nation fights differently - `
+                        + `check ${COUNTRY_NAMES[rivalId]}'s strengths before you engage.`,
+                    objectives
+                };
+            });
 
             stages.push({
                 number: 12,
+                rivalId: null,
                 title: 'Stage 12: The Reckoning',
                 briefing: `Eleven nations have fallen under your banner. Only the old enemy remains - `
                     + `every Cyborg, Zoonester, and Roufestreal stronghold in the sector, all at once. This is the last fight.`,
-                enemyCountryIds: [],
-                alienCountryIds: [12, 13, 14, 15, 16]
+                objectives: [12, 13, 14, 15, 16].map(id => ({ id, kind: 'alien', label: `Destroy ${campaignCountryName(id)}` }))
             });
 
             return stages;
@@ -2937,10 +2994,10 @@
             COUNTRY_NAMES.forEach((name, idx) => {
                 const btn = document.createElement('button');
                 btn.className = 'countryBtn';
-                btn.textContent = name;
                 btn.style.background = COUNTRY_COLORS[idx];
                 btn.style.borderColor = COUNTRY_COLORS[idx];
                 btn.style.color = '#000';
+                btn.innerHTML = `${name}<span class="bonusText">${describeCountryBonus(idx)}</span>`;
                 btn.onclick = () => selectCampaignNation(idx);
                 container.appendChild(btn);
             });
@@ -2968,7 +3025,9 @@
             titleEl.textContent = stage.title;
             textEl.textContent = isIntro
                 ? `Earth is gone. Twelve nations fled into the stars, each claiming a world of their own - `
-                  + `and never stopped fighting. You lead ${COUNTRY_NAMES[gameState.campaignNationId]}. `
+                  + `and never stopped fighting. Every nation fights differently, with its own strengths in the field - `
+                  + `you saw ${COUNTRY_NAMES[gameState.campaignNationId]}'s on the select screen, and you'll face eleven more `
+                  + `flavors of resistance before this is over.\n\nYou lead ${COUNTRY_NAMES[gameState.campaignNationId]}. `
                   + `Conquer the other eleven, then face what's really out there.\n\n${stage.briefing}`
                 : stage.briefing;
             document.getElementById('campaignBriefingScreen').style.display = 'block';
@@ -3004,10 +3063,36 @@
             return positions[id];
         }
 
+        // Outposts ring the rival's homeworld rather than being scattered across the whole
+        // galaxy, so a stage reads as "fight through their territory" instead of a random hunt.
+        function campaignOutpostPosition(rivalId, outpostIdx, total) {
+            const home = campaignNationPosition(rivalId);
+            const angle = (outpostIdx / Math.max(total, 1)) * Math.PI * 2;
+            const radius = 6000 + (outpostIdx % 3) * 1500;
+            return { x: home.x + Math.cos(angle) * radius, y: home.y + Math.sin(angle) * radius };
+        }
+
         function campaignCountryName(id) {
             if (id < 12) return COUNTRY_NAMES[id];
             if (id === 16) return 'Zoonester';
             return `Cyborg Planet ${['North', 'South', 'East', 'West'][id - 12]}`;
+        }
+
+        // Pre-places a small garrison on a freshly-spawned enemy/objective planet so stages
+        // feel populated and defended from turn 1, not empty until the AI economy builds up.
+        function spawnCampaignGarrison(country, count) {
+            const pool = ['groundpounders', 'ironbeast', 'boomcannon', 'thunderwing', 'blazefalcon', 'skyripper', 'deepglider', 'stormbreaker'];
+            for (let i = 0; i < count; i++) {
+                const type = pool[Math.floor(Math.random() * pool.length)];
+                const angle = Math.random() * Math.PI * 2;
+                const dist = country.island.size + 80 + Math.random() * 150;
+                const unit = new Unit(
+                    country.island.x + Math.cos(angle) * dist,
+                    country.island.y + Math.sin(angle) * dist,
+                    type, country.id
+                );
+                country.units.push(unit);
+            }
         }
 
         function startCampaignStage(stageIndex) {
@@ -3021,18 +3106,46 @@
             missiles.length = 0;
             laserEffects.length = 0;
 
-            const activeIds = [gameState.campaignNationId, ...stage.enemyCountryIds, ...stage.alienCountryIds];
-            activeIds.forEach(id => {
-                const isAlien = id >= 12;
-                const pos = isAlien ? campaignAlienPosition(id) : campaignNationPosition(id);
-                const island = new Island(pos.x, pos.y, id);
-                island.size = isAlien ? 350 : 250;
-                const isPlayer = id === gameState.campaignNationId;
-                const color = id < 12 ? COUNTRY_COLORS[id] : (id === 16 ? '#9d00ff' : '#00ffff');
-                const country = new Country(id, campaignCountryName(id), color, island, isPlayer);
-                if (country.isZoonester) country.zoonesterTurnCounter = 0;
+            const outpostTotal = stage.objectives.filter(o => o.kind === 'outpost').length;
+
+            // Player's own nation first.
+            const playerId = gameState.campaignNationId;
+            const playerPos = campaignNationPosition(playerId);
+            const playerIsland = new Island(playerPos.x, playerPos.y, playerId);
+            const playerCountry = new Country(playerId, COUNTRY_NAMES[playerId], COUNTRY_COLORS[playerId], playerIsland, true);
+            gameState.countries.push(playerCountry);
+            gameState.playerCountry = playerCountry;
+
+            stage.objectives.forEach(obj => {
+                let island, country;
+                if (obj.kind === 'homeworld') {
+                    const pos = campaignNationPosition(obj.id);
+                    island = new Island(pos.x, pos.y, obj.id);
+                    country = new Country(obj.id, COUNTRY_NAMES[obj.id], COUNTRY_COLORS[obj.id], island, false);
+                    spawnCampaignGarrison(country, 5);
+                } else if (obj.kind === 'alien') {
+                    const pos = campaignAlienPosition(obj.id);
+                    island = new Island(pos.x, pos.y, obj.id);
+                    island.size = 350;
+                    const color = obj.id === 16 ? '#9d00ff' : '#00ffff';
+                    country = new Country(obj.id, campaignCountryName(obj.id), color, island, false);
+                    if (country.isZoonester) country.zoonesterTurnCounter = 0;
+                    spawnCampaignGarrison(country, 3);
+                } else { // outpost - synthetic id, needs its own structure layout + art
+                    const pos = campaignOutpostPosition(stage.rivalId, obj.outpostIdx, outpostTotal);
+                    ISLAND_STRUCTURES[obj.id] = ['Outpost Command', 'Sentry Post', 'Harbor', 'Marine Base', 'War Factory', 'Defense Gun'];
+                    island = new Island(pos.x, pos.y, obj.id);
+                    island.size = 220;
+                    const art = CUSTOM_ISLANDS[1 + (obj.outpostIdx % (CUSTOM_ISLANDS.length - 1))];
+                    if (art && art.imageUrl) {
+                        island.planetImage = new Image();
+                        island.planetImage.onerror = () => { island.planetImage = null; };
+                        queueImageLoad(island.planetImage, art.imageUrl);
+                    }
+                    country = new Country(obj.id, `${COUNTRY_NAMES[stage.rivalId]} Outpost`, COUNTRY_COLORS[stage.rivalId], island, false);
+                    spawnCampaignGarrison(country, 2);
+                }
                 gameState.countries.push(country);
-                if (isPlayer) gameState.playerCountry = country;
             });
 
             gameState.turn = 1;
@@ -3105,6 +3218,38 @@
             gameState.campaignStages = buildCampaignStages(saved.nationId);
             gameState.campaignStageIndex = Math.min(saved.stageIndex, gameState.campaignStages.length - 1);
             startCampaignStage(gameState.campaignStageIndex);
+        }
+
+        // Live objectives checklist, drawn each frame in the top-left when a campaign is active.
+        function drawCampaignObjectives() {
+            if (!gameState.campaignActive) return;
+            const stage = gameState.campaignStages[gameState.campaignStageIndex];
+            const x = 15, yStart = 60;
+            const lineHeight = 16;
+            const width = 320;
+            const height = 30 + stage.objectives.length * lineHeight;
+
+            ctx.save();
+            ctx.fillStyle = 'rgba(0, 10, 0, 0.75)';
+            ctx.fillRect(x, yStart, width, height);
+            ctx.strokeStyle = '#ffff00';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x, yStart, width, height);
+
+            ctx.fillStyle = '#ffff00';
+            ctx.font = 'bold 12px Courier New';
+            ctx.textAlign = 'left';
+            ctx.fillText(`OBJECTIVES - ${stage.title}`, x + 8, yStart + 18);
+
+            stage.objectives.forEach((obj, i) => {
+                const country = gameState.countries.find(c => c.id === obj.id);
+                const cleared = !country || country.island.buildings.every(b => b.destroyed);
+                ctx.fillStyle = cleared ? '#00ff00' : '#ffffff';
+                const check = cleared ? '[x]' : '[ ]';
+                ctx.font = cleared ? 'italic 11px Courier New' : '11px Courier New';
+                ctx.fillText(`${check} ${obj.label}`, x + 8, yStart + 36 + i * lineHeight);
+            });
+            ctx.restore();
         }
 
         function newGame() {
@@ -3488,6 +3633,7 @@
             }
 
             drawMinimap();
+            drawCampaignObjectives();
 
             updateSpaceElements();
             requestAnimationFrame(gameLoop);
