@@ -464,10 +464,30 @@
                 <button id="diffBtn-normal" class="difficultyBtn" onclick="chooseDifficulty('normal')">Normal</button>
                 <button id="diffBtn-hard" class="difficultyBtn" onclick="chooseDifficulty('hard')">Hard</button>
             </div>
+            <button id="campaignEntryBtn" class="countryBtn" style="width:100%; background:#ff8800; border-color:#ff8800; margin-bottom:20px;" onclick="openCampaignNationSelect()">🎖️ CAMPAIGN MODE</button>
             <p style="margin-bottom: 20px;">Select Your Country:</p>
             <div id="countrySelect"></div>
         </div>
-        
+
+        <div id="campaignNationSelect" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.95); color:#00ff00; padding:30px; border-radius:12px; text-align:center; max-width:600px; z-index:1000;">
+            <h1>🎖️ CAMPAIGN MODE 🎖️</h1>
+            <p style="margin-bottom:20px; max-width:520px;">Choose the nation you'll lead. You'll fight the other eleven, one at a time, with alien threats mixed into every stage - then face what's really out there.</p>
+            <div id="campaignCountrySelect"></div>
+            <button class="countryBtn" style="margin-top:20px; background:#888; border-color:#888;" onclick="closeCampaignNationSelect()">← Back</button>
+        </div>
+
+        <div id="campaignBriefingScreen" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.95); color:#00ff00; padding:30px; border-radius:12px; text-align:center; max-width:600px; z-index:1000;">
+            <h1 id="campaignBriefingTitle"></h1>
+            <p id="campaignBriefingText" style="margin:20px 0; line-height:1.5;"></p>
+            <button class="countryBtn" style="background:#00ff00;" onclick="beginCampaignFromBriefing()">▶ BEGIN</button>
+        </div>
+
+        <div id="campaignStageScreen" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.98); color:#00ff00; padding:40px; border-radius:12px; text-align:center; max-width:600px; z-index:2000; border:4px solid #ffff00;">
+            <h1 id="campaignStageTitle"></h1>
+            <p id="campaignStageBriefing" style="margin:20px 0; line-height:1.5;"></p>
+            <button id="campaignStageContinueBtn" style="width:200px; padding:15px; font-size:16px; margin:10px;"></button>
+        </div>
+
         <div id="videoScreen">
             <h2 style="color: #ffff00; margin-bottom: 20px;">MISSION BRIEFING</h2>
             <video id="briefingVideo" controls preload="none">
@@ -1116,7 +1136,11 @@
             selectionBox: null,
             isSelecting: false,
             turnTimeRemaining: TURN_TIME_SECONDS,
-            lastFrameTime: Date.now()
+            lastFrameTime: Date.now(),
+            campaignActive: false,
+            campaignNationId: null,
+            campaignStages: null,
+            campaignStageIndex: 0
         };
 
         class Building {
@@ -2380,6 +2404,21 @@
                 }
             }
 
+            // If there's saved campaign progress, let the campaign button resume it directly
+            // instead of going back through nation-select.
+            let campaignRaw = null;
+            try { campaignRaw = localStorage.getItem(CAMPAIGN_KEY); } catch (e) { /* private browsing etc. */ }
+            if (campaignRaw) {
+                try {
+                    const saved = JSON.parse(campaignRaw);
+                    const campaignBtn = document.getElementById('campaignEntryBtn');
+                    campaignBtn.textContent = `🎖️ CONTINUE CAMPAIGN (Stage ${saved.stageIndex + 1} - ${COUNTRY_NAMES[saved.nationId]})`;
+                    campaignBtn.onclick = () => resumeCampaign(saved);
+                } catch (e) {
+                    clearCampaignProgress();
+                }
+            }
+
             COUNTRY_NAMES.forEach((name, idx) => {
                 const btn = document.createElement('button');
                 btn.className = 'countryBtn';
@@ -2667,10 +2706,23 @@
         function checkGameOver() {
             const playerBuildings = gameState.playerCountry.island.buildings.filter(b => !b.destroyed);
             if (playerBuildings.length === 0) {
-                showGameOver(false, 'All your buildings have been destroyed!');
+                showGameOver(false, gameState.campaignActive
+                    ? `Your forces were wiped out on Stage ${gameState.campaignStageIndex + 1}.`
+                    : 'All your buildings have been destroyed!');
                 return;
             }
-            
+
+            if (gameState.campaignActive) {
+                const stage = gameState.campaignStages[gameState.campaignStageIndex];
+                const targetIds = [...stage.enemyCountryIds, ...stage.alienCountryIds];
+                const anyTargetAlive = gameState.countries.some(c =>
+                    targetIds.includes(c.id) && c.island.buildings.some(b => !b.destroyed));
+                if (!anyTargetAlive) {
+                    showCampaignStageComplete();
+                }
+                return;
+            }
+
             let enemiesRemaining = 0;
             gameState.countries.forEach(country => {
                 if (!country.isPlayer) {
@@ -2680,7 +2732,7 @@
                     }
                 }
             });
-            
+
             if (enemiesRemaining === 0) {
                 showGameOver(true, 'You have destroyed all enemy nations!');
             }
@@ -2693,15 +2745,27 @@
             const title = document.getElementById('gameOverTitle');
             const msg = document.getElementById('gameOverMessage');
             const stats = document.getElementById('gameOverStats');
-            
+
             screen.className = victory ? 'victory' : 'defeat';
             title.textContent = victory ? '🎉 VICTORY! 🎉' : '💀 DEFEAT 💀';
             msg.textContent = message;
-            
+
             const totalUnits = gameState.playerCountry.units.length;
             const totalResources = gameState.playerCountry.resources;
             stats.textContent = `Turn: ${gameState.turn} | Units: ${totalUnits} | Resources: ${totalResources}💰`;
-            
+
+            const actionBtn = screen.querySelector('button');
+            if (gameState.campaignActive && !victory) {
+                actionBtn.textContent = '🔁 RETRY STAGE';
+                actionBtn.onclick = () => {
+                    screen.style.display = 'none';
+                    startCampaignStage(gameState.campaignStageIndex);
+                };
+            } else {
+                actionBtn.textContent = '🔄 NEW GAME';
+                actionBtn.onclick = newGame;
+            }
+
             screen.style.display = 'block';
         }
 
@@ -2823,6 +2887,224 @@
 
         function clearAutosave() {
             try { localStorage.removeItem(AUTOSAVE_KEY); } catch (e) {}
+        }
+
+        // =====================================================================
+        // CAMPAIGN MODE
+        // Long ago Earth was destroyed. In the chaos, twelve fractured human
+        // nations fled into the stars and each staked a claim to a new world -
+        // but they never stopped fighting each other. Choose a nation, conquer
+        // the other eleven one at a time (alien threats mixed into every fight),
+        // then face what's really out there.
+        // =====================================================================
+        const CAMPAIGN_KEY = 'universeGameCampaign';
+        const CAMPAIGN_ALIEN_WAVES = [
+            [12], [12], [12, 16],
+            [16], [16], [16, 13],
+            [13], [13], [13, 14],
+            [14, 15]
+        ]; // escalating alien presence across the 11 nation stages
+
+        function buildCampaignStages(playerNationId) {
+            const rivals = [];
+            for (let i = 0; i < 12; i++) if (i !== playerNationId) rivals.push(i);
+
+            const stages = rivals.map((rivalId, idx) => ({
+                number: idx + 1,
+                title: `Stage ${idx + 1}: ${COUNTRY_NAMES[rivalId]}`,
+                briefing: `${COUNTRY_NAMES[playerNationId]} forces engage ${COUNTRY_NAMES[rivalId]}. `
+                    + `Alien contacts detected in the sector - destroy every hostile structure to clear the stage.`,
+                enemyCountryIds: [rivalId],
+                alienCountryIds: CAMPAIGN_ALIEN_WAVES[idx] || [12]
+            }));
+
+            stages.push({
+                number: 12,
+                title: 'Stage 12: The Reckoning',
+                briefing: `Eleven nations have fallen under your banner. Only the old enemy remains - `
+                    + `every Cyborg, Zoonester, and Roufestreal stronghold in the sector, all at once. This is the last fight.`,
+                enemyCountryIds: [],
+                alienCountryIds: [12, 13, 14, 15, 16]
+            });
+
+            return stages;
+        }
+
+        function openCampaignNationSelect() {
+            document.getElementById('startScreen').style.display = 'none';
+            const container = document.getElementById('campaignCountrySelect');
+            container.innerHTML = '';
+            COUNTRY_NAMES.forEach((name, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'countryBtn';
+                btn.textContent = name;
+                btn.style.background = COUNTRY_COLORS[idx];
+                btn.style.borderColor = COUNTRY_COLORS[idx];
+                btn.style.color = '#000';
+                btn.onclick = () => selectCampaignNation(idx);
+                container.appendChild(btn);
+            });
+            document.getElementById('campaignNationSelect').style.display = 'block';
+        }
+
+        function closeCampaignNationSelect() {
+            document.getElementById('campaignNationSelect').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'block';
+        }
+
+        function selectCampaignNation(nationId) {
+            gameState.campaignNationId = nationId;
+            gameState.campaignStages = buildCampaignStages(nationId);
+            gameState.campaignStageIndex = 0;
+
+            document.getElementById('campaignNationSelect').style.display = 'none';
+            showCampaignBriefing(0, true);
+        }
+
+        function showCampaignBriefing(stageIndex, isIntro) {
+            const stage = gameState.campaignStages[stageIndex];
+            const titleEl = document.getElementById('campaignBriefingTitle');
+            const textEl = document.getElementById('campaignBriefingText');
+            titleEl.textContent = stage.title;
+            textEl.textContent = isIntro
+                ? `Earth is gone. Twelve nations fled into the stars, each claiming a world of their own - `
+                  + `and never stopped fighting. You lead ${COUNTRY_NAMES[gameState.campaignNationId]}. `
+                  + `Conquer the other eleven, then face what's really out there.\n\n${stage.briefing}`
+                : stage.briefing;
+            document.getElementById('campaignBriefingScreen').style.display = 'block';
+        }
+
+        function beginCampaignFromBriefing() {
+            document.getElementById('campaignBriefingScreen').style.display = 'none';
+            startCampaignStage(gameState.campaignStageIndex);
+        }
+
+        // Same placement math initGame() uses for the full galaxy, kept standalone here so a
+        // campaign stage (which only spawns a handful of the 27 countries) doesn't touch or
+        // risk breaking the normal full-galaxy game setup.
+        function campaignNationPosition(i) {
+            const cols = 4, rows = 3;
+            const baseMarginX = MAP_WIDTH * 0.15, baseMarginY = MAP_HEIGHT * 0.15;
+            const marginX = baseMarginX * ISLAND_SPACING_MULTIPLIER, marginY = baseMarginY * ISLAND_SPACING_MULTIPLIER;
+            const spacingX = (MAP_WIDTH - marginX * 2) / (cols - 1);
+            const spacingY = (MAP_HEIGHT - marginY * 2) / (rows - 1);
+            const col = i % cols, row = Math.floor(i / cols);
+            return { x: marginX + col * spacingX, y: marginY + row * spacingY };
+        }
+
+        function campaignAlienPosition(id) {
+            const centerX = MAP_WIDTH / 2, centerY = MAP_HEIGHT / 2;
+            const positions = {
+                12: { x: centerX, y: centerY - 30000 },
+                13: { x: centerX, y: centerY + 30000 },
+                14: { x: centerX + 30000, y: centerY },
+                15: { x: centerX - 30000, y: centerY },
+                16: { x: centerX, y: centerY - 40000 }
+            };
+            return positions[id];
+        }
+
+        function campaignCountryName(id) {
+            if (id < 12) return COUNTRY_NAMES[id];
+            if (id === 16) return 'Zoonester';
+            return `Cyborg Planet ${['North', 'South', 'East', 'West'][id - 12]}`;
+        }
+
+        function startCampaignStage(stageIndex) {
+            const stage = gameState.campaignStages[stageIndex];
+            gameState.campaignActive = true;
+            gameState.campaignStageIndex = stageIndex;
+            gameState.countries = [];
+            gameState.selectedUnit = null;
+            gameState.selectedUnits = [];
+            spaceMines.length = 0;
+            missiles.length = 0;
+            laserEffects.length = 0;
+
+            const activeIds = [gameState.campaignNationId, ...stage.enemyCountryIds, ...stage.alienCountryIds];
+            activeIds.forEach(id => {
+                const isAlien = id >= 12;
+                const pos = isAlien ? campaignAlienPosition(id) : campaignNationPosition(id);
+                const island = new Island(pos.x, pos.y, id);
+                island.size = isAlien ? 350 : 250;
+                const isPlayer = id === gameState.campaignNationId;
+                const color = id < 12 ? COUNTRY_COLORS[id] : (id === 16 ? '#9d00ff' : '#00ffff');
+                const country = new Country(id, campaignCountryName(id), color, island, isPlayer);
+                if (country.isZoonester) country.zoonesterTurnCounter = 0;
+                gameState.countries.push(country);
+                if (isPlayer) gameState.playerCountry = country;
+            });
+
+            gameState.turn = 1;
+            gameState.paused = false;
+            gameState.gameStarted = true;
+            gameState.turnTimeRemaining = TURN_TIME_SECONDS;
+            camera.x = gameState.playerCountry.island.x;
+            camera.y = gameState.playerCountry.island.y;
+            camera.zoom = 1;
+
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('videoScreen').style.display = 'none';
+            document.getElementById('campaignBriefingScreen').style.display = 'none';
+            document.getElementById('campaignStageScreen').style.display = 'none';
+            document.getElementById('gameOverScreen').style.display = 'none';
+
+            createSpaceElements();
+            updateUI();
+            gameLoop();
+        }
+
+        function showCampaignStageComplete() {
+            gameState.paused = true;
+            clearAutosave();
+            const nextIndex = gameState.campaignStageIndex + 1;
+            saveCampaignProgress(nextIndex);
+
+            const titleEl = document.getElementById('campaignStageTitle');
+            const briefEl = document.getElementById('campaignStageBriefing');
+            const btn = document.getElementById('campaignStageContinueBtn');
+
+            if (nextIndex >= gameState.campaignStages.length) {
+                titleEl.textContent = '🎉 CAMPAIGN COMPLETE 🎉';
+                briefEl.textContent = `${COUNTRY_NAMES[gameState.campaignNationId]} has united humanity and driven back `
+                    + `the alien threat once and for all. The galaxy is yours.`;
+                btn.textContent = '🏠 RETURN TO MENU';
+                btn.onclick = () => {
+                    clearCampaignProgress();
+                    location.reload();
+                };
+            } else {
+                const nextStage = gameState.campaignStages[nextIndex];
+                titleEl.textContent = `✅ STAGE ${gameState.campaignStageIndex + 1} CLEARED`;
+                briefEl.textContent = nextStage.briefing;
+                btn.textContent = '▶ CONTINUE';
+                btn.onclick = () => {
+                    document.getElementById('campaignStageScreen').style.display = 'none';
+                    startCampaignStage(nextIndex);
+                };
+            }
+
+            document.getElementById('campaignStageScreen').style.display = 'block';
+        }
+
+        function saveCampaignProgress(stageIndex) {
+            try {
+                localStorage.setItem(CAMPAIGN_KEY, JSON.stringify({
+                    nationId: gameState.campaignNationId,
+                    stageIndex
+                }));
+            } catch (e) { /* best-effort */ }
+        }
+
+        function clearCampaignProgress() {
+            try { localStorage.removeItem(CAMPAIGN_KEY); } catch (e) {}
+        }
+
+        function resumeCampaign(saved) {
+            gameState.campaignNationId = saved.nationId;
+            gameState.campaignStages = buildCampaignStages(saved.nationId);
+            gameState.campaignStageIndex = Math.min(saved.stageIndex, gameState.campaignStages.length - 1);
+            startCampaignStage(gameState.campaignStageIndex);
         }
 
         function newGame() {
