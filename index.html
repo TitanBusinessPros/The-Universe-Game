@@ -26,6 +26,45 @@
             background: #000000;
             cursor: crosshair;
         }
+        #loadingScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            color: #00ff00;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 5000;
+            font-family: 'Courier New', monospace;
+        }
+        #loadingScreen h1 {
+            text-shadow: 0 0 10px #00ff00;
+            margin-bottom: 20px;
+        }
+        #loadingBarOuter {
+            width: 420px;
+            max-width: 80vw;
+            height: 22px;
+            border: 2px solid #00ff00;
+            border-radius: 4px;
+            overflow: hidden;
+            background: #001100;
+        }
+        #loadingBarInner {
+            height: 100%;
+            width: 0%;
+            background: #00ff00;
+            transition: width 0.15s ease-out;
+        }
+        #loadingText {
+            margin-top: 12px;
+            font-size: 14px;
+            color: #88ff88;
+        }
         #startScreen {
             position: absolute;
             top: 50%;
@@ -410,7 +449,13 @@
 </head>
 <body>
     <div id="gameContainer">
-        
+
+        <div id="loadingScreen">
+            <h1>🌌 LOADING GALAXY 🌌</h1>
+            <div id="loadingBarOuter"><div id="loadingBarInner"></div></div>
+            <div id="loadingText">Loading assets... 0 / 0</div>
+        </div>
+
         <div id="startScreen">
             <h1>🌊 NAVAL WARFARE 🌊</h1>
             <p style="margin-bottom: 10px;">Difficulty:</p>
@@ -822,7 +867,10 @@
         const IMAGE_LOAD_CONCURRENCY = 6;
         let __activeImageLoads = 0;
         const __imageLoadQueue = [];
+        let totalImagesToLoad = 0;   // drives the loading screen progress bar
+        let imagesLoadedSoFar = 0;
         function queueImageLoad(img, url) {
+            totalImagesToLoad++;
             __imageLoadQueue.push({ img, url });
             __pumpImageQueue();
         }
@@ -833,8 +881,8 @@
                 __activeImageLoads++;
                 const userOnLoad = img.onload;
                 const userOnError = img.onerror;
-                img.onload = (e) => { __activeImageLoads--; if (userOnLoad) userOnLoad(e); __pumpImageQueue(); };
-                img.onerror = (e) => { __activeImageLoads--; if (userOnError) userOnError(e); __pumpImageQueue(); };
+                img.onload = (e) => { __activeImageLoads--; imagesLoadedSoFar++; if (userOnLoad) userOnLoad(e); __pumpImageQueue(); };
+                img.onerror = (e) => { __activeImageLoads--; imagesLoadedSoFar++; if (userOnError) userOnError(e); __pumpImageQueue(); };
                 img.src = job.url;
             }
         }
@@ -1263,17 +1311,10 @@
                         ctx.textAlign = 'center';
                         ctx.fillText(building.name, building.x + size[0]/2, building.y - 15);
 
-                        if (building.isHarbor) {
-                            ctx.fillStyle = '#ffffff';
-                            ctx.font = 'bold 14px Arial';
-                            ctx.fillText('⚓', building.x + size[0]/2, building.y + 15);
-                        }
-
-                        if (building.isDefenseGun) {
-                            ctx.fillStyle = '#ffffff';
-                            ctx.font = 'bold 14px Arial';
-                            ctx.fillText('🔫', building.x + size[0]/2, building.y + 15);
-                        }
+                        // Harbor/Defense Gun used to get an extra anchor/gun emoji stamped on
+                        // top back when buildings were plain colored boxes - now that every
+                        // building slot has real structure art, that emoji just clutters the
+                        // planet, so it's gone. The name label + color coding above is enough.
                     }
                 });
                 
@@ -3000,6 +3041,63 @@
             document.getElementById('unitsList').innerHTML = unitsHtml;
         }
 
+        // Small always-on solar-system overview in the top-right corner: every planet as a dot
+        // (colored to match its country) plus a rectangle showing what the main camera can see.
+        const MINIMAP_WIDTH = 220;
+        const MINIMAP_HEIGHT = 160;
+        const MINIMAP_MARGIN_TOP = 60;
+        const MINIMAP_MARGIN_RIGHT = 15;
+        function drawMinimap() {
+            const mmX = canvas.width - MINIMAP_WIDTH - MINIMAP_MARGIN_RIGHT;
+            const mmY = MINIMAP_MARGIN_TOP;
+
+            ctx.save();
+            ctx.fillStyle = 'rgba(0, 10, 0, 0.75)';
+            ctx.fillRect(mmX, mmY, MINIMAP_WIDTH, MINIMAP_HEIGHT);
+            ctx.strokeStyle = '#00ff00';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(mmX, mmY, MINIMAP_WIDTH, MINIMAP_HEIGHT);
+
+            const toMinimap = (worldX, worldY) => ({
+                x: mmX + (worldX / MAP_WIDTH) * MINIMAP_WIDTH,
+                y: mmY + (worldY / MAP_HEIGHT) * MINIMAP_HEIGHT
+            });
+
+            gameState.countries.forEach(country => {
+                const p = toMinimap(country.island.x, country.island.y);
+                const isPlayer = country.isPlayer;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, isPlayer ? 4 : 2.5, 0, Math.PI * 2);
+                ctx.fillStyle = country.color || COUNTRY_COLORS[country.id] || '#888';
+                ctx.fill();
+                if (isPlayer) {
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+                }
+            });
+
+            // Camera viewport rectangle
+            const halfW = (canvas.width / 2) / camera.zoom;
+            const halfH = (canvas.height / 2) / camera.zoom;
+            const topLeft = toMinimap(camera.x - halfW, camera.y - halfH);
+            const bottomRight = toMinimap(camera.x + halfW, camera.y + halfH);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(
+                Math.max(mmX, topLeft.x),
+                Math.max(mmY, topLeft.y),
+                Math.min(bottomRight.x, mmX + MINIMAP_WIDTH) - Math.max(mmX, topLeft.x),
+                Math.min(bottomRight.y, mmY + MINIMAP_HEIGHT) - Math.max(mmY, topLeft.y)
+            );
+
+            ctx.fillStyle = '#00ff00';
+            ctx.font = 'bold 10px Courier New';
+            ctx.textAlign = 'left';
+            ctx.fillText('GALAXY MAP', mmX + 4, mmY - 4);
+            ctx.restore();
+        }
+
         function gameLoop() {
             if (!gameState.gameStarted) return;
             
@@ -3097,6 +3195,8 @@
                     screenEndY - screenStartY
                 );
             }
+
+            drawMinimap();
 
             updateSpaceElements();
             requestAnimationFrame(gameLoop);
@@ -3447,7 +3547,30 @@
             canvas.height = window.innerHeight;
         });
 
+        // Show a real loading screen instead of dumping the player onto the start screen while
+        // ~50 planet/ship/structure images are still queued in the background - hides once every
+        // queued image has loaded (or errored out), with a hard cap so one stuck request can't
+        // strand the game on this screen forever.
+        const LOADING_SCREEN_MAX_WAIT_MS = 20000;
+        function pollLoadingScreen(startTime) {
+            const bar = document.getElementById('loadingBarInner');
+            const text = document.getElementById('loadingText');
+            const total = totalImagesToLoad;
+            const loaded = Math.min(imagesLoadedSoFar, total);
+            const pct = total > 0 ? Math.round((loaded / total) * 100) : 100;
+            bar.style.width = pct + '%';
+            text.textContent = `Loading assets... ${loaded} / ${total}`;
+
+            const timedOut = (Date.now() - startTime) > LOADING_SCREEN_MAX_WAIT_MS;
+            if ((total > 0 && loaded >= total) || timedOut) {
+                document.getElementById('loadingScreen').style.display = 'none';
+            } else {
+                requestAnimationFrame(() => pollLoadingScreen(startTime));
+            }
+        }
+
         initGame();
+        pollLoadingScreen(Date.now());
     </script>
 </body>
 </html>
