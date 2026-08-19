@@ -2414,6 +2414,12 @@
         function closeVideo() {
             document.getElementById('videoScreen').style.display = 'none';
 
+            // Hiding the video element does NOT stop it - it (and its audio) keeps playing
+            // in the background forever unless explicitly paused.
+            const briefingVideo = document.getElementById('briefingVideo');
+            briefingVideo.pause();
+            briefingVideo.currentTime = 0;
+
             // Now actually start the game
             gameState.gameStarted = true;
             camera.x = gameState.playerCountry.island.x;
@@ -2435,6 +2441,9 @@
 
             document.getElementById('startScreen').style.display = 'none';
             document.getElementById('videoScreen').style.display = 'none';
+            const briefingVideo = document.getElementById('briefingVideo');
+            briefingVideo.pause();
+            briefingVideo.currentTime = 0;
 
             gameState.gameStarted = true;
             gameState.paused = false;
@@ -3204,11 +3213,21 @@
 
         canvas.addEventListener('click', (e) => {
             if (!gameState.gameStarted) return;
-            
+
             const rect = canvas.getBoundingClientRect();
             const screenX = e.clientX - rect.left;
             const screenY = e.clientY - rect.top;
-            
+
+            // Click-to-navigate on the minimap: jump the camera there instead of treating it
+            // as a normal world click (move/attack/select).
+            const mmX = canvas.width - MINIMAP_WIDTH - MINIMAP_MARGIN_RIGHT;
+            const mmY = MINIMAP_MARGIN_TOP;
+            if (screenX >= mmX && screenX <= mmX + MINIMAP_WIDTH && screenY >= mmY && screenY <= mmY + MINIMAP_HEIGHT) {
+                camera.x = ((screenX - mmX) / MINIMAP_WIDTH) * MAP_WIDTH;
+                camera.y = ((screenY - mmY) / MINIMAP_HEIGHT) * MAP_HEIGHT;
+                return;
+            }
+
             const worldX = (screenX - canvas.width / 2) / camera.zoom + camera.x;
             const worldY = (screenY - canvas.height / 2) / camera.zoom + camera.y;
 
