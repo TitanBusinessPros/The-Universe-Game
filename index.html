@@ -116,12 +116,25 @@
             gap: 10px;
             margin: 20px 0;
         }
+        .countryBtn {
+            text-align: left;
+        }
+        .countryBtn > strong {
+            display: block;
+            text-align: center;
+            font-size: 14px;
+        }
         .countryBtn .bonusText {
             display: block;
+            text-align: left;
             font-size: 10px;
             font-weight: normal;
-            margin-top: 4px;
+            margin-top: 6px;
             opacity: 0.85;
+            line-height: 1.5;
+        }
+        .countryBtn .bonusText > span {
+            display: block;
         }
         .countryBtn {
             background: #00ff00;
@@ -315,6 +328,58 @@
             border-color: #ff0000;
             text-decoration: line-through;
         }
+        #campaignObjectivesPanel {
+            position: absolute;
+            top: 60px;
+            left: 15px;
+            width: 320px;
+            max-width: 42vw;
+            background: rgba(0, 10, 0, 0.88);
+            border: 2px solid #ffff00;
+            border-radius: 6px;
+            color: #ffffff;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            z-index: 500;
+            display: none;
+        }
+        #campaignObjectivesHeader {
+            padding: 8px 10px;
+            color: #ffff00;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+        #campaignObjectivesHeader:hover {
+            background: rgba(255, 255, 0, 0.12);
+        }
+        #campaignObjectivesList {
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 0 10px 10px 10px;
+            transition: max-height 0.25s ease, padding 0.25s ease;
+        }
+        #campaignObjectivesList.collapsed {
+            max-height: 0;
+            padding: 0 10px;
+            overflow: hidden;
+        }
+        .objectiveItem {
+            padding: 4px 0;
+            border-top: 1px solid rgba(255, 255, 0, 0.2);
+            word-wrap: break-word;
+            white-space: normal;
+            line-height: 1.4;
+        }
+        .objectiveItem.cleared {
+            color: #00ff00;
+            font-style: italic;
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
         #legend {
             position: absolute;
             bottom: 10px;
@@ -466,7 +531,7 @@
         </div>
 
         <div id="startScreen">
-            <h1>🌊 NAVAL WARFARE 🌊</h1>
+            <h1>🌌 GALAXY WARFARE 🌌</h1>
             <p style="margin-bottom: 10px;">Difficulty:</p>
             <div id="difficultySelect" style="display:flex; gap:10px; justify-content:center; margin-bottom:20px;">
                 <button id="diffBtn-easy" class="difficultyBtn" onclick="chooseDifficulty('easy')">Easy</button>
@@ -617,6 +682,14 @@
             <button onclick="viewAll()">🗺️ VIEW ALL</button>
         </div>
         
+        <div id="campaignObjectivesPanel">
+            <div id="campaignObjectivesHeader" onclick="toggleCampaignObjectives()">
+                <span>🎯 OBJECTIVES <span id="campaignObjectivesCount"></span></span>
+                <span id="campaignObjectivesArrow">▼</span>
+            </div>
+            <div id="campaignObjectivesList"></div>
+        </div>
+
         <div id="legend">
             <div class="legend-item"><strong>TIMER:</strong></div>
             <div class="legend-item" id="timerDisplay">⏱️ Next turn in: --:--</div>
@@ -625,8 +698,10 @@
             <div class="legend-item">🚢 Cargohaulers hold 10 ground troops</div>
             <div class="legend-item">🔫 Defense Guns auto-attack (500 range)</div>
             <div class="legend-item" style="margin-top: 5px;"><strong>CONTROLS:</strong></div>
-            <div class="legend-item">SHIFT+Drag to select multiple</div>
+            <div class="legend-item">Click+Drag to select multiple</div>
+            <div class="legend-item">Click again to move selected units</div>
             <div class="legend-item">Right-click drag to pan map</div>
+            <div class="legend-item">Drag/click the minimap too</div>
         </div>
     </div>
 
@@ -2439,7 +2514,7 @@
                 btn.style.background = COUNTRY_COLORS[idx];
                 btn.style.borderColor = COUNTRY_COLORS[idx];
                 btn.style.color = '#000';
-                btn.innerHTML = `${name}<span class="bonusText">${describeCountryBonus(idx)}</span>`;
+                btn.innerHTML = `<strong>${name}</strong><span class="bonusText">${describeCountryBonusHTML(idx)}</span>`;
                 btn.onclick = () => startGame(idx);
                 selectDiv.appendChild(btn);
             });
@@ -2939,7 +3014,14 @@
             addAll(b.attackMultiplier, 'ATK');
             addAll(b.speedMultiplier, 'speed');
             addAll(b.rangeMultiplier, 'range');
-            return perks.length ? perks.slice(0, 3).join(', ') : 'Balanced - no standout bonuses.';
+            return perks.length ? perks.slice(0, 3) : ['Balanced - no standout bonuses.'];
+        }
+
+        // Uniform stacked lines (one <span> per perk) so every button's bonus text lines up on
+        // the same left edge, instead of a single comma-joined string wrapping differently
+        // depending on each nation's text length.
+        function describeCountryBonusHTML(id) {
+            return describeCountryBonus(id).map(p => `<span>${p}</span>`).join('');
         }
 
         function buildStageObjectives(stageIdx, rivalId) {
@@ -3002,7 +3084,7 @@
                 btn.style.background = COUNTRY_COLORS[idx];
                 btn.style.borderColor = COUNTRY_COLORS[idx];
                 btn.style.color = '#000';
-                btn.innerHTML = `${name}<span class="bonusText">${describeCountryBonus(idx)}</span>`;
+                btn.innerHTML = `<strong>${name}</strong><span class="bonusText">${describeCountryBonusHTML(idx)}</span>`;
                 btn.onclick = () => selectCampaignNation(idx);
                 container.appendChild(btn);
             });
@@ -3226,35 +3308,57 @@
         }
 
         // Live objectives checklist, drawn each frame in the top-left when a campaign is active.
-        function drawCampaignObjectives() {
-            if (!gameState.campaignActive) return;
+        // Short synthesized sci-fi blip for UI interactions (dropdown toggle, etc.) - no
+        // external audio file needed.
+        let __uiAudioCtx = null;
+        function playUIClickSound() {
+            try {
+                if (!__uiAudioCtx) __uiAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const ctx2 = __uiAudioCtx;
+                const osc = ctx2.createOscillator();
+                const gain = ctx2.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, ctx2.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(220, ctx2.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.15, ctx2.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx2.currentTime + 0.15);
+                osc.connect(gain);
+                gain.connect(ctx2.destination);
+                osc.start();
+                osc.stop(ctx2.currentTime + 0.15);
+            } catch (e) { /* audio not available in this environment */ }
+        }
+
+        function toggleCampaignObjectives() {
+            playUIClickSound();
+            const list = document.getElementById('campaignObjectivesList');
+            const arrow = document.getElementById('campaignObjectivesArrow');
+            list.classList.toggle('collapsed');
+            arrow.textContent = list.classList.contains('collapsed') ? '▶' : '▼';
+        }
+
+        // Real DOM panel (not canvas text) so long objective labels wrap inside the box instead
+        // of running off the edge, and the header can be clicked to collapse/expand it.
+        function updateCampaignObjectivesPanel() {
+            const panel = document.getElementById('campaignObjectivesPanel');
+            if (!gameState.campaignActive || !gameState.campaignStages) {
+                panel.style.display = 'none';
+                return;
+            }
+            panel.style.display = 'block';
+
             const stage = gameState.campaignStages[gameState.campaignStageIndex];
-            const x = 15, yStart = 60;
-            const lineHeight = 16;
-            const width = 320;
-            const height = 30 + stage.objectives.length * lineHeight;
-
-            ctx.save();
-            ctx.fillStyle = 'rgba(0, 10, 0, 0.75)';
-            ctx.fillRect(x, yStart, width, height);
-            ctx.strokeStyle = '#ffff00';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(x, yStart, width, height);
-
-            ctx.fillStyle = '#ffff00';
-            ctx.font = 'bold 12px Courier New';
-            ctx.textAlign = 'left';
-            ctx.fillText(`OBJECTIVES - ${stage.title}`, x + 8, yStart + 18);
-
-            stage.objectives.forEach((obj, i) => {
+            let clearedCount = 0;
+            let html = '';
+            stage.objectives.forEach(obj => {
                 const country = gameState.countries.find(c => c.id === obj.id);
                 const cleared = !country || country.island.buildings.every(b => b.destroyed);
-                ctx.fillStyle = cleared ? '#00ff00' : '#ffffff';
-                const check = cleared ? '[x]' : '[ ]';
-                ctx.font = cleared ? 'italic 11px Courier New' : '11px Courier New';
-                ctx.fillText(`${check} ${obj.label}`, x + 8, yStart + 36 + i * lineHeight);
+                if (cleared) clearedCount++;
+                html += `<div class="objectiveItem ${cleared ? 'cleared' : ''}">${cleared ? '✓' : '☐'} ${obj.label}</div>`;
             });
-            ctx.restore();
+
+            document.getElementById('campaignObjectivesList').innerHTML = html;
+            document.getElementById('campaignObjectivesCount').textContent = `(${clearedCount}/${stage.objectives.length})`;
         }
 
         function newGame() {
@@ -3418,6 +3522,7 @@
         function updateUI() {
             const country = gameState.playerCountry;
             document.getElementById('countryTitle').textContent = `${country.name}`;
+            updateCampaignObjectivesPanel();
             
             const counts = country.countUnits();
             
@@ -3487,14 +3592,42 @@
         }
 
         // Small always-on solar-system overview in the top-right corner: every planet as a dot
-        // (colored to match its country) plus a rectangle showing what the main camera can see.
+        // (colored to match its country) plus a rectangle showing what the main camera can see,
+        // plus every one of your own units as a tiny green dot so you can find your fleet without
+        // having to fly there first. Click-drag on it to select units, plain click to move
+        // selected units there (or navigate the camera if nothing's selected).
         const MINIMAP_WIDTH = 220;
         const MINIMAP_HEIGHT = 160;
         const MINIMAP_MARGIN_TOP = 60;
         const MINIMAP_MARGIN_RIGHT = 15;
+
+        function minimapBounds() {
+            return {
+                mmX: canvas.width - MINIMAP_WIDTH - MINIMAP_MARGIN_RIGHT,
+                mmY: MINIMAP_MARGIN_TOP
+            };
+        }
+        function isOnMinimap(screenX, screenY) {
+            const { mmX, mmY } = minimapBounds();
+            return screenX >= mmX && screenX <= mmX + MINIMAP_WIDTH && screenY >= mmY && screenY <= mmY + MINIMAP_HEIGHT;
+        }
+        function minimapToWorld(screenX, screenY) {
+            const { mmX, mmY } = minimapBounds();
+            return {
+                x: ((screenX - mmX) / MINIMAP_WIDTH) * MAP_WIDTH,
+                y: ((screenY - mmY) / MINIMAP_HEIGHT) * MAP_HEIGHT
+            };
+        }
+        function worldToMinimap(worldX, worldY) {
+            const { mmX, mmY } = minimapBounds();
+            return {
+                x: mmX + (worldX / MAP_WIDTH) * MINIMAP_WIDTH,
+                y: mmY + (worldY / MAP_HEIGHT) * MINIMAP_HEIGHT
+            };
+        }
+
         function drawMinimap() {
-            const mmX = canvas.width - MINIMAP_WIDTH - MINIMAP_MARGIN_RIGHT;
-            const mmY = MINIMAP_MARGIN_TOP;
+            const { mmX, mmY } = minimapBounds();
 
             ctx.save();
             ctx.fillStyle = 'rgba(0, 10, 0, 0.75)';
@@ -3503,13 +3636,8 @@
             ctx.lineWidth = 2;
             ctx.strokeRect(mmX, mmY, MINIMAP_WIDTH, MINIMAP_HEIGHT);
 
-            const toMinimap = (worldX, worldY) => ({
-                x: mmX + (worldX / MAP_WIDTH) * MINIMAP_WIDTH,
-                y: mmY + (worldY / MAP_HEIGHT) * MINIMAP_HEIGHT
-            });
-
             gameState.countries.forEach(country => {
-                const p = toMinimap(country.island.x, country.island.y);
+                const p = worldToMinimap(country.island.x, country.island.y);
                 const isPlayer = country.isPlayer;
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, isPlayer ? 4 : 2.5, 0, Math.PI * 2);
@@ -3522,11 +3650,25 @@
                 }
             });
 
+            // Your own units, so the fleet is visible without flying out there first.
+            if (gameState.playerCountry) {
+                ctx.fillStyle = '#39ff6a';
+                gameState.playerCountry.units.forEach(unit => {
+                    if (unit.isGroundUnit() && unit.isInHarbor) return;
+                    const p = worldToMinimap(unit.x, unit.y);
+                    const isSelected = gameState.selectedUnits.includes(unit);
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, isSelected ? 2 : 1.3, 0, Math.PI * 2);
+                    ctx.fillStyle = isSelected ? '#ffff00' : '#39ff6a';
+                    ctx.fill();
+                });
+            }
+
             // Camera viewport rectangle
             const halfW = (canvas.width / 2) / camera.zoom;
             const halfH = (canvas.height / 2) / camera.zoom;
-            const topLeft = toMinimap(camera.x - halfW, camera.y - halfH);
-            const bottomRight = toMinimap(camera.x + halfW, camera.y + halfH);
+            const topLeft = worldToMinimap(camera.x - halfW, camera.y - halfH);
+            const bottomRight = worldToMinimap(camera.x + halfW, camera.y + halfH);
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
             ctx.lineWidth = 1;
             ctx.strokeRect(
@@ -3535,6 +3677,15 @@
                 Math.min(bottomRight.x, mmX + MINIMAP_WIDTH) - Math.max(mmX, topLeft.x),
                 Math.min(bottomRight.y, mmY + MINIMAP_HEIGHT) - Math.max(mmY, topLeft.y)
             );
+
+            // Live drag-select box, in minimap-local screen space.
+            if (isMinimapSelecting && minimapSelectionBox) {
+                const s = worldToMinimap(minimapSelectionBox.startX, minimapSelectionBox.startY);
+                const e = worldToMinimap(minimapSelectionBox.endX, minimapSelectionBox.endY);
+                ctx.strokeStyle = '#ffff00';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(Math.min(s.x, e.x), Math.min(s.y, e.y), Math.abs(e.x - s.x), Math.abs(e.y - s.y));
+            }
 
             ctx.fillStyle = '#00ff00';
             ctx.font = 'bold 10px Courier New';
@@ -3642,7 +3793,6 @@
             }
 
             drawMinimap();
-            drawCampaignObjectives();
 
             updateSpaceElements();
             requestAnimationFrame(gameLoop);
@@ -3655,15 +3805,10 @@
             const screenX = e.clientX - rect.left;
             const screenY = e.clientY - rect.top;
 
-            // Click-to-navigate on the minimap: jump the camera there instead of treating it
-            // as a normal world click (move/attack/select).
-            const mmX = canvas.width - MINIMAP_WIDTH - MINIMAP_MARGIN_RIGHT;
-            const mmY = MINIMAP_MARGIN_TOP;
-            if (screenX >= mmX && screenX <= mmX + MINIMAP_WIDTH && screenY >= mmY && screenY <= mmY + MINIMAP_HEIGHT) {
-                camera.x = ((screenX - mmX) / MINIMAP_WIDTH) * MAP_WIDTH;
-                camera.y = ((screenY - mmY) / MINIMAP_HEIGHT) * MAP_HEIGHT;
-                return;
-            }
+            // Minimap clicks/drags are fully handled in mousedown/mousemove/mouseup below
+            // (select-by-drag, click-to-move selected units, or click-to-navigate) - bail out
+            // of the normal world-click handling entirely here.
+            if (isOnMinimap(screenX, screenY)) return;
 
             const worldX = (screenX - canvas.width / 2) / camera.zoom + camera.x;
             const worldY = (screenY - canvas.height / 2) / camera.zoom + camera.y;
@@ -3877,6 +4022,15 @@
                         }
                     });
                 }
+            } else if (gameState.selectedUnits.length > 0) {
+                // No MOVE/ATTACK mode armed, but units are already selected (e.g. via a
+                // marquee drag) - a plain click just moves them there directly, standard
+                // RTS click-to-move, instead of requiring an extra click on a MOVE button first.
+                gameState.selectedUnits.forEach((unit, index) => {
+                    const offsetX = (index % 3 - 1) * 30;
+                    const offsetY = (Math.floor(index / 3) - 1) * 30;
+                    unit.moveTo(worldX + offsetX, worldY + offsetY);
+                });
             }
         });
 
@@ -3885,15 +4039,41 @@
         let lastMouseY = 0;
         let selectionStartX = 0;
         let selectionStartY = 0;
+        let leftMouseIsDown = false;
+        let leftMouseDownScreenX = 0;
+        let leftMouseDownScreenY = 0;
+        let minimapMouseIsDown = false;
+        let minimapMouseDownScreenX = 0;
+        let minimapMouseDownScreenY = 0;
+        let isMinimapSelecting = false;
+        let minimapSelectionBox = null;
 
         canvas.addEventListener('mousedown', (e) => {
             if (!gameState.gameStarted) return;
-            
-            if (e.button === 0 && e.shiftKey) {
-                gameState.isSelecting = true;
+
+            if (e.button === 0) {
+                const rectForMinimap = canvas.getBoundingClientRect();
+                const sxForMinimap = e.clientX - rectForMinimap.left;
+                const syForMinimap = e.clientY - rectForMinimap.top;
+                if (isOnMinimap(sxForMinimap, syForMinimap)) {
+                    minimapMouseIsDown = true;
+                    minimapMouseDownScreenX = sxForMinimap;
+                    minimapMouseDownScreenY = syForMinimap;
+                    const w = minimapToWorld(sxForMinimap, syForMinimap);
+                    minimapSelectionBox = { startX: w.x, startY: w.y, endX: w.x, endY: w.y };
+                    return;
+                }
+
+                // A plain click still behaves like a normal click (handled by the 'click'
+                // listener above) - this only becomes a marquee select box once the mouse
+                // actually drags past a few pixels, checked in mousemove below. Shift is no
+                // longer required, just click-drag over your units like a normal RTS.
+                leftMouseIsDown = true;
                 const rect = canvas.getBoundingClientRect();
                 selectionStartX = e.clientX - rect.left;
                 selectionStartY = e.clientY - rect.top;
+                leftMouseDownScreenX = selectionStartX;
+                leftMouseDownScreenY = selectionStartY;
                 gameState.selectionBox = {
                     startX: (selectionStartX - canvas.width / 2) / camera.zoom + camera.x,
                     startY: (selectionStartY - canvas.height / 2) / camera.zoom + camera.y,
@@ -3910,17 +4090,32 @@
 
         canvas.addEventListener('mousemove', (e) => {
             if (!gameState.gameStarted) return;
-            
+
             const rect = canvas.getBoundingClientRect();
             const screenX = e.clientX - rect.left;
             const screenY = e.clientY - rect.top;
-            
+
             mouseWorldX = (screenX - canvas.width / 2) / camera.zoom + camera.x;
             mouseWorldY = (screenY - canvas.height / 2) / camera.zoom + camera.y;
 
-            if (gameState.isSelecting && gameState.selectionBox) {
-                gameState.selectionBox.endX = mouseWorldX;
-                gameState.selectionBox.endY = mouseWorldY;
+            if (minimapMouseIsDown && minimapSelectionBox) {
+                const dragDist = Math.hypot(screenX - minimapMouseDownScreenX, screenY - minimapMouseDownScreenY);
+                if (dragDist > 4) isMinimapSelecting = true;
+                if (isMinimapSelecting) {
+                    const w = minimapToWorld(screenX, screenY);
+                    minimapSelectionBox.endX = w.x;
+                    minimapSelectionBox.endY = w.y;
+                }
+                return;
+            }
+
+            if (leftMouseIsDown && gameState.selectionBox) {
+                const dragDist = Math.hypot(screenX - leftMouseDownScreenX, screenY - leftMouseDownScreenY);
+                if (dragDist > 5) gameState.isSelecting = true;
+                if (gameState.isSelecting) {
+                    gameState.selectionBox.endX = mouseWorldX;
+                    gameState.selectionBox.endY = mouseWorldY;
+                }
             }
 
             let foundUnit = null;
@@ -3934,7 +4129,7 @@
 
             gameState.hoveredUnit = foundUnit;
             updateUnitInspector(foundUnit, e.clientX, e.clientY);
-            
+
             if (isDragging) {
                 const dx = e.clientX - lastMouseX;
                 const dy = e.clientY - lastMouseY;
@@ -3948,26 +4143,59 @@
         canvas.addEventListener('mouseup', (e) => {
             if (e.button === 2) {
                 isDragging = false;
-            } else if (e.button === 0 && gameState.isSelecting) {
-                gameState.isSelecting = false;
-                
-                const box = gameState.selectionBox;
-                const minX = Math.min(box.startX, box.endX);
-                const maxX = Math.max(box.startX, box.endX);
-                const minY = Math.min(box.startY, box.endY);
-                const maxY = Math.max(box.startY, box.endY);
-                
-                const selectedUnits = [];
-                gameState.playerCountry.units.forEach(unit => {
-                    if (unit.x >= minX && unit.x <= maxX && unit.y >= minY && unit.y <= maxY) {
-                        selectedUnits.push(unit);
+            } else if (e.button === 0) {
+                if (minimapMouseIsDown) {
+                    minimapMouseIsDown = false;
+                    const rect = canvas.getBoundingClientRect();
+                    const sx = e.clientX - rect.left, sy = e.clientY - rect.top;
+                    const w = minimapToWorld(sx, sy);
+
+                    if (isMinimapSelecting) {
+                        isMinimapSelecting = false;
+                        const box = minimapSelectionBox;
+                        const minX = Math.min(box.startX, box.endX), maxX = Math.max(box.startX, box.endX);
+                        const minY = Math.min(box.startY, box.endY), maxY = Math.max(box.startY, box.endY);
+                        const selected = gameState.playerCountry.units.filter(u =>
+                            u.x >= minX && u.x <= maxX && u.y >= minY && u.y <= maxY);
+                        if (selected.length > 0) selectMultipleUnits(selected);
+                    } else if (gameState.selectedUnits.length > 0) {
+                        // Plain click on the minimap with units already selected - send them there.
+                        gameState.selectedUnits.forEach((unit, index) => {
+                            const offsetX = (index % 3 - 1) * 60;
+                            const offsetY = (Math.floor(index / 3) - 1) * 60;
+                            unit.moveTo(w.x + offsetX, w.y + offsetY);
+                        });
+                    } else {
+                        // Nothing selected - plain click just navigates the camera there.
+                        camera.x = w.x;
+                        camera.y = w.y;
                     }
-                });
-                
-                if (selectedUnits.length > 0) {
-                    selectMultipleUnits(selectedUnits);
+
+                    minimapSelectionBox = null;
+                    return;
                 }
-                
+
+                leftMouseIsDown = false;
+                if (gameState.isSelecting) {
+                    gameState.isSelecting = false;
+
+                    const box = gameState.selectionBox;
+                    const minX = Math.min(box.startX, box.endX);
+                    const maxX = Math.max(box.startX, box.endX);
+                    const minY = Math.min(box.startY, box.endY);
+                    const maxY = Math.max(box.startY, box.endY);
+
+                    const selectedUnits = [];
+                    gameState.playerCountry.units.forEach(unit => {
+                        if (unit.x >= minX && unit.x <= maxX && unit.y >= minY && unit.y <= maxY) {
+                            selectedUnits.push(unit);
+                        }
+                    });
+
+                    if (selectedUnits.length > 0) {
+                        selectMultipleUnits(selectedUnits);
+                    }
+                }
                 gameState.selectionBox = null;
             }
         });
