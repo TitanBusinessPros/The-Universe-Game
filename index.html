@@ -1358,7 +1358,12 @@
                 ctx.textAlign = 'center';
                 let planetLabel = COUNTRY_NAMES[this.countryId];
                 if (!planetLabel) {
-                    planetLabel = (this.countryId === 16) ? 'Zoonester Planet' : `Cyborg Planet ${this.countryId - 11}`;
+                    // Custom islands, campaign outposts, etc. don't have a fixed COUNTRY_NAMES
+                    // entry - use the actual owning Country's name instead of guessing from id math.
+                    const owner = gameState.countries.find(c => c.id === this.countryId);
+                    planetLabel = owner ? owner.name
+                        : (this.countryId === 16 ? 'Zoonester Planet'
+                            : (this.countryId >= 12 && this.countryId <= 15 ? `Cyborg Planet ${this.countryId - 11}` : 'Unknown'));
                 }
                 ctx.fillText(planetLabel, this.x, this.y + this.size + 35);
             }
@@ -2023,7 +2028,7 @@
                     
                     this.units.forEach(unit => {
                         if (Math.random() < Math.min(1, 0.5 * AI_SPECIAL_AGGRESSION_MULT)) {
-                            const targetCountry = gameState.countries[Math.floor(Math.random() * 12)];
+                            const targetCountry = gameState.countries[Math.floor(Math.random() * gameState.countries.length)];
                             if (targetCountry.id !== this.id) {
                                 unit.moveTo(
                                     targetCountry.island.x + (Math.random() - 0.5) * 400,
@@ -3324,7 +3329,11 @@
                 return;
             }
 
-            const country = gameState.countries[unit.countryId];
+            // Not gameState.countries[unit.countryId] - in campaign mode the array only holds
+            // the handful of countries active in the current stage, indexed by push order, not
+            // by real country id (that indexing trick only holds for the full 27-country galaxy).
+            const country = gameState.countries.find(c => c.id === unit.countryId);
+            if (!country) { document.getElementById('unitInspector').style.display = 'none'; return; }
             const inspector = document.getElementById('unitInspector');
             const content = document.getElementById('inspectorContent');
             
