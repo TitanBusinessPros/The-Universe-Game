@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Naval Warfare Strategy Game</title>
+    <title>After Earth</title>
     <style>
         * {
             margin: 0;
@@ -547,13 +547,13 @@
     <div id="gameContainer">
 
         <div id="loadingScreen">
-            <h1>🌌 LOADING GALAXY 🌌</h1>
+            <h1>🌌 LOADING AFTER EARTH 🌌</h1>
             <div id="loadingBarOuter"><div id="loadingBarInner"></div></div>
             <div id="loadingText">Loading assets... 0 / 0</div>
         </div>
 
         <div id="startScreen">
-            <h1>🌌 GALAXY WARFARE 🌌</h1>
+            <h1>🌌 AFTER EARTH 🌌</h1>
             <p style="margin-bottom: 10px;">Difficulty:</p>
             <div id="difficultySelect" style="display:flex; gap:10px; justify-content:center; margin-bottom:20px;">
                 <button id="diffBtn-easy" class="difficultyBtn" onclick="chooseDifficulty('easy')">Easy</button>
@@ -812,8 +812,18 @@
 
         // Difficulty presets - "normal" matches the tuned defaults from tonight's AI fix.
         // setDifficulty() below reassigns the `let` values everyone reads from at runtime.
+        // Easy was originally build/movement/attack/buildingAttack/specialMult all roughly
+        // half of normal - real campaign playtesting on Easy showed 15 turns passing with
+        // zero building damage and almost no unit losses (confirmed reproducible: 3/3 direct
+        // AI-turn simulations landed 0 damage by turn 15). Doubled every aggression constant
+        // here per direct player feedback ("it needs to be twice as hard as this"), which the
+        // AI turn logic already supports cleanly - values above 1.0 just mean a guaranteed
+        // attempt plus a chance at a second one that turn (see buildAttempts/movementAttempts/
+        // attackAttempts below), rather than needing a separate code path.
         const DIFFICULTY_PRESETS = {
-            easy:   { build: 0.5, movement: 0.6,  attack: 0.5, buildingAttack: 0.4, specialMult: 0.6 },
+            // movement is doubled from 0.6 to 1.2 in spirit, but capped at 1.0 (a guaranteed
+            // attempt every turn) so Easy's movement aggression doesn't end up exceeding Hard's.
+            easy:   { build: 1.0, movement: 1.0,  attack: 1.0, buildingAttack: 0.8, specialMult: 1.2 },
             normal: { build: 0.8, movement: 0.95, attack: 0.9, buildingAttack: 0.7, specialMult: 1.0 },
             hard:   { build: 1.0, movement: 1.0,  attack: 1.0, buildingAttack: 0.9, specialMult: 1.4 }
         };
