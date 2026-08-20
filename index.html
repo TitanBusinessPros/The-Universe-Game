@@ -395,6 +395,28 @@
         .legend-item {
             margin: 2px 0;
         }
+        #legendHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            user-select: none;
+            font-weight: bold;
+        }
+        #legendHeader:hover {
+            color: #66ff66;
+        }
+        #legendBody {
+            max-height: 300px;
+            overflow: hidden;
+            transition: max-height 0.25s ease, margin-top 0.25s ease;
+            margin-top: 6px;
+        }
+        #legendBody.collapsed {
+            max-height: 0;
+            margin-top: 0;
+        }
         .action-mode {
             background: rgba(255, 255, 0, 0.2);
             padding: 10px;
@@ -674,10 +696,6 @@
         </div>
 
         <div id="controls">
-            <button onclick="camera.x -= 200">⬅️</button>
-            <button onclick="camera.y -= 200">⬆️</button>
-            <button onclick="camera.y += 200">⬇️</button>
-            <button onclick="camera.x += 200">➡️</button>
             <button onclick="centerOnPlayer()">🏠 HOME</button>
             <button onclick="viewAll()">🗺️ VIEW ALL</button>
         </div>
@@ -691,18 +709,22 @@
         </div>
 
         <div id="legend">
-            <div class="legend-item"><strong>TIMER:</strong></div>
-            <div class="legend-item" id="timerDisplay">⏱️ Next turn in: --:--</div>
-            <div class="legend-item" style="margin-top: 5px;"><strong>HARBOR SYSTEM:</strong></div>
-            <div class="legend-item">⚓ Each island has 1 Harbor</div>
-            <div class="legend-item">🚢 Cargohaulers hold 10 ground troops</div>
-            <div class="legend-item">🔫 Defense Guns auto-attack (500 range)</div>
-            <div class="legend-item" style="margin-top: 5px;"><strong>CONTROLS:</strong></div>
-            <div class="legend-item">Click+Drag to select multiple</div>
-            <div class="legend-item">Click again to move selected units</div>
-            <div class="legend-item">Right-click drag to pan map</div>
-            <div class="legend-item">Drag/click the minimap too</div>
-            <div class="legend-item">Right-click (no drag) to deselect</div>
+            <div id="legendHeader" onclick="toggleLegend()">
+                <span id="timerDisplay">⏱️ Next turn in: --:--</span>
+                <span id="legendArrow">▼</span>
+            </div>
+            <div id="legendBody">
+                <div class="legend-item"><strong>HARBOR SYSTEM:</strong></div>
+                <div class="legend-item">⚓ Each island has 1 Harbor</div>
+                <div class="legend-item">🚢 Cargohaulers hold 10 ground troops</div>
+                <div class="legend-item">🔫 Defense Guns auto-attack (500 range)</div>
+                <div class="legend-item" style="margin-top: 5px;"><strong>CONTROLS:</strong></div>
+                <div class="legend-item">Click+Drag to select multiple</div>
+                <div class="legend-item">Click again to move selected units</div>
+                <div class="legend-item">Right-click drag to pan map</div>
+                <div class="legend-item">Drag/click the minimap too</div>
+                <div class="legend-item">Right-click (no drag) to deselect</div>
+            </div>
         </div>
     </div>
 
@@ -807,6 +829,26 @@
         const AI_HUNT_RADIUS = 2500;      // how far a unit can "see" an enemy to chase it
         const AI_HUNT_PLAYER_BIAS = 0.7;  // chance to head for the player instead of a random rival when nothing is in sight
 
+        // A move target picked as "the target planet's center plus a small random offset" lands
+        // *inside* that planet's own collision radius far more often than not (the offset has to
+        // land in the four corners of its range to clear a typical 250-350 size planet) - and
+        // moveTo() silently refuses naval units any target inside a collision radius. That left
+        // ships that had no specific enemy unit to chase (the common case whenever the player has
+        // no units out, e.g. early campaign) permanently stuck. This always aims just outside the
+        // target planet's edge instead, which moveTo() will actually accept.
+        function huntApproachPosition(targetIsland) {
+            const angle = Math.random() * Math.PI * 2;
+            // Just outside the collision edge, not way out - most weapon ranges (100-220) are
+            // already shorter than a typical island's own size (220-350), so parking any farther
+            // out than necessary leaves plenty of unit types permanently unable to reach the
+            // island's buildings at all.
+            const dist = targetIsland.size + 15 + Math.random() * 40;
+            return {
+                x: targetIsland.x + Math.cos(angle) * dist,
+                y: targetIsland.y + Math.sin(angle) * dist
+            };
+        }
+
         function setDifficulty(name) {
             const preset = DIFFICULTY_PRESETS[name];
             if (!preset) return;
@@ -826,7 +868,12 @@
             if (btn) btn.classList.add('active');
         }
 
-        const UNIT_SIGHT_RANGE = 25;
+        // Was 25 - so small that almost nothing was ever actually in sight range, which meant
+        // enemy units effectively never rendered at all (a completely separate radar-detection
+        // feature draws a red ring around anything it picks up within 500 units regardless of
+        // this value, which is what made enemies look like "black holes" - a marker with no ship
+        // visible inside it).
+        const UNIT_SIGHT_RANGE = 700;
 
         const COUNTRY_BONUSES = {
             0: {
@@ -1738,17 +1785,25 @@
                 
                 if (this.countryId !== gameState.playerCountry.id) {
                     let isVisible = false;
-                    
+
                     gameState.playerCountry.units.forEach(playerUnit => {
                         const dx = this.x - playerUnit.x;
                         const dy = this.y - playerUnit.y;
                         const dist = Math.sqrt(dx * dx + dy * dy);
-                        
+
                         if (dist <= UNIT_SIGHT_RANGE) {
                             isVisible = true;
                         }
                     });
-                    
+
+                    // Your own planet also grants vision around itself - otherwise an enemy
+                    // could be actively attacking your base while you have zero units built
+                    // and you'd never be able to see it happening at all.
+                    if (!isVisible) {
+                        const homeDist = Math.hypot(this.x - gameState.playerCountry.island.x, this.y - gameState.playerCountry.island.y);
+                        if (homeDist <= UNIT_SIGHT_RANGE) isVisible = true;
+                    }
+
                     if (!isVisible) return;
                 }
                 
@@ -1867,6 +1922,11 @@
                 this.isCyborg = (id >= 12 && id <= 15);
                 this.isZoonester = (id === 16);
                 this.cyborgTurnCounter = 0;
+                // Every country is its own team by default (unchanged behavior for the normal
+                // 27-planet galaxy, where every nation really is independent). Campaign mode
+                // assigns a rival's outposts the same team as their homeworld, below, so they
+                // don't perpetually "fight" their own garrison instead of the player.
+                this.team = id;
             }
 
             collectResources() {
@@ -1937,7 +1997,7 @@
                 let closestDist = Infinity;
 
                 gameState.countries.forEach(country => {
-                    if (country.id !== this.id) {
+                    if (country.team !== this.team) {
                         country.units.forEach(unit => {
                             if (unit.isGroundUnit() && unit.isInHarbor) return;
                             
@@ -1984,10 +2044,8 @@
                         if (Math.random() < Math.min(1, 0.9 * AI_SPECIAL_AGGRESSION_MULT)) { // highly aggressive baseline, scaled by difficulty
                             const targetCountry = gameState.countries[Math.floor(Math.random() * gameState.countries.length)];
                             if (targetCountry.id !== this.id) {
-                                unit.moveTo(
-                                    targetCountry.island.x + (Math.random() - 0.5) * 400,
-                                    targetCountry.island.y + (Math.random() - 0.5) * 400
-                                );
+                                const approach = huntApproachPosition(targetCountry.island);
+                                unit.moveTo(approach.x, approach.y);
                             }
                         }
                     });
@@ -1998,7 +2056,7 @@
                             let targetFound = false;
                             
                             gameState.countries.forEach(country => {
-                                if (country.id !== this.id && !parasite.hasAttacked && !targetFound) {
+                                if (country.team !== this.team && !parasite.hasAttacked && !targetFound) {
                                     let closestUnit = null;
                                     let closestDist = Infinity;
                                     
@@ -2061,10 +2119,8 @@
                                     const targetY = playerCountry.island.y + Math.sin(angle) * 600;
                                     unit.moveTo(targetX, targetY);
                                 } else {
-                                    unit.moveTo(
-                                        playerCountry.island.x + (Math.random() - 0.5) * 400,
-                                        playerCountry.island.y + (Math.random() - 0.5) * 400
-                                    );
+                                    const approach = huntApproachPosition(playerCountry.island);
+                                    unit.moveTo(approach.x, approach.y);
                                 }
                                 
                                 unit.turnsSinceLastMine++;
@@ -2106,10 +2162,8 @@
                         if (Math.random() < Math.min(1, 0.5 * AI_SPECIAL_AGGRESSION_MULT)) {
                             const targetCountry = gameState.countries[Math.floor(Math.random() * gameState.countries.length)];
                             if (targetCountry.id !== this.id) {
-                                unit.moveTo(
-                                    targetCountry.island.x + (Math.random() - 0.5) * 400,
-                                    targetCountry.island.y + (Math.random() - 0.5) * 400
-                                );
+                                const approach = huntApproachPosition(targetCountry.island);
+                                unit.moveTo(approach.x, approach.y);
                             }
                         }
                     });
@@ -2119,7 +2173,7 @@
                             let targetFound = false;
                             
                             gameState.countries.forEach(country => {
-                                if (country.id !== this.id && !attacker.hasAttacked && !targetFound) {
+                                if (country.team !== this.team && !attacker.hasAttacked && !targetFound) {
                                     let closestUnit = null;
                                     let closestDist = Infinity;
                                     
@@ -2196,7 +2250,7 @@
                             let nearestDist = Infinity;
 
                             gameState.countries.forEach(country => {
-                                if (country.id === this.id) return;
+                                if (country.team === this.team) return;
                                 country.units.forEach(target => {
                                     if (target.isGroundUnit() && target.isInHarbor) return;
                                     const dx = target.x - unit.x;
@@ -2223,10 +2277,8 @@
                                     : gameState.countries[Math.floor(Math.random() * gameState.countries.length)];
 
                                 if (targetCountry.id !== this.id) {
-                                    unit.moveTo(
-                                        targetCountry.island.x + (Math.random() - 0.5) * 400,
-                                        targetCountry.island.y + (Math.random() - 0.5) * 400
-                                    );
+                                    const approach = huntApproachPosition(targetCountry.island);
+                                    unit.moveTo(approach.x, approach.y);
                                 }
                             }
                         }
@@ -2242,7 +2294,7 @@
                             let targetFound = false;
                             
                             gameState.countries.forEach(country => {
-                                if (country.id !== this.id && !attacker.hasAttacked && !targetFound) {
+                                if (country.team !== this.team && !attacker.hasAttacked && !targetFound) {
                                     let closestUnit = null;
                                     let closestDist = Infinity;
                                     
@@ -3254,6 +3306,7 @@
                         queueImageLoad(island.planetImage, art.imageUrl);
                     }
                     country = new Country(obj.id, `${COUNTRY_NAMES[stage.rivalId]} Outpost`, COUNTRY_COLORS[stage.rivalId], island, false);
+                    country.team = stage.rivalId; // same side as its homeworld - don't fight your own garrison
                     spawnCampaignGarrison(country, 2);
                 }
                 gameState.countries.push(country);
@@ -3359,6 +3412,14 @@
             const arrow = document.getElementById('campaignObjectivesArrow');
             list.classList.toggle('collapsed');
             arrow.textContent = list.classList.contains('collapsed') ? '▶' : '▼';
+        }
+
+        function toggleLegend() {
+            playUIClickSound();
+            const body = document.getElementById('legendBody');
+            const arrow = document.getElementById('legendArrow');
+            body.classList.toggle('collapsed');
+            arrow.textContent = body.classList.contains('collapsed') ? '▶' : '▼';
         }
 
         // Real DOM panel (not canvas text) so long objective labels wrap inside the box instead
@@ -3846,6 +3907,30 @@
             const worldX = (screenX - canvas.width / 2) / camera.zoom + camera.x;
             const worldY = (screenY - canvas.height / 2) / camera.zoom + camera.y;
 
+            // Smart-click: if units are selected but no MOVE/ATTACK mode was explicitly armed
+            // (via the buttons), decide automatically based on what's under the cursor - click an
+            // enemy unit or building to attack it, click empty space to move there. This lets the
+            // normal move/attack logic below run exactly as if the right button had been clicked
+            // first.
+            if (!gameState.actionMode && gameState.selectedUnits.length > 0) {
+                let clickedEnemy = false;
+                gameState.countries.forEach(country => {
+                    if (country.id === gameState.playerCountry.id) return;
+                    country.units.forEach(target => {
+                        if (target.isGroundUnit() && target.isInHarbor) return;
+                        if (Math.hypot(target.x - worldX, target.y - worldY) < 50) clickedEnemy = true;
+                    });
+                    if (!clickedEnemy) {
+                        country.island.buildings.forEach(b => {
+                            if (b.destroyed) return;
+                            const bx = country.island.x + b.x, by = country.island.y + b.y;
+                            if (Math.hypot(bx - worldX, by - worldY) < 150) clickedEnemy = true;
+                        });
+                    }
+                });
+                gameState.actionMode = clickedEnemy ? 'attack' : 'move';
+            }
+
             if (gameState.actionMode === 'move' && gameState.selectedUnits.length > 0) {
                 gameState.selectedUnits.forEach((unit, index) => {
                     const offsetX = (index % 3 - 1) * 30;
@@ -4055,18 +4140,10 @@
                         }
                     });
                 }
-            } else if (gameState.selectedUnits.length > 0) {
-                // No MOVE/ATTACK mode armed, but units are already selected (e.g. via a
-                // marquee drag) - a plain click just moves them there directly, standard
-                // RTS click-to-move, instead of requiring an extra click on a MOVE button first.
-                // The order is issued immediately, so release the selection right after -
-                // otherwise the next click anywhere would just move them again.
-                gameState.selectedUnits.forEach((unit, index) => {
-                    const offsetX = (index % 3 - 1) * 30;
-                    const offsetY = (Math.floor(index / 3) - 1) * 30;
-                    unit.moveTo(worldX + offsetX, worldY + offsetY);
-                });
-                deselectAllUnits();
+                // Note: the smart-click pre-detection above always arms actionMode to
+                // 'move' or 'attack' whenever units are selected, so by this point the
+                // move/attack branches above have already handled it - there's nothing
+                // left to do for a plain click with units selected but no mode armed.
             }
         });
 
