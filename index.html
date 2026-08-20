@@ -1511,6 +1511,13 @@
                 this.isInHarbor = this.isGroundUnit();
                 this.turnsSinceLastMine = 0;      // roufestreal mine-layer cooldown
                 this.turnsSinceLastMissile = 5;   // phantomstrike missile cooldown (starts ready)
+                // Standing "attack-move" order: { kind: 'unit', unit } or
+                // { kind: 'building', building, country }. Set when the player attacks a
+                // target that's out of weapon range - the unit closes the distance every
+                // frame (processAttackMoveOrders()) and opens fire automatically as soon as
+                // it's in range, re-engaging every turn until the target dies or a new order
+                // is issued.
+                this.attackMoveTarget = null;
             }
 
             isGroundUnit() {
@@ -1907,6 +1914,70 @@
                 
                 ctx.restore();
             }
+        }
+
+        // Runs every frame for every unit on the map with a standing attack-move order
+        // (see Unit.attackMoveTarget). While the target is out of weapon range it keeps
+        // closing the distance (the target may itself be moving); as soon as it's in range
+        // it opens fire using the same effects as a manual click-to-attack, then waits for
+        // hasAttacked to reset next turn and does it again - so "select troops, click an
+        // enemy" now actually sends them there and keeps them fighting, instead of just
+        // alerting "out of range" and doing nothing when the target isn't already adjacent.
+        function processAttackMoveOrders() {
+            gameState.countries.forEach(attackerCountry => {
+                attackerCountry.units.forEach(unit => {
+                    const order = unit.attackMoveTarget;
+                    if (!order) return;
+                    if (unit.frozenTurns > 0) return;
+
+                    let targetX, targetY, targetValid = false;
+
+                    if (order.kind === 'unit') {
+                        const t = order.unit;
+                        targetValid = !!t && t.hp > 0 && gameState.countries.some(c => c.units.includes(t));
+                        if (targetValid) { targetX = t.x; targetY = t.y; }
+                    } else if (order.kind === 'building') {
+                        const b = order.building;
+                        targetValid = !!b && !b.destroyed;
+                        if (targetValid) {
+                            targetX = order.country.island.x + b.x;
+                            targetY = order.country.island.y + b.y;
+                        }
+                    }
+
+                    if (!targetValid) {
+                        unit.attackMoveTarget = null;
+                        return;
+                    }
+
+                    if (unit.hasAttacked) return; // already fired this turn - wait for reset
+
+                    const dist = Math.hypot(targetX - unit.x, targetY - unit.y);
+                    if (dist < unit.getRange()) {
+                        if (order.kind === 'unit') {
+                            if (!unit.canAttackUnit(order.unit)) { unit.attackMoveTarget = null; return; }
+                            if (unit.type === 'frostwing') {
+                                order.unit.frozenTurns = 2;
+                                laserEffects.push({ startX: unit.x, startY: unit.y, endX: order.unit.x, endY: order.unit.y, createdAt: Date.now(), duration: 2000, color: 'blue' });
+                            }
+                            order.unit.hp -= unit.getAttackPower();
+                            unit.hasAttacked = true;
+                            if (order.unit.hp <= 0) {
+                                gameState.countries.forEach(c => { c.units = c.units.filter(u => u.hp > 0); });
+                                unit.attackMoveTarget = null;
+                            }
+                        } else {
+                            if (!unit.canAttackBuildings()) { unit.attackMoveTarget = null; return; }
+                            order.building.takeDamage(unit.getAttackPower());
+                            unit.hasAttacked = true;
+                            if (order.building.destroyed) unit.attackMoveTarget = null;
+                        }
+                        updateUI();
+                    } else {
+                        unit.moveTo(targetX, targetY);
+                    }
+                });
+            });
         }
 
         class Country {
@@ -3823,12 +3894,16 @@
 
             gameState.countries.forEach(country => {
                 country.island.draw();
-                
+
                 if (!gameState.paused) {
                     country.units.forEach(unit => unit.update());
                 }
             });
-            
+
+            if (!gameState.paused) {
+                processAttackMoveOrders();
+            }
+
             drawRadarPulses();
             const now=Date.now();laserEffects=laserEffects.filter(l=>{const age=now-l.createdAt;if(age>l.duration)return false;const alpha=1-(age/l.duration);const isBlue=l.color==='blue';const c1=isBlue?`rgba(0,150,255,${alpha*0.3})`:`rgba(0,255,0,${alpha*0.3})`;const c2=isBlue?`rgba(50,200,255,${alpha*0.6})`:`rgba(50,255,50,${alpha*0.6})`;const c3=isBlue?`rgba(150,230,255,${alpha})`:`rgba(150,255,150,${alpha})`;ctx.strokeStyle=c1;ctx.lineWidth=12*camera.zoom;ctx.beginPath();ctx.moveTo(l.startX,l.startY);ctx.lineTo(l.endX,l.endY);ctx.stroke();ctx.strokeStyle=c2;ctx.lineWidth=6*camera.zoom;ctx.beginPath();ctx.moveTo(l.startX,l.startY);ctx.lineTo(l.endX,l.endY);ctx.stroke();ctx.strokeStyle=c3;ctx.lineWidth=2*camera.zoom;ctx.beginPath();ctx.moveTo(l.startX,l.startY);ctx.lineTo(l.endX,l.endY);ctx.stroke();return true;});
             if(!gameState.paused){spaceMines.forEach(mine=>{gameState.countries.forEach(country=>{country.units.forEach(unit=>{if(unit.isGroundUnit()&&unit.isInHarbor)return;const dx=unit.x-mine.x,dy=unit.y-mine.y,dist=Math.sqrt(dx*dx+dy*dy);if(dist<mine.detectionRange&&mine.countryId!==country.id){unit.hp-=Math.ceil(unit.hp*mine.damage);mine.hp=0;}});});});spaceMines=spaceMines.filter(m=>m.hp>0);}
@@ -3935,12 +4010,18 @@
                 gameState.selectedUnits.forEach((unit, index) => {
                     const offsetX = (index % 3 - 1) * 30;
                     const offsetY = (Math.floor(index / 3) - 1) * 30;
+                    unit.attackMoveTarget = null; // a manual move order cancels any standing attack-move chase
                     unit.moveTo(worldX + offsetX, worldY + offsetY);
                 });
                 deselectAllUnits();
             } else if (gameState.actionMode === 'attack' && gameState.selectedUnits.length > 0) {
                 let anyAttacked = false;
-                
+                // Attackers that couldn't fire this click because the target is too far away
+                // don't just get told "out of range" and left standing there - they get sent
+                // an attack-move order instead, so they actually travel there and start
+                // fighting once in range (see processAttackMoveOrders()).
+                let anyChaseIssued = false;
+
                 let closestGroundTarget = null;
                 let closestGroundDist = Infinity;
                 
@@ -3975,20 +4056,32 @@
                                 (closestGroundTarget.x - attacker.x) ** 2 +
                                 (closestGroundTarget.y - attacker.y) ** 2
                             );
-                            
+
                             if (attackDist < attacker.getRange()) {
                                 closestGroundTarget.hp -= attacker.getAttackPower();
                                 attacker.hasAttacked = true;
                                 anyAttacked = true;
                             }
+                            // Keep engaging this target every turn until it dies (or a new
+                            // order overrides it), whether we just landed a hit or are still
+                            // closing the distance.
+                            attacker.attackMoveTarget = { kind: 'unit', unit: closestGroundTarget };
+                            if (attackDist >= attacker.getRange()) {
+                                attacker.moveTo(closestGroundTarget.x, closestGroundTarget.y);
+                                anyChaseIssued = true;
+                            }
                         }
                     });
-                    
+
                     if (anyAttacked) {
                         gameState.countries.forEach(country => {
                             country.units = country.units.filter(u => u.hp > 0);
                         });
                         updateUI();
+                        cancelAction();
+                        return;
+                    }
+                    if (anyChaseIssued) {
                         cancelAction();
                         return;
                     }
@@ -4024,7 +4117,7 @@
                                 (closestTarget.x - attacker.x) ** 2 +
                                 (closestTarget.y - attacker.y) ** 2
                             );
-                            
+
                             if (attackDist < attacker.getRange()) {
                                 if (attacker.type === 'frostwing') {
                                     closestTarget.frozenTurns = 2;
@@ -4034,17 +4127,25 @@
                                 attacker.hasAttacked = true;
                                 anyAttacked = true;
                             }
+                            // Same deal here - land the hit if already in range, but either
+                            // way keep a standing order to engage this target so out-of-range
+                            // attackers actually close in and fight instead of stalling.
+                            attacker.attackMoveTarget = { kind: 'unit', unit: closestTarget };
+                            if (attackDist >= attacker.getRange()) {
+                                attacker.moveTo(closestTarget.x, closestTarget.y);
+                                anyChaseIssued = true;
+                            }
                         }
                     });
-                    
-                    if (anyAttacked) {
+
+                    if (anyAttacked || anyChaseIssued) {
                         gameState.countries.forEach(country => {
                             country.units = country.units.filter(u => u.hp > 0);
                         });
                         updateUI();
                         cancelAction();
                     } else {
-                        alert('Target out of range or cannot be attacked by selected units!');
+                        alert('Cannot be attacked by selected units!');
                     }
                 } else {
                     gameState.countries.forEach(country => {
@@ -4122,17 +4223,23 @@
                                                 unitsInRange++;
                                             }
                                         } else {
+                                            // Out of range - send it in instead of just leaving it
+                                            // stuck alerting the player. Keeps re-engaging this
+                                            // building every turn until it's destroyed.
+                                            attacker.moveTo(buildingWorldX, buildingWorldY);
                                             unitsOutOfRange++;
                                         }
+                                        attacker.attackMoveTarget = { kind: 'building', building: targetBuilding, country: country };
                                     }
                                 });
-                                
+
                                 if (anyAttacked) {
                                     updateUI();
                                     cancelAction();
                                     alert(`${unitsInRange} unit(s) attacked ${targetBuilding.name}! Remaining HP: ${targetBuilding.hp}/${targetBuilding.maxHp}`);
                                 } else if (unitsOutOfRange > 0) {
-                                    alert(`Selected units are out of range of ${targetBuilding.name}!`);
+                                    updateUI();
+                                    cancelAction();
                                 } else {
                                     alert('No valid units to attack this building! (Ground units must be deployed from harbor first)');
                                 }
@@ -4289,6 +4396,7 @@
                         gameState.selectedUnits.forEach((unit, index) => {
                             const offsetX = (index % 3 - 1) * 60;
                             const offsetY = (Math.floor(index / 3) - 1) * 60;
+                            unit.attackMoveTarget = null; // a manual move order cancels any standing attack-move chase
                             unit.moveTo(w.x + offsetX, w.y + offsetY);
                         });
                         deselectAllUnits();
