@@ -715,7 +715,7 @@
             </div>
             <div id="legendBody">
                 <div class="legend-item"><strong>HARBOR SYSTEM:</strong></div>
-                <div class="legend-item">⚓ Each island has 1 Harbor</div>
+                <div class="legend-item">⚓ Each planet has 1 Harbor</div>
                 <div class="legend-item">🚢 Cargohaulers hold 10 ground troops</div>
                 <div class="legend-item">🔫 Defense Guns auto-attack (500 range)</div>
                 <div class="legend-item" style="margin-top: 5px;"><strong>CONTROLS:</strong></div>
@@ -2866,7 +2866,7 @@
                 });
                 
                 if (!nearIsland) {
-                    alert('Cargohauler must be near an island to unload troops!');
+                    alert('Cargohauler must be near a planet to unload troops!');
                     return;
                 }
                 
@@ -2883,7 +2883,7 @@
                 
                 cargohauler.cargo = [];
                 
-                alert(`Unloaded ${unloaded} ground unit(s) onto the island!`);
+                alert(`Unloaded ${unloaded} ground unit(s) onto the planet!`);
                 updateUI();
                 return;
             }
