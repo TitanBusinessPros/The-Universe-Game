@@ -538,7 +538,7 @@
                 <button id="diffBtn-normal" class="difficultyBtn" onclick="chooseDifficulty('normal')">Normal</button>
                 <button id="diffBtn-hard" class="difficultyBtn" onclick="chooseDifficulty('hard')">Hard</button>
             </div>
-            <button id="campaignEntryBtn" class="countryBtn" style="width:100%; background:#ff8800; border-color:#ff8800; margin-bottom:20px;" onclick="openCampaignNationSelect()">🎖️ CAMPAIGN MODE</button>
+            <button id="campaignEntryBtn" class="countryBtn" style="width:100%; text-align:center; background:#ff8800; border-color:#ff8800; margin-bottom:20px;" onclick="openCampaignNationSelect()">🎖️ CAMPAIGN MODE</button>
             <p style="margin-bottom: 20px;">Select Your Country:</p>
             <div id="countrySelect"></div>
         </div>
@@ -547,13 +547,13 @@
             <h1>🎖️ CAMPAIGN MODE 🎖️</h1>
             <p style="margin-bottom:20px; max-width:520px;">Choose the nation you'll lead. You'll fight the other eleven, one at a time, with alien threats mixed into every stage - then face what's really out there.</p>
             <div id="campaignCountrySelect"></div>
-            <button class="countryBtn" style="margin-top:20px; background:#888; border-color:#888;" onclick="closeCampaignNationSelect()">← Back</button>
+            <button class="countryBtn" style="margin-top:20px; text-align:center; background:#888; border-color:#888;" onclick="closeCampaignNationSelect()">← Back</button>
         </div>
 
         <div id="campaignBriefingScreen" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.95); color:#00ff00; padding:30px; border-radius:12px; text-align:center; max-width:600px; max-height:90vh; overflow-y:auto; z-index:1000;">
             <h1 id="campaignBriefingTitle"></h1>
             <p id="campaignBriefingText" style="margin:20px 0; line-height:1.5;"></p>
-            <button class="countryBtn" style="background:#00ff00;" onclick="beginCampaignFromBriefing()">▶ BEGIN</button>
+            <button class="countryBtn" style="text-align:center; background:#00ff00;" onclick="beginCampaignFromBriefing()">▶ BEGIN</button>
         </div>
 
         <div id="campaignStageScreen" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.98); color:#00ff00; padding:40px; border-radius:12px; text-align:center; max-width:600px; max-height:90vh; overflow-y:auto; z-index:2000; border:4px solid #ffff00;">
@@ -702,6 +702,7 @@
             <div class="legend-item">Click again to move selected units</div>
             <div class="legend-item">Right-click drag to pan map</div>
             <div class="legend-item">Drag/click the minimap too</div>
+            <div class="legend-item">Right-click (no drag) to deselect</div>
         </div>
     </div>
 
@@ -2485,6 +2486,7 @@
                     continueBtn.style.borderColor = '#00ff00';
                     continueBtn.style.color = '#000';
                     continueBtn.style.width = '100%';
+                    continueBtn.style.textAlign = 'center';
                     continueBtn.style.marginBottom = '15px';
                     continueBtn.onclick = () => continueFromAutosave(autosave);
                     selectDiv.appendChild(continueBtn);
@@ -2607,6 +2609,15 @@
             gameState.selectedUnits = [unit];
             gameState.playerCountry.units.forEach(u => u.selected = false);
             unit.selected = true;
+            gameState.actionMode = null;
+            document.getElementById('actionMode').style.display = 'none';
+            updateUI();
+        }
+
+        function deselectAllUnits() {
+            gameState.playerCountry.units.forEach(u => u.selected = false);
+            gameState.selectedUnits = [];
+            gameState.selectedUnit = null;
             gameState.actionMode = null;
             document.getElementById('actionMode').style.display = 'none';
             updateUI();
@@ -3128,6 +3139,13 @@
         // Same placement math initGame() uses for the full galaxy, kept standalone here so a
         // campaign stage (which only spawns a handful of the 27 countries) doesn't touch or
         // risk breaking the normal full-galaxy game setup.
+        // Campaign stages only ever have a handful of planets active (2-10, not the full
+        // 27-planet galaxy), so they get their own compact layout instead of reusing the
+        // full-galaxy spacing - otherwise a stage's rival homeworld could be tens of thousands
+        // of units away, turning a single unit's trip into a 5-7 minute commute. Everything
+        // below is scaled to a third of the full-galaxy spread, around the same center point.
+        const CAMPAIGN_SCALE = 1 / 3;
+
         function campaignNationPosition(i) {
             const cols = 4, rows = 3;
             const baseMarginX = MAP_WIDTH * 0.15, baseMarginY = MAP_HEIGHT * 0.15;
@@ -3135,17 +3153,23 @@
             const spacingX = (MAP_WIDTH - marginX * 2) / (cols - 1);
             const spacingY = (MAP_HEIGHT - marginY * 2) / (rows - 1);
             const col = i % cols, row = Math.floor(i / cols);
-            return { x: marginX + col * spacingX, y: marginY + row * spacingY };
+            const fullX = marginX + col * spacingX;
+            const fullY = marginY + row * spacingY;
+            const gridCenterX = MAP_WIDTH / 2, gridCenterY = MAP_HEIGHT / 2;
+            return {
+                x: gridCenterX + (fullX - gridCenterX) * CAMPAIGN_SCALE,
+                y: gridCenterY + (fullY - gridCenterY) * CAMPAIGN_SCALE
+            };
         }
 
         function campaignAlienPosition(id) {
             const centerX = MAP_WIDTH / 2, centerY = MAP_HEIGHT / 2;
             const positions = {
-                12: { x: centerX, y: centerY - 30000 },
-                13: { x: centerX, y: centerY + 30000 },
-                14: { x: centerX + 30000, y: centerY },
-                15: { x: centerX - 30000, y: centerY },
-                16: { x: centerX, y: centerY - 40000 }
+                12: { x: centerX, y: centerY - 30000 * CAMPAIGN_SCALE },
+                13: { x: centerX, y: centerY + 30000 * CAMPAIGN_SCALE },
+                14: { x: centerX + 30000 * CAMPAIGN_SCALE, y: centerY },
+                15: { x: centerX - 30000 * CAMPAIGN_SCALE, y: centerY },
+                16: { x: centerX, y: centerY - 40000 * CAMPAIGN_SCALE }
             };
             return positions[id];
         }
@@ -3155,7 +3179,7 @@
         function campaignOutpostPosition(rivalId, outpostIdx, total) {
             const home = campaignNationPosition(rivalId);
             const angle = (outpostIdx / Math.max(total, 1)) * Math.PI * 2;
-            const radius = 6000 + (outpostIdx % 3) * 1500;
+            const radius = (6000 + (outpostIdx % 3) * 1500) * CAMPAIGN_SCALE;
             return { x: home.x + Math.cos(angle) * radius, y: home.y + Math.sin(angle) * radius };
         }
 
@@ -3801,6 +3825,15 @@
         canvas.addEventListener('click', (e) => {
             if (!gameState.gameStarted) return;
 
+            // The browser still fires 'click' after mouseup even when the mousedown->mouseup
+            // pair was a real drag (there's no built-in distance threshold) - without this, the
+            // click right after finishing a marquee/minimap drag-select would immediately move
+            // and deselect whatever was just selected.
+            if (suppressNextClick) {
+                suppressNextClick = false;
+                return;
+            }
+
             const rect = canvas.getBoundingClientRect();
             const screenX = e.clientX - rect.left;
             const screenY = e.clientY - rect.top;
@@ -3819,7 +3852,7 @@
                     const offsetY = (Math.floor(index / 3) - 1) * 30;
                     unit.moveTo(worldX + offsetX, worldY + offsetY);
                 });
-                cancelAction();
+                deselectAllUnits();
             } else if (gameState.actionMode === 'attack' && gameState.selectedUnits.length > 0) {
                 let anyAttacked = false;
                 
@@ -4026,11 +4059,14 @@
                 // No MOVE/ATTACK mode armed, but units are already selected (e.g. via a
                 // marquee drag) - a plain click just moves them there directly, standard
                 // RTS click-to-move, instead of requiring an extra click on a MOVE button first.
+                // The order is issued immediately, so release the selection right after -
+                // otherwise the next click anywhere would just move them again.
                 gameState.selectedUnits.forEach((unit, index) => {
                     const offsetX = (index % 3 - 1) * 30;
                     const offsetY = (Math.floor(index / 3) - 1) * 30;
                     unit.moveTo(worldX + offsetX, worldY + offsetY);
                 });
+                deselectAllUnits();
             }
         });
 
@@ -4047,6 +4083,9 @@
         let minimapMouseDownScreenY = 0;
         let isMinimapSelecting = false;
         let minimapSelectionBox = null;
+        let rightMouseDownScreenX = 0;
+        let rightMouseDownScreenY = 0;
+        let suppressNextClick = false;
 
         canvas.addEventListener('mousedown', (e) => {
             if (!gameState.gameStarted) return;
@@ -4084,6 +4123,8 @@
                 isDragging = true;
                 lastMouseX = e.clientX;
                 lastMouseY = e.clientY;
+                rightMouseDownScreenX = e.clientX;
+                rightMouseDownScreenY = e.clientY;
                 e.preventDefault();
             }
         });
@@ -4143,6 +4184,13 @@
         canvas.addEventListener('mouseup', (e) => {
             if (e.button === 2) {
                 isDragging = false;
+                // A plain right-click (no real drag - that's camera panning) with units
+                // selected deselects them, so there's always a clear way to "let go" of a
+                // selection instead of every click re-issuing a move order.
+                const dragDist = Math.hypot(e.clientX - rightMouseDownScreenX, e.clientY - rightMouseDownScreenY);
+                if (dragDist < 5 && gameState.selectedUnits.length > 0) {
+                    deselectAllUnits();
+                }
             } else if (e.button === 0) {
                 if (minimapMouseIsDown) {
                     minimapMouseIsDown = false;
@@ -4159,12 +4207,14 @@
                             u.x >= minX && u.x <= maxX && u.y >= minY && u.y <= maxY);
                         if (selected.length > 0) selectMultipleUnits(selected);
                     } else if (gameState.selectedUnits.length > 0) {
-                        // Plain click on the minimap with units already selected - send them there.
+                        // Plain click on the minimap with units already selected - send them
+                        // there, then release the selection (same as a main-map move click).
                         gameState.selectedUnits.forEach((unit, index) => {
                             const offsetX = (index % 3 - 1) * 60;
                             const offsetY = (Math.floor(index / 3) - 1) * 60;
                             unit.moveTo(w.x + offsetX, w.y + offsetY);
                         });
+                        deselectAllUnits();
                     } else {
                         // Nothing selected - plain click just navigates the camera there.
                         camera.x = w.x;
@@ -4178,6 +4228,7 @@
                 leftMouseIsDown = false;
                 if (gameState.isSelecting) {
                     gameState.isSelecting = false;
+                    suppressNextClick = true; // this drag will still fire a trailing 'click' - ignore it
 
                     const box = gameState.selectionBox;
                     const minX = Math.min(box.startX, box.endX);
