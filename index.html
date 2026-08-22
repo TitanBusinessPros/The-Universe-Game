@@ -871,7 +871,7 @@
         // both read more clearly on screen. Single named constants so every place a
         // planet/unit size gets set stays proportional and this is easy to retune.
         const PLANET_SCALE = 1.5;
-        const UNIT_SCALE = 2;
+        const UNIT_SCALE = 4;
 
         const UNIT_SPEEDS = {
             'blazefalcon': 3.5,
@@ -3914,18 +3914,45 @@
             const { mmX, mmY } = minimapBounds();
             return screenX >= mmX && screenX <= mmX + MINIMAP_WIDTH && screenY >= mmY && screenY <= mmY + MINIMAP_HEIGHT;
         }
+        // The Cyborg/Zoonester/custom-island planets sit well outside the [0,MAP_WIDTH]x
+        // [0,MAP_HEIGHT] box (some are 60-70k units off-center, while MAP_WIDTH/HEIGHT
+        // are only sized for the 12-nation grid) - they're still perfectly reachable in
+        // the real 2D world, but mapping the minimap straight off MAP_WIDTH/HEIGHT put
+        // their dots outside the minimap's own rectangle, so over half the galaxy never
+        // showed up on it. Instead, scale the minimap to whatever the actual galaxy's
+        // extent is this game, computed fresh from every planet that actually exists
+        // (works the same for the 27-planet standard galaxy and Campaign Mode's smaller
+        // per-stage roster).
+        function getGalaxyBounds() {
+            if (!gameState.countries || gameState.countries.length === 0) {
+                return { minX: 0, maxX: MAP_WIDTH, minY: 0, maxY: MAP_HEIGHT };
+            }
+            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+            gameState.countries.forEach(country => {
+                const isl = country.island;
+                minX = Math.min(minX, isl.x - isl.size);
+                maxX = Math.max(maxX, isl.x + isl.size);
+                minY = Math.min(minY, isl.y - isl.size);
+                maxY = Math.max(maxY, isl.y + isl.size);
+            });
+            const padX = (maxX - minX) * 0.05 || 50;
+            const padY = (maxY - minY) * 0.05 || 50;
+            return { minX: minX - padX, maxX: maxX + padX, minY: minY - padY, maxY: maxY + padY };
+        }
         function minimapToWorld(screenX, screenY) {
             const { mmX, mmY } = minimapBounds();
+            const b = getGalaxyBounds();
             return {
-                x: ((screenX - mmX) / MINIMAP_WIDTH) * MAP_WIDTH,
-                y: ((screenY - mmY) / MINIMAP_HEIGHT) * MAP_HEIGHT
+                x: b.minX + ((screenX - mmX) / MINIMAP_WIDTH) * (b.maxX - b.minX),
+                y: b.minY + ((screenY - mmY) / MINIMAP_HEIGHT) * (b.maxY - b.minY)
             };
         }
         function worldToMinimap(worldX, worldY) {
             const { mmX, mmY } = minimapBounds();
+            const b = getGalaxyBounds();
             return {
-                x: mmX + (worldX / MAP_WIDTH) * MINIMAP_WIDTH,
-                y: mmY + (worldY / MAP_HEIGHT) * MINIMAP_HEIGHT
+                x: mmX + ((worldX - b.minX) / (b.maxX - b.minX)) * MINIMAP_WIDTH,
+                y: mmY + ((worldY - b.minY) / (b.maxY - b.minY)) * MINIMAP_HEIGHT
             };
         }
 
