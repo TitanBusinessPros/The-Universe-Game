@@ -961,6 +961,30 @@
             };
         }
 
+        // Same stand-off distance as huntApproachPosition, but the angle is aimed at a
+        // building instead of picked at random. A ship parking on the far side of the
+        // planet from every building can never bridge the gap between the mandatory
+        // stand-off distance and a building sitting near the center, no matter how long
+        // it waits - most weapon ranges are shorter than that combined distance unless
+        // the angle lines up. Aiming at the building farthest from center (the easiest
+        // one to actually reach) turns "might get lucky eventually" into "reliably gets
+        // in range once it arrives" for every unit whose range can bridge the gap at all.
+        function buildingApproachPosition(island) {
+            const alive = island.buildings.filter(b => !b.destroyed);
+            if (alive.length === 0) return huntApproachPosition(island);
+            let target = alive[0], targetMag = Math.hypot(target.x, target.y);
+            alive.forEach(b => {
+                const mag = Math.hypot(b.x, b.y);
+                if (mag > targetMag) { target = b; targetMag = mag; }
+            });
+            const angle = Math.atan2(target.y, target.x) + (Math.random() - 0.5) * 0.3;
+            const dist = island.collisionSize + 15 + Math.random() * 40;
+            return {
+                x: island.x + Math.cos(angle) * dist,
+                y: island.y + Math.sin(angle) * dist
+            };
+        }
+
         function setDifficulty(name) {
             const preset = DIFFICULTY_PRESETS[name];
             if (!preset) return;
@@ -2572,7 +2596,12 @@
                                     : gameState.countries[Math.floor(Math.random() * gameState.countries.length)];
 
                                 if (targetCountry.id !== this.id) {
-                                    const approach = huntApproachPosition(targetCountry.island);
+                                    // Ships that can actually hit buildings aim at one deliberately;
+                                    // everything else (scouts, interceptors) just takes any spot on
+                                    // the ring since it's not going to be attacking a building anyway.
+                                    const approach = unit.canAttackBuildings()
+                                        ? buildingApproachPosition(targetCountry.island)
+                                        : huntApproachPosition(targetCountry.island);
                                     unit.moveTo(approach.x, approach.y);
                                 }
                             }
@@ -2613,20 +2642,29 @@
                                     }
                                     
                                     if (!targetFound && attacker.canAttackBuildings() && Math.random() < AI_BUILDING_ATTACK_CHANCE) {
-                                        const islandDist = Math.sqrt(
-                                            (country.island.x - attacker.x) ** 2 +
-                                            (country.island.y - attacker.y) ** 2
-                                        );
-                                        
-                                        if (islandDist < attacker.getRange()) {
-                                            for (let building of country.island.buildings) {
-                                                if (!building.destroyed) {
-                                                    building.takeDamage(attacker.getAttackPower());
-                                                    attacker.hasAttacked = true;
-                                                    targetFound = true;
-                                                    break;
-                                                }
-                                            }
+                                        // Was checking distance to the island's *center* - ships can't get
+                                        // closer than the planet's collisionSize (roughly 220-350) to avoid
+                                        // colliding with it, and most weapon ranges (100-220) are shorter
+                                        // than that, so this fallback almost never actually fired: an AI
+                                        // fleet could camp right outside a planet indefinitely without ever
+                                        // damaging a single building. Check the nearest real building
+                                        // position instead - same as the player's own manual attack already
+                                        // correctly does - since a building can sit well off-center, in
+                                        // range even when the island's center isn't.
+                                        let nearestBuilding = null;
+                                        let nearestBuildingDist = Infinity;
+                                        country.island.buildings.forEach(building => {
+                                            if (building.destroyed) return;
+                                            const bdx = (country.island.x + building.x) - attacker.x;
+                                            const bdy = (country.island.y + building.y) - attacker.y;
+                                            const bdist = Math.sqrt(bdx * bdx + bdy * bdy);
+                                            if (bdist < nearestBuildingDist) { nearestBuildingDist = bdist; nearestBuilding = building; }
+                                        });
+
+                                        if (nearestBuilding && nearestBuildingDist < attacker.getRange()) {
+                                            nearestBuilding.takeDamage(attacker.getAttackPower());
+                                            attacker.hasAttacked = true;
+                                            targetFound = true;
                                         }
                                     }
                                 }
