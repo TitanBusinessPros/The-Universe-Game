@@ -561,8 +561,15 @@
                 <button id="diffBtn-hard" class="difficultyBtn" onclick="chooseDifficulty('hard')">Hard</button>
             </div>
             <button id="campaignEntryBtn" class="countryBtn" style="width:100%; text-align:center; background:#ff8800; border-color:#ff8800; margin-bottom:20px;" onclick="openCampaignNationSelect()">🎖️ CAMPAIGN MODE</button>
+            <button class="countryBtn" style="width:100%; text-align:center; background:#00aaff; border-color:#00aaff; margin-bottom:20px;" onclick="openStatsScreen()">📊 YOUR STATS</button>
             <p style="margin-bottom: 20px;">Select Your Country:</p>
             <div id="countrySelect"></div>
+        </div>
+
+        <div id="statsScreen" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.95); color:#00ff00; padding:30px; border-radius:12px; text-align:center; max-width:500px; max-height:90vh; overflow-y:auto; z-index:1000;">
+            <h1>📊 YOUR STATS 📊</h1>
+            <div id="statsContent" style="text-align:left; margin:20px 0; line-height:1.6;"></div>
+            <button class="countryBtn" style="text-align:center; background:#888; border-color:#888;" onclick="closeStatsScreen()">← Back</button>
         </div>
 
         <div id="campaignNationSelect" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.95); color:#00ff00; padding:30px; border-radius:12px; text-align:center; max-width:700px; max-height:90vh; overflow-y:auto; z-index:1000;">
@@ -914,9 +921,11 @@
         // attempt plus a chance at a second one that turn (see buildAttempts/movementAttempts/
         // attackAttempts below), rather than needing a separate code path.
         const DIFFICULTY_PRESETS = {
-            // movement is doubled from 0.6 to 1.2 in spirit, but capped at 1.0 (a guaranteed
-            // attempt every turn) so Easy's movement aggression doesn't end up exceeding Hard's.
-            easy:   { build: 1.0, movement: 1.0,  attack: 1.0, buildingAttack: 0.8, specialMult: 1.2 },
+            // Previously Easy and Hard were identical on build/movement/attack (both 1.0/1.0/1.0),
+            // and Normal was actually *less* aggressive than Easy on all three - so picking "Easy"
+            // didn't make regular-nation AI any easier at all, only the aliens. Now every dial
+            // increases strictly from easy -> normal -> hard.
+            easy:   { build: 0.6, movement: 0.7,  attack: 0.6, buildingAttack: 0.5, specialMult: 0.8 },
             normal: { build: 0.8, movement: 0.95, attack: 0.9, buildingAttack: 0.7, specialMult: 1.0 },
             hard:   { build: 1.0, movement: 1.0,  attack: 1.0, buildingAttack: 0.9, specialMult: 1.4 }
         };
@@ -945,7 +954,7 @@
             // already shorter than a typical island's own size (220-350), so parking any farther
             // out than necessary leaves plenty of unit types permanently unable to reach the
             // island's buildings at all.
-            const dist = targetIsland.size + 15 + Math.random() * 40;
+            const dist = targetIsland.collisionSize + 15 + Math.random() * 40;
             return {
                 x: targetIsland.x + Math.cos(angle) * dist,
                 y: targetIsland.y + Math.sin(angle) * dist
@@ -977,6 +986,19 @@
         // this value, which is what made enemies look like "black holes" - a marker with no ship
         // visible inside it).
         const UNIT_SIGHT_RANGE = 700;
+
+        // Decision (2026-08-22): give the Radar drone/Skyfortress/Cyborg Dreadnought's radar
+        // an actual gameplay effect instead of leaving it pure flavor. They already drew a
+        // pulse + a 500-range "detected" ring around enemies, but that never did anything -
+        // 500 is *smaller* than the flat 700 sight range every unit already gets, so a radar
+        // unit never revealed anything a regular ship standing in the same spot wouldn't have
+        // anyway. Now radar-carrying units (and an unbroken Radar Tower's home-planet vision)
+        // see twice as far, so building one is a real scouting choice and losing your Radar
+        // Tower is a real loss, not just a destroyed prop.
+        const RADAR_SIGHT_RANGE = 1400;
+        function hasRadarDetection(unit) {
+            return unit.type === 'radar' || unit.type === 'skyfortress' || unit.type === 'cyborgdreadnought';
+        }
 
         const COUNTRY_BONUSES = {
             0: {
@@ -1441,6 +1463,14 @@
                 this.y = y;
                 this.countryId = countryId;
                 this.size = 250 * PLANET_SCALE;
+                // Separate from the visual size on purpose. collidesWith() and the AI's
+                // combat approach distance both key off this, not size - if they used the
+                // bigger visual radius, every ship's mandatory stand-off distance would get
+                // pushed out past most weapon ranges (100-220), making buildings
+                // effectively unattackable. Keeping this at the original pre-scale value
+                // means planets look 50% bigger without changing how close anything can
+                // actually get.
+                this.collisionSize = 250;
                 this.structureNames = ISLAND_STRUCTURES[countryId];
                 this.shape = this.generateShape();
                 this.buildings = this.createBuildings();
@@ -1508,7 +1538,7 @@
             collidesWith(x, y) {
                 const dx = x - this.x;
                 const dy = y - this.y;
-                return Math.sqrt(dx * dx + dy * dy) < this.size;
+                return Math.sqrt(dx * dx + dy * dy) < this.collisionSize;
             }
 
             draw() {
@@ -1966,18 +1996,22 @@
                         const dx = this.x - playerUnit.x;
                         const dy = this.y - playerUnit.y;
                         const dist = Math.sqrt(dx * dx + dy * dy);
+                        const sightRange = hasRadarDetection(playerUnit) ? RADAR_SIGHT_RANGE : UNIT_SIGHT_RANGE;
 
-                        if (dist <= UNIT_SIGHT_RANGE) {
+                        if (dist <= sightRange) {
                             isVisible = true;
                         }
                     });
 
                     // Your own planet also grants vision around itself - otherwise an enemy
                     // could be actively attacking your base while you have zero units built
-                    // and you'd never be able to see it happening at all.
+                    // and you'd never be able to see it happening at all. Extended further
+                    // while your Radar Tower is still standing.
                     if (!isVisible) {
                         const homeDist = Math.hypot(this.x - gameState.playerCountry.island.x, this.y - gameState.playerCountry.island.y);
-                        if (homeDist <= UNIT_SIGHT_RANGE) isVisible = true;
+                        const radarTower = gameState.playerCountry.island.buildings.find(b => b.name === 'Radar Tower');
+                        const homeSightRange = (radarTower && !radarTower.destroyed) ? RADAR_SIGHT_RANGE : UNIT_SIGHT_RANGE;
+                        if (homeDist <= homeSightRange) isVisible = true;
                     }
 
                     if (!isVisible) return;
@@ -2359,22 +2393,31 @@
                     
                     this.units.forEach(unit => {
                         if (unit.type === 'roufestreal') {
-                            const playerCountry = gameState.playerCountry;
-                            if (playerCountry && playerCountry.id !== this.id) {
-                                const dx = playerCountry.island.x - unit.x;
-                                const dy = playerCountry.island.y - unit.y;
-                                const dist = Math.sqrt(dx * dx + dy * dy);
-                                
+                            // Was hardcoded to gameState.playerCountry - Roufestreal would never
+                            // so much as move against another nation or alien faction, no matter
+                            // what was happening around it. Now picks whichever enemy planet (by
+                            // team, same rule every other faction uses) is actually nearest, so it
+                            // menaces the whole galaxy like Cyborg/Zoonester already do.
+                            let targetIsland = null, dist = Infinity, dx = 0, dy = 0;
+                            gameState.countries.forEach(country => {
+                                if (country.team === this.team) return;
+                                const ddx = country.island.x - unit.x;
+                                const ddy = country.island.y - unit.y;
+                                const d = Math.sqrt(ddx * ddx + ddy * ddy);
+                                if (d < dist) { dist = d; targetIsland = country.island; dx = ddx; dy = ddy; }
+                            });
+
+                            if (targetIsland) {
                                 if (dist < 800) {
                                     const angle = Math.atan2(dy, dx) + Math.PI / 4;
-                                    const targetX = playerCountry.island.x + Math.cos(angle) * 600;
-                                    const targetY = playerCountry.island.y + Math.sin(angle) * 600;
+                                    const targetX = targetIsland.x + Math.cos(angle) * 600;
+                                    const targetY = targetIsland.y + Math.sin(angle) * 600;
                                     unit.moveTo(targetX, targetY);
                                 } else {
-                                    const approach = huntApproachPosition(playerCountry.island);
+                                    const approach = huntApproachPosition(targetIsland);
                                     unit.moveTo(approach.x, approach.y);
                                 }
-                                
+
                                 unit.turnsSinceLastMine++;
                                 if (unit.turnsSinceLastMine >= 3 && dist < 1000) {
                                     unit.turnsSinceLastMine = 0;
@@ -2700,6 +2743,7 @@
             cyborgPlanets.forEach(planet => {
                 const island = new Island(planet.x, planet.y, planet.id);
                 island.size = 350 * PLANET_SCALE;
+                island.collisionSize = 350;
                 const country = new Country(planet.id, planet.name, '#00ffff', island, false);
                 gameState.countries.push(country);
             });
@@ -2708,6 +2752,7 @@
             const zoonesterY = centerY - 30000 - 10000;
             const zoonesterIsland = new Island(centerX, zoonesterY, 16);
             zoonesterIsland.size = 350 * PLANET_SCALE;
+            zoonesterIsland.collisionSize = 350;
             // planetImage is already set from ISLAND_IMAGES[16] by the Island constructor above -
             // don't overwrite it with a bare relative filename (that was 404ing and forcing the
             // brown fallback island shape).
@@ -2747,6 +2792,7 @@
                 const customY = centerY + customIsland.yOffset;
                 const island = new Island(customX, customY, nextCustomId);
                 island.size = (customIsland.size || 350) * PLANET_SCALE;
+                island.collisionSize = customIsland.size || 350;
                 
                 if (customIsland.imageUrl) {
                     island.planetImage = new Image();
@@ -2902,6 +2948,8 @@
 
         function buildUnit(type) {
             if (gameState.playerCountry.buildUnit(type)) {
+                lifetimeStats.unitsBuilt++;
+                saveLifetimeStats();
                 updateUI();
             } else {
                 alert('Not enough resources!');
@@ -3045,7 +3093,10 @@
                 cargohauler.cargo.forEach(groundUnit => {
                     groundUnit.isInHarbor = false;
                     const angle = Math.random() * Math.PI * 2;
-                    const spawnDist = nearIsland.size * 0.7;
+                    // Ground units' own onIsland movement checks are gated by collisionSize,
+                    // not the (now bigger) visual size - landing them past collisionSize would
+                    // make them count as no longer on the planet at all.
+                    const spawnDist = nearIsland.collisionSize * 0.7;
                     groundUnit.x = nearIsland.x + Math.cos(angle) * spawnDist;
                     groundUnit.y = nearIsland.y + Math.sin(angle) * spawnDist;
                     groundUnit.targetX = groundUnit.x;
@@ -3097,11 +3148,28 @@
                     c.aiTurn();
                 }
             });
-            
+
+            // Lifetime stats: tally the player's own losses before they're pruned below,
+            // and note any enemy nation that's now fully destroyed (eliminatedCounted keeps
+            // this to exactly once per nation per game, not once per turn it stays dead).
+            if (gameState.playerCountry) {
+                const diedCount = gameState.playerCountry.units.filter(u => u.hp <= 0).length;
+                if (diedCount > 0) lifetimeStats.unitsLost += diedCount;
+            }
+            gameState.countries.forEach(c => {
+                if (!c.isPlayer && !c.eliminatedCounted && c.island.buildings.every(b => b.destroyed)) {
+                    c.eliminatedCounted = true;
+                    lifetimeStats.nationsEliminated++;
+                }
+            });
+            lifetimeStats.totalTurnsPlayed++;
+            if (gameState.turn > lifetimeStats.highestTurn) lifetimeStats.highestTurn = gameState.turn;
+            saveLifetimeStats();
+
             gameState.countries.forEach(c => {
                 c.units = c.units.filter(u => u.hp > 0);
             });
-            
+
             checkGameOver();
             updateUI();
             if (!gameState.paused) autoSaveGame();
@@ -3145,6 +3213,18 @@
         function showGameOver(victory, message) {
             gameState.paused = true;
             clearAutosave(); // don't offer "Continue" into a game that's already over
+
+            // A campaign win is never routed here (checkGameOver() calls
+            // showCampaignStageComplete() instead), so the only campaign case reaching this
+            // function is a stage loss - keep that out of the Standard Game counters.
+            if (gameState.campaignActive) {
+                if (!victory) lifetimeStats.campaign.stagesFailed++;
+            } else {
+                lifetimeStats.standard.gamesPlayed++;
+                if (victory) lifetimeStats.standard.gamesWon++;
+                else lifetimeStats.standard.gamesLost++;
+            }
+            saveLifetimeStats();
             const screen = document.getElementById('gameOverScreen');
             const title = document.getElementById('gameOverTitle');
             const msg = document.getElementById('gameOverMessage');
@@ -3171,6 +3251,70 @@
             }
 
             screen.style.display = 'block';
+        }
+
+        // Lifetime player stats, tracked separately from the autosave/campaign-progress
+        // saves above so they survive starting new games and never get wiped by "New Game".
+        // Every counter is only ever touched from one already-centralized place (buildUnit's
+        // global wrapper, nextTurn, showGameOver, showCampaignStageComplete) so there's no
+        // risk of double-counting or missing a scattered call site.
+        const STATS_KEY = 'universeGameStats';
+        let lifetimeStats = {
+            standard: { gamesPlayed: 0, gamesWon: 0, gamesLost: 0 },
+            campaign: { stagesCleared: 0, stagesFailed: 0, campaignsCompleted: 0 },
+            unitsBuilt: 0,
+            unitsLost: 0,
+            nationsEliminated: 0,
+            totalTurnsPlayed: 0,
+            highestTurn: 0
+        };
+
+        function loadLifetimeStats() {
+            try {
+                const raw = localStorage.getItem(STATS_KEY);
+                if (!raw) return;
+                const parsed = JSON.parse(raw);
+                // Merge onto the defaults so a stats file saved before a field existed
+                // doesn't leave that field undefined.
+                lifetimeStats.standard = Object.assign({}, lifetimeStats.standard, parsed.standard);
+                lifetimeStats.campaign = Object.assign({}, lifetimeStats.campaign, parsed.campaign);
+                lifetimeStats.unitsBuilt = parsed.unitsBuilt || 0;
+                lifetimeStats.unitsLost = parsed.unitsLost || 0;
+                lifetimeStats.nationsEliminated = parsed.nationsEliminated || 0;
+                lifetimeStats.totalTurnsPlayed = parsed.totalTurnsPlayed || 0;
+                lifetimeStats.highestTurn = parsed.highestTurn || 0;
+            } catch (e) { /* corrupted or unavailable - start fresh */ }
+        }
+
+        function saveLifetimeStats() {
+            try { localStorage.setItem(STATS_KEY, JSON.stringify(lifetimeStats)); } catch (e) { /* best-effort */ }
+        }
+
+        function openStatsScreen() {
+            const s = lifetimeStats;
+            const winPct = s.standard.gamesPlayed > 0 ? Math.round(100 * s.standard.gamesWon / s.standard.gamesPlayed) : 0;
+            document.getElementById('statsContent').innerHTML = `
+                <h3 style="color:#ffff00; margin-bottom:8px;">🌌 Standard Game</h3>
+                <div>Games Played: ${s.standard.gamesPlayed}</div>
+                <div>Games Won: ${s.standard.gamesWon}</div>
+                <div>Games Lost: ${s.standard.gamesLost}</div>
+                <div>Win Rate: ${winPct}%</div>
+                <h3 style="color:#ffff00; margin:16px 0 8px;">🎖️ Campaign Mode</h3>
+                <div>Stages Cleared: ${s.campaign.stagesCleared}</div>
+                <div>Stages Failed: ${s.campaign.stagesFailed}</div>
+                <div>Campaigns Completed: ${s.campaign.campaignsCompleted}</div>
+                <h3 style="color:#ffff00; margin:16px 0 8px;">⚔️ Overall</h3>
+                <div>Units Built: ${s.unitsBuilt}</div>
+                <div>Units Lost: ${s.unitsLost}</div>
+                <div>Enemy Nations Eliminated: ${s.nationsEliminated}</div>
+                <div>Total Turns Played: ${s.totalTurnsPlayed}</div>
+                <div>Highest Turn Reached: ${s.highestTurn}</div>
+            `;
+            document.getElementById('statsScreen').style.display = 'block';
+        }
+
+        function closeStatsScreen() {
+            document.getElementById('statsScreen').style.display = 'none';
         }
 
         const AUTOSAVE_KEY = 'universeGameAutosave';
@@ -3542,6 +3686,7 @@
                     const pos = campaignAlienPosition(obj.id);
                     island = new Island(pos.x, pos.y, obj.id);
                     island.size = 350 * PLANET_SCALE;
+                    island.collisionSize = 350;
                     const color = obj.id === 16 ? '#9d00ff' : '#00ffff';
                     country = new Country(obj.id, campaignCountryName(obj.id), color, island, false);
                     if (country.isZoonester) country.zoonesterTurnCounter = 0;
@@ -3551,6 +3696,7 @@
                     ISLAND_STRUCTURES[obj.id] = ['Outpost Command', 'Sentry Post', 'Harbor', 'Marine Base', 'War Factory', 'Defense Gun'];
                     island = new Island(pos.x, pos.y, obj.id);
                     island.size = 220 * PLANET_SCALE;
+                    island.collisionSize = 220;
                     const art = CUSTOM_ISLANDS[1 + (obj.outpostIdx % (CUSTOM_ISLANDS.length - 1))];
                     if (art && art.imageUrl) {
                         island.planetImage = new Image();
@@ -3578,6 +3724,7 @@
             document.getElementById('campaignStageScreen').style.display = 'none';
             document.getElementById('gameOverScreen').style.display = 'none';
 
+            startMusic();
             createSpaceElements();
             updateUI();
             gameLoop();
@@ -3588,6 +3735,10 @@
             clearAutosave();
             const nextIndex = gameState.campaignStageIndex + 1;
             saveCampaignProgress(nextIndex);
+
+            lifetimeStats.campaign.stagesCleared++;
+            if (nextIndex >= gameState.campaignStages.length) lifetimeStats.campaign.campaignsCompleted++;
+            saveLifetimeStats();
 
             const titleEl = document.getElementById('campaignStageTitle');
             const briefEl = document.getElementById('campaignStageBriefing');
@@ -3808,7 +3959,7 @@
             gameState.countries.forEach(country => {
                 country.units.forEach(unit => {
                     // Only these three units have radar detection and pulses
-                    const hasRadar = (unit.type === 'radar' || unit.type === 'skyfortress' || unit.type === 'cyborgdreadnought');
+                    const hasRadar = hasRadarDetection(unit);
                     
                     if (hasRadar) {
                         if (!unit.radarPulse) {
@@ -4698,6 +4849,7 @@
             }
         }
 
+        loadLifetimeStats();
         initGame();
         pollLoadingScreen(Date.now());
     </script>
