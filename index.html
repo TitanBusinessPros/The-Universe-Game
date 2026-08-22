@@ -1383,6 +1383,14 @@
                 this.name = name;
                 this.x = x;
                 this.y = y;
+                // Fixed offset from the planet's center, before rotation. Island.draw()
+                // rewrites this.x/this.y every frame from these + the planet's current
+                // spin, so the building visibly orbits with the planet - and because
+                // every other system (click detection, attack targeting, the harbor
+                // lookup) reads this.x/this.y fresh at the moment it needs them, they
+                // all automatically track the building's real current position.
+                this.baseX = x;
+                this.baseY = y;
                 this.hp = isDefenseGun ? 20 : 5;
                 this.maxHp = isDefenseGun ? 20 : 5;
                 this.destroyed = false;
@@ -1506,6 +1514,16 @@
             draw() {
                 this.rotationAngle += this.rotationSpeed;
 
+                // Buildings orbit the planet's center in lockstep with its spin - same
+                // angle that rotates the body below. Recomputed every frame from each
+                // building's fixed baseX/baseY, so this is the only place the rotation
+                // math lives; everywhere else just reads building.x/building.y.
+                const cosA = Math.cos(this.rotationAngle), sinA = Math.sin(this.rotationAngle);
+                this.buildings.forEach(b => {
+                    b.x = b.baseX * cosA - b.baseY * sinA;
+                    b.y = b.baseX * sinA + b.baseY * cosA;
+                });
+
                 ctx.save();
                 ctx.translate(this.x, this.y);
 
@@ -1549,6 +1567,14 @@
                     const structSprite = SPRITES[structSpriteKeys[idx]];
                     const size = structSizes[idx] || [20 * PLANET_SCALE, 20 * PLANET_SCALE];
 
+                    // Names only show on hover now (instead of being stamped on every
+                    // building all the time) - keeps the now-rotating, now-bigger planets
+                    // from turning into a wall of overlapping text.
+                    const buildingWorldX = this.x + building.x;
+                    const buildingWorldY = this.y + building.y;
+                    const hoverRadius = Math.max(size[0], size[1]);
+                    const isHovered = Math.hypot(mouseWorldX - buildingWorldX, mouseWorldY - buildingWorldY) < hoverRadius;
+
                     if (building.destroyed) {
                         ctx.globalAlpha = 0.35;
                         if (structSprite) {
@@ -1563,6 +1589,11 @@
                         ctx.font = 'bold 9px Courier New';
                         ctx.textAlign = 'center';
                         ctx.fillText('DESTROYED', building.x + size[0]/2, building.y - 3 * PLANET_SCALE);
+
+                        if (isHovered) {
+                            ctx.fillStyle = '#ffff00';
+                            ctx.fillText(building.name, building.x + size[0]/2, building.y - 15 * PLANET_SCALE);
+                        }
                     } else {
                         if (structSprite) {
                             ctx.drawImage(structSprite, building.x, building.y, size[0], size[1]);
@@ -1582,15 +1613,18 @@
                         ctx.fillStyle = '#00ff00';
                         ctx.fillRect(building.x, building.y - 8 * PLANET_SCALE, barWidth * hpPercent, 4);
 
-                        ctx.fillStyle = building.isHarbor ? '#00ffff' : (building.isDefenseGun ? '#ff0000' : '#ffff00');
-                        ctx.font = 'bold 9px Courier New';
-                        ctx.textAlign = 'center';
-                        ctx.fillText(building.name, building.x + size[0]/2, building.y - 15 * PLANET_SCALE);
+                        if (isHovered) {
+                            ctx.fillStyle = building.isHarbor ? '#00ffff' : (building.isDefenseGun ? '#ff0000' : '#ffff00');
+                            ctx.font = 'bold 9px Courier New';
+                            ctx.textAlign = 'center';
+                            ctx.fillText(building.name, building.x + size[0]/2, building.y - 15 * PLANET_SCALE);
+                        }
 
                         // Harbor/Defense Gun used to get an extra anchor/gun emoji stamped on
                         // top back when buildings were plain colored boxes - now that every
                         // building slot has real structure art, that emoji just clutters the
-                        // planet, so it's gone. The name label + color coding above is enough.
+                        // planet, so it's gone. The color coding above is enough at a glance;
+                        // the name itself is available on hover.
                     }
                 });
                 
