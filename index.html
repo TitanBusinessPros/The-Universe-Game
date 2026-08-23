@@ -1797,14 +1797,10 @@
             }
 
             canAttackUnit(target) {
-                if (['thunderwing', 'shadowglider'].includes(this.type) && ['blazefalcon', 'skyripper', 'vortexhawk', 'phantomstrike', 'razorwing'].includes(target.type)) {
-                    return false;
-                }
-                
                 if (this.isGroundUnit() && !target.isGroundUnit()) {
                     return false;
                 }
-                
+
                 return true;
             }
 
