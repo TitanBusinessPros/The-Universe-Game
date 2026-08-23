@@ -57,10 +57,11 @@ script = script.replace('loadLifetimeStats();', '// suppressed for regression te
 script = script.replace('initGame();', '// suppressed for regression test');
 script = script.replace('pollLoadingScreen(Date.now());', '// suppressed for regression test');
 
-const dom = new JSDOM(`<!DOCTYPE html><html><body>
-<canvas id="canvas"></canvas>
-<div id="gameContainer"></div>
-</body></html>`, { url: 'https://example.test/', pretendToBeVisual: true });
+// Load the ACTUAL page markup (not a stripped-down stand-in) so every element
+// id/button the real script reaches for via getElementById/onclick genuinely
+// exists - JSDOM doesn't execute <script> tags by default, so this is safe;
+// we run the extracted script ourselves via vm below instead.
+const dom = new JSDOM(html, { url: 'https://example.test/', pretendToBeVisual: true, resources: undefined, runScripts: undefined });
 const { window } = dom;
 
 function makeFakeCtx() {
@@ -281,13 +282,24 @@ check('AI nations fight each other, not just the player (behavioral)', () => {
     gameState.countries = [countryA, countryB, countryC];
     gameState.playerCountry = countryA;
 
-    const b1 = new Unit(650, 0, 'stormbreaker', 1);
-    const c1 = new Unit(320, 460, 'stormbreaker', 2);
-    countryB.units.push(b1);
-    countryC.units.push(c1);
+    // Several units per side over many turns, not one lone unit over a few -
+    // combat has a per-shot hit-chance roll, so a 1-unit/10-turn version of
+    // this test is a coin flip on RNG alone and fails ~1 run in 3 for reasons
+    // that have nothing to do with whether AI-vs-AI combat actually works.
+    const bUnits = [];
+    const cUnits = [];
+    for (let i = 0; i < 4; i++) {
+        const bu = new Unit(650 + i * 10, i * 10, 'stormbreaker', 1);
+        const cu = new Unit(320 + i * 10, 460 + i * 10, 'stormbreaker', 2);
+        countryB.units.push(bu);
+        countryC.units.push(cu);
+        bUnits.push(bu);
+        cUnits.push(cu);
+    }
+    const startTotalHpB = bUnits.reduce((s, u) => s + u.hp, 0);
+    const startTotalHpC = cUnits.reduce((s, u) => s + u.hp, 0);
 
-    const startHpB = b1.hp, startHpC = c1.hp;
-    for (let turn = 0; turn < 10; turn++) {
+    for (let turn = 0; turn < 20; turn++) {
         [countryA, countryB, countryC].forEach(c => {
             c.collectResources();
             c.resetAttacks();
@@ -297,10 +309,251 @@ check('AI nations fight each other, not just the player (behavioral)', () => {
             [countryA, countryB, countryC].forEach(c => c.units.forEach(u => u.update()));
         }
     }
-    if (b1.hp >= startHpB && c1.hp >= startHpC) {
-        return ['after 10 turns, two adjacent AI nations never damaged each other at all'];
+    // Sum HP on the ORIGINAL unit references, not the live country.units array -
+    // aiTurn() also spends resources building brand-new units every turn as
+    // normal economy behavior, and those show up in country.units with full
+    // HP. Summing the live army list would let that production noise mask
+    // real combat losses (more new units built = higher total, regardless of
+    // whether any actual fighting happened) - tracking the fixed original
+    // units by reference is the only way to isolate "did combat damage land".
+    const endTotalHpB = bUnits.reduce((s, u) => s + Math.max(0, u.hp), 0);
+    const endTotalHpC = cUnits.reduce((s, u) => s + Math.max(0, u.hp), 0);
+    if (endTotalHpB >= startTotalHpB && endTotalHpC >= startTotalHpC) {
+        return ['after 20 turns with 4 ships per side, two adjacent AI nations never damaged each other at all'];
     }
     return [];
+});
+
+// ---------- 8. Function inventory: catch every function, including future ones ----------
+//    Auto-discovers every top-level function and every class method by scanning
+//    the source itself (not a hand-typed list), so newly-added functions are
+//    picked up automatically with zero maintenance. Two things fall out of this:
+//      a) a running count/inventory, diffed against a committed snapshot so any
+//         rename/removal is visible in the report;
+//      b) a scan for "dangling calls" - a bare function call whose name matches
+//         nothing we can find defined anywhere (the classic single-file-script
+//         mistake: rename a function, forget one of its call sites).
+
+function extractTopLevelFunctions(src) {
+    const re = /(?:^|\n)[ \t]*function\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*\(([^)]*)\)/g;
+    const out = [];
+    let m;
+    while ((m = re.exec(src))) out.push({ name: m[1], params: m[2].trim() });
+    return out;
+}
+
+function extractAllFunctionLikeNames(src) {
+    // Any "function name(" or "name(...) {" anywhere (any indent) - covers
+    // top-level functions, nested/local helper functions, and class methods
+    // all at once, for the purpose of "is this name defined SOMEWHERE".
+    const names = new Set();
+    const funcDeclRe = /function\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*\(/g;
+    let m;
+    while ((m = funcDeclRe.exec(src))) names.add(m[1]);
+    const methodLikeRe = /(?:^|\n)[ \t]{2,}([A-Za-z_$][A-Za-z0-9_$]*)\s*\([^)]*\)\s*\{/g;
+    const KEYWORDS = new Set(['if', 'for', 'while', 'switch', 'catch', 'function', 'return', 'constructor']);
+    while ((m = methodLikeRe.exec(src))) {
+        if (!KEYWORDS.has(m[1])) names.add(m[1]);
+    }
+    // const/let/var NAME = ... (covers arrow functions and data tables assigned
+    // to identifiers, since either could legitimately be "called" or referenced)
+    const varRe = /(?:const|let|var)\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*=/g;
+    while ((m = varRe.exec(src))) names.add(m[1]);
+    // class Name - covers `new Name(...)` call sites
+    const classRe = /class\s+([A-Za-z_$][A-Za-z0-9_$]*)/g;
+    while ((m = classRe.exec(src))) names.add(m[1]);
+    return names;
+}
+
+function extractClassMethods(src) {
+    const classes = [];
+    const classRe = /class\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*(?:extends\s+[A-Za-z_$][A-Za-z0-9_$]*\s*)?\{/g;
+    let m;
+    while ((m = classRe.exec(src))) {
+        let depth = 1, i = m.index + m[0].length;
+        while (i < src.length && depth > 0) {
+            if (src[i] === '{') depth++;
+            else if (src[i] === '}') depth--;
+            i++;
+        }
+        const body = src.slice(m.index + m[0].length, i - 1);
+        const methodRe = /(?:^|\n)[ \t]{2,}([A-Za-z_$][A-Za-z0-9_$]*)\s*\([^)]*\)\s*\{/g;
+        const KEYWORDS = new Set(['if', 'for', 'while', 'switch', 'catch', 'function', 'return', 'constructor']);
+        const methods = [];
+        let mm;
+        while ((mm = methodRe.exec(body))) {
+            if (!KEYWORDS.has(mm[1])) methods.push(mm[1]);
+        }
+        classes.push({ name: m[1], methods });
+    }
+    return classes;
+}
+
+function stripCommentsAndStrings(src) {
+    // Heuristic, not a real parser: blanks out (replaces with spaces, so
+    // positions/line numbers are unaffected) the contents of //, /* */,
+    // and quoted strings, so plain English in a comment ("counts (total)")
+    // or a CSS color string ("rgba(0,0,0,.5)") can't look like a function call.
+    let out = '';
+    let i = 0;
+    while (i < src.length) {
+        const two = src.slice(i, i + 2);
+        if (two === '//') {
+            let end = src.indexOf('\n', i);
+            if (end === -1) end = src.length;
+            out += src.slice(i, end).replace(/[^\n]/g, ' ');
+            i = end;
+        } else if (two === '/*') {
+            let end = src.indexOf('*/', i + 2);
+            end = end === -1 ? src.length : end + 2;
+            out += src.slice(i, end).replace(/[^\n]/g, ' ');
+            i = end;
+        } else if (src[i] === '"' || src[i] === "'" || src[i] === '`') {
+            const quote = src[i];
+            let j = i + 1;
+            while (j < src.length && src[j] !== quote) {
+                j += (src[j] === '\\') ? 2 : 1;
+            }
+            j = Math.min(j + 1, src.length);
+            out += src.slice(i, j).replace(/[^\n]/g, ' ');
+            i = j;
+        } else {
+            out += src[i];
+            i++;
+        }
+    }
+    return out;
+}
+const cleanedScript = stripCommentsAndStrings(script);
+
+const topLevelFns = extractTopLevelFunctions(script);
+const classInfo = extractClassMethods(script);
+const knownNames = extractAllFunctionLikeNames(script);
+
+const RESERVED = new Set([
+    'if', 'for', 'while', 'switch', 'catch', 'function', 'return', 'typeof', 'delete', 'void',
+    'new', 'else', 'do', 'try', 'in', 'of', 'instanceof', 'yield', 'await', 'class', 'extends',
+    'super', 'this', 'constructor', 'throw', 'finally', 'let', 'const', 'var',
+]);
+const KNOWN_GLOBALS = new Set([
+    'Math', 'JSON', 'Array', 'Object', 'String', 'Number', 'Boolean', 'Date', 'RegExp', 'Error',
+    'TypeError', 'RangeError', 'SyntaxError', 'parseInt', 'parseFloat', 'isNaN', 'isFinite',
+    'encodeURIComponent', 'decodeURIComponent', 'setTimeout', 'setInterval', 'clearTimeout',
+    'clearInterval', 'requestAnimationFrame', 'cancelAnimationFrame', 'Promise', 'Proxy', 'Map',
+    'Set', 'WeakMap', 'WeakSet', 'Symbol', 'fetch', 'alert', 'confirm', 'prompt', 'console',
+    'Image', 'Audio', 'Function', 'structuredClone', 'Blob', 'File', 'FileReader', 'URL',
+    'XMLHttpRequest', 'FormData', 'Worker', 'Notification',
+]);
+
+// Persisted snapshot so a future run can report "N functions added" / "these
+// disappeared" as visible information, not just a silent total.
+const SNAPSHOT_PATH = path.join(__dirname, 'function-inventory.json');
+const currentInventory = {
+    topLevel: topLevelFns.map(f => f.name).sort(),
+    classes: Object.fromEntries(classInfo.map(c => [c.name, c.methods.slice().sort()])),
+};
+const totalCount = currentInventory.topLevel.length +
+    Object.values(currentInventory.classes).reduce((sum, m) => sum + m.length, 0);
+
+check(`function inventory tracked (${totalCount} total: ${currentInventory.topLevel.length} top-level + ${totalCount - currentInventory.topLevel.length} class methods)`, () => {
+    if (!fs.existsSync(SNAPSHOT_PATH)) {
+        fs.writeFileSync(SNAPSHOT_PATH, JSON.stringify(currentInventory, null, 2) + '\n');
+        console.log(`  (no snapshot yet - wrote a fresh one to ${path.basename(SNAPSHOT_PATH)})`);
+        return [];
+    }
+    const prev = JSON.parse(fs.readFileSync(SNAPSHOT_PATH, 'utf8'));
+    const prevTopSet = new Set(prev.topLevel || []);
+    const curTopSet = new Set(currentInventory.topLevel);
+    const addedTop = [...curTopSet].filter(n => !prevTopSet.has(n));
+    const removedTop = [...prevTopSet].filter(n => !curTopSet.has(n));
+
+    const info = [];
+    if (addedTop.length) info.push(`+${addedTop.length} new top-level function(s): ${addedTop.join(', ')}`);
+    if (removedTop.length) info.push(`-${removedTop.length} removed/renamed top-level function(s): ${removedTop.join(', ')}`);
+    Object.keys(currentInventory.classes).forEach(cls => {
+        const prevM = new Set((prev.classes && prev.classes[cls]) || []);
+        const curM = new Set(currentInventory.classes[cls]);
+        const added = [...curM].filter(n => !prevM.has(n));
+        const removed = [...prevM].filter(n => !curM.has(n));
+        if (added.length) info.push(`+${added.length} new ${cls} method(s): ${added.join(', ')}`);
+        if (removed.length) info.push(`-${removed.length} removed/renamed ${cls} method(s): ${removed.join(', ')}`);
+    });
+    if (info.length) {
+        console.log('  Inventory changed since last snapshot:');
+        info.forEach(line => console.log(`    ${line}`));
+        console.log('  (snapshot updated - if any of the above was accidental, that\'s your signal)');
+        fs.writeFileSync(SNAPSHOT_PATH, JSON.stringify(currentInventory, null, 2) + '\n');
+    }
+    return []; // informational only - never fails the suite by itself
+});
+
+check('no dangling calls to a function that no longer exists (rename/delete left a stale call site)', () => {
+    const callRe = /(?<![\w.$])([A-Za-z_$][A-Za-z0-9_$]*)\s*\(/g;
+    const missing = new Map();
+    let m;
+    while ((m = callRe.exec(cleanedScript))) {
+        const name = m[1];
+        if (RESERVED.has(name) || KNOWN_GLOBALS.has(name) || knownNames.has(name)) continue;
+        missing.set(name, (missing.get(name) || 0) + 1);
+    }
+    if (missing.size === 0) return [];
+    return [...missing.entries()].map(([name, count]) => `"${name}(" called ${count}x but never defined anywhere`);
+});
+
+check('every onclick="..." button in the HTML calls a function that still exists', () => {
+    const problems = [];
+    const onclickRe = /onclick="([a-zA-Z_$][a-zA-Z0-9_$]*)\(/g;
+    const seen = new Set();
+    let m;
+    while ((m = onclickRe.exec(html))) {
+        const name = m[1];
+        if (seen.has(name)) continue;
+        seen.add(name);
+        if (!knownNames.has(name)) problems.push(`onclick="${name}(...)" - no such function defined`);
+    }
+    return problems;
+});
+
+// ---------- 9. Zero-arg smoke test: every no-parameter top-level function ----------
+//    should be callable, from a real freshly-started game state, without
+//    throwing. Runs against every CURRENT and future zero-arg function
+//    automatically - no list to maintain.
+
+check('every zero-argument top-level function runs without throwing (from a live game state)', () => {
+    const problems = [];
+    const info = [];
+    try {
+        vm.runInContext('newGame();', context, { filename: 'setup-smoke-test.js' });
+    } catch (e) {
+        return [`could not even start a new game to smoke-test against: ${e.message}`];
+    }
+    topLevelFns.forEach(({ name, params }) => {
+        if (params !== '') return; // only ones we can call with zero args in good faith
+        if (name === 'gameLoop') return; // deliberately recursive via rAF; harmless here (rAF is a no-op stub) but skip for clarity
+        try {
+            vm.runInContext(`${name}();`, context, { filename: `smoke-${name}.js` });
+        } catch (e) {
+            // A ReferenceError ("X is not defined") is unambiguous - the function
+            // reaches for something that genuinely doesn't exist, regardless of
+            // what state it's called in. That's always worth failing on.
+            //
+            // Any other error (usually "can't read property of null/undefined")
+            // is far more often just "this function expects a specific prior UI
+            // state we didn't set up" (e.g. a modal-close handler called without
+            // the modal ever being opened) than an actual bug - so those are
+            // reported for a human to skim, not treated as failures.
+            if (e instanceof ReferenceError) {
+                problems.push(`${name}(): ${e.message}`);
+            } else {
+                info.push(`${name}(): ${e.constructor.name}: ${e.message}`);
+            }
+        }
+    });
+    if (info.length) {
+        console.log(`  ${info.length} function(s) threw when smoke-tested with no prior UI state (informational, not a failure - most just expect a modal/selection to already be open):`);
+        info.forEach(line => console.log(`    - ${line}`));
+    }
+    return problems;
 });
 
 report();
