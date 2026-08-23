@@ -1,0 +1,12 @@
+{
+  "name": "after-earth-regression-tests",
+  "version": "1.0.0",
+  "description": "Headless regression tests for the After Earth game (see README.md)",
+  "private": true,
+  "scripts": {
+    "test": "node regression-test.js ../index.html"
+  },
+  "dependencies": {
+    "jsdom": "^29.1.1"
+  }
+}
