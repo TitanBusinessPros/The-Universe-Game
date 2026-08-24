@@ -79,6 +79,54 @@ jobs:
         working-directory: tests/browser
         run: node interaction-test.js ../../index.html --engines=chromium,firefox,webkit
 
+  balance-simulation-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install test dependencies
+        working-directory: tests/balance
+        run: npm install
+
+      # Cheap (1 run, 10 turns) - this only exists to catch the simulation
+      # ITSELF crashing (a real bug), on every push. The real statistical
+      # report (many runs, all difficulties) is manual - see the
+      # balance-report job and tests/README.md - since it takes several
+      # minutes and its output is a report to read, not a pass/fail signal.
+      - name: Smoke-test the balance simulation against index.html
+        working-directory: tests/balance
+        run: npm test
+
+  # A full statistical report, not a correctness gate - see tests/README.md.
+  # Manual only: it takes several minutes, and "nation X wins slightly more
+  # often" is a finding for a human to read and weigh, not something that
+  # should block every push. Trigger from the Actions tab (workflow_dispatch)
+  # or run tests/balance's "report" npm script locally; the results print to
+  # the job log (and the workflow summary) rather than being committed
+  # anywhere, since there's no single "correct" baseline for a balance report
+  # the way there is for the visual suite.
+  balance-report:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install test dependencies
+        working-directory: tests/balance
+        run: npm install
+
+      - name: Run full balance report
+        working-directory: tests/balance
+        run: npm run report | tee "$GITHUB_STEP_SUMMARY"
+
   # Regenerating the baseline is a manual, deliberate action (see
   # tests/README.md) - it must never run automatically on every push, or a
   # real visual regression would just get silently "fixed" into the

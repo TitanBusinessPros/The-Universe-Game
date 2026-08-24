@@ -85,3 +85,43 @@ node interaction-test.js ../../index.html --engines=chromium,firefox,webkit
 ```
 
 Both run automatically in CI (see `.github/workflows/regression-tests.yml`).
+
+## Balance simulation (`balance/`)
+
+Every other suite answers "does this work correctly" - this one answers a
+genuinely different question: "is it *fair*". A nation quietly having a
+much easier or harder time than the others isn't a crash or a broken
+function, so nothing above would ever catch it; it only shows up
+statistically, across many games.
+
+`balance/balance-simulation.js` runs many full AI-vs-AI games (every
+nation/faction played by the AI, no player advantage) to a turn cap, using
+each nation's own real id/bonuses/units/AI logic exactly as a real game
+would, and reports survival rate, average elimination turn, and average
+remaining strength per nation/faction.
+
+One deliberate departure from a real game: the real galaxy spaces nations
+12,000-50,000 units apart (fine for a long human-paced game, but measured
+directly - even 90 simulated turns of travel time left every nation
+undefeated, which would make a useful report take hours to generate). Since
+what's actually being measured is each nation's own stats and behavior
+relative to the others, not how far apart their homeworlds happen to be,
+every island gets repositioned onto a single tight ring first (real ids,
+bonuses, buildings, and units all untouched) - and *who sits next to whom*
+on that ring is reshuffled every run, so a nation's results reflect its own
+balance, not which neighbor it happened to get seated next to.
+
+```
+cd tests/balance
+npm install
+node balance-simulation.js ../../index.html --runs=15 --turns=40 --frames=800 --difficulties=easy,normal,hard
+# or: npm run report   (same thing)
+```
+
+This is a report to READ, not a pass/fail gate - "Nation X wins a bit more
+often than average" is a finding for a human to weigh, not something with
+an objectively correct target. It only fails (exit code 1) if a run
+actually crashes, which is a real bug. A cheap 1-run smoke version of it
+runs automatically in CI on every push, purely to catch that; the full
+15-run report is manual (`workflow_dispatch`, or `npm run report` locally)
+since it takes several minutes.
