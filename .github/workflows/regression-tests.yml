@@ -58,18 +58,14 @@ jobs:
             tests/visual/baseline/*-diff.png
           if-no-files-found: ignore
 
-  # One-time bootstrap: the baseline PNGs were originally generated on a
-  # Windows machine, and Ubuntu's Chromium substitutes different fonts for
-  # generic font-family names (no "Arial" installed), which is enough to
-  # fail the pixel diff on text alone even with nothing actually wrong. The
-  # fix is to generate the baseline from the SAME environment that checks
-  # it - this job runs the visual test in --update mode right here in CI and
-  # commits the result back to the repo, using the workflow's own token.
-  #
-  # This is a bootstrap step, not something that should run on every push -
-  # remove the "push" trigger below (or delete this job) once the baseline
-  # is confirmed correct and visual-test is passing normally.
+  # Regenerating the baseline is a manual, deliberate action (see
+  # tests/visual/README notes) - it must never run automatically on every
+  # push, or a real visual regression would just get silently "fixed" into
+  # the baseline instead of failing. Trigger this by hand from the Actions
+  # tab (workflow_dispatch) only when you've confirmed by eye that the new
+  # screenshots are actually correct.
   bootstrap-visual-baseline:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: write
