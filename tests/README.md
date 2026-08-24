@@ -114,7 +114,7 @@ balance, not which neighbor it happened to get seated next to.
 ```
 cd tests/balance
 npm install
-node balance-simulation.js ../../index.html --runs=15 --turns=40 --frames=800 --difficulties=easy,normal,hard
+node balance-simulation.js ../../index.html --runs=30 --turns=40 --frames=800 --difficulties=easy,normal,hard
 # or: npm run report   (same thing)
 ```
 
@@ -123,5 +123,13 @@ often than average" is a finding for a human to weigh, not something with
 an objectively correct target. It only fails (exit code 1) if a run
 actually crashes, which is a real bug. A cheap 1-run smoke version of it
 runs automatically in CI on every push, purely to catch that; the full
-15-run report is manual (`workflow_dispatch`, or `npm run report` locally)
-since it takes several minutes.
+report is manual (`workflow_dispatch`, or `npm run report` locally) since
+it takes a while.
+
+**On sample size - measured, not guessed:** an early 15-run report flagged
+4 nations as clearly underperforming on Hard. A second, independent
+15-run batch flagged an almost entirely different set - including Russia,
+which the first batch showed as the single strongest nation. Bumping to
+60 runs settled it: every regular nation lands in a tight 82-92% band with
+no real outliers. Don't trust a single report under ~30 runs per
+difficulty; the script itself warns when you go below that.

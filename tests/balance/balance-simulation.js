@@ -13,12 +13,22 @@
  * whether a fight was FUN (that part still needs a human).
  *
  * Usage:
- *   node balance-simulation.js "<path-to-index.html>" [--runs=10] [--turns=40] [--difficulties=easy,normal,hard]
+ *   node balance-simulation.js "<path-to-index.html>" [--runs=30] [--turns=40] [--difficulties=easy,normal,hard]
  *
  * Exits 1 only if a run actually crashed (a real bug, not a balance
  * finding) - the balance numbers themselves are printed as a report, not a
  * pass/fail gate, since "nation X wins slightly more often" is something
  * for a human to weigh, not something with an objectively correct answer.
+ *
+ * ON SAMPLE SIZE - measured, not assumed: two independent 15-run Hard
+ * batches produced CONTRADICTORY outlier lists (one flagged Russia as the
+ * strongest nation at 100%; the very next batch put Russia at 73%, among
+ * the weakest, with nothing about Russia's own numbers having changed).
+ * Bumping to 60 runs collapsed the entire regular-nation roster into a
+ * tight, unremarkable 82-92% band with no outliers at all. Fewer than
+ * ~30 runs is a quick smoke check, not a finding - don't treat a single
+ * low-run batch's outlier list as real without at least that much
+ * confirmation, and ideally the 60+ used to actually settle this once.
  */
 const fs = require('fs');
 const path = require('path');
@@ -26,7 +36,7 @@ const vm = require('vm');
 const { JSDOM } = require('jsdom');
 
 const GAME_PATH = process.argv[2];
-const RUNS = parseInt((process.argv.find(a => a.startsWith('--runs=')) || '').split('=')[1]) || 10;
+const RUNS = parseInt((process.argv.find(a => a.startsWith('--runs=')) || '').split('=')[1]) || 30;
 const TURNS = parseInt((process.argv.find(a => a.startsWith('--turns=')) || '').split('=')[1]) || 40;
 const FRAMES_PER_TURN = parseInt((process.argv.find(a => a.startsWith('--frames=')) || '').split('=')[1]) || 600;
 const DIFFICULTIES = ((process.argv.find(a => a.startsWith('--difficulties=')) || '').split('=')[1] || 'easy,normal,hard').split(',');
@@ -261,14 +271,19 @@ function main() {
             specialRows.forEach(r => printRow(r.name, r.survivalPct, r.avgElimTurn, r.avgFinalUnits, r.avgBuildingsAlivePct));
         }
 
-        if (nationRows.length > 1) {
+        if (nationRows.length > 1 && RUNS < 30) {
+            console.log('  (spread analysis skipped - need --runs=30+ for this to mean anything; see the note at the end of this report)');
+        } else if (nationRows.length > 1) {
             const survivalVals = nationRows.map(r => Number(r.survivalPct));
             const mean = survivalVals.reduce((a, b) => a + b, 0) / survivalVals.length;
             const spread = Math.max(...survivalVals) - Math.min(...survivalVals);
-            // Threshold calibrated against a real 15-run/difficulty report: a
-            // 33-point spread (Hard: China 67% vs Russia/Italy 100%) is a
-            // real pattern worth a human's attention, not noise - 40 missed
-            // it entirely.
+            // Threshold calibrated against a real 60-run/difficulty report: a
+            // properly-balanced roster naturally spreads about 10 points
+            // (82-92% observed) even with nothing wrong - a 15-run report
+            // showing 33 points turned out to be mostly noise (confirmed by a
+            // second independent 15-run batch flipping which nations looked
+            // like outliers entirely). 25 leaves real room above the natural
+            // ~10-point floor without re-triggering on that same noise.
             if (spread >= 25) {
                 console.log(`  ⚠ notable spread: survival ranges from ${Math.min(...survivalVals)}% to ${Math.max(...survivalVals)}% (mean ${mean.toFixed(0)}%)`);
                 const laggards = nationRows.filter(r => mean - Number(r.survivalPct) >= 15);
@@ -279,7 +294,10 @@ function main() {
         }
     });
 
-    console.log(`\n(Sample size is ${RUNS} run(s) per difficulty - treat this as a signal to investigate, not a verdict. Re-run with a higher --runs for more confidence.)`);
+    const confidenceNote = RUNS < 30
+        ? `⚠ ${RUNS} run(s) per difficulty is a quick smoke check, not a reliable read - two independent 15-run batches produced opposite outlier lists during development. Re-run with --runs=60+ before treating any single nation's number here as a finding.`
+        : `Sample size is ${RUNS} run(s) per difficulty. Even at this size, treat outliers as a signal to investigate rather than a certainty - re-run to confirm before changing anything based on a single report.`;
+    console.log(`\n${confidenceNote}`);
 
     if (crashes > 0) {
         console.log(`\n❌ ${crashes} run(s) crashed - that's a real bug, not a balance finding.`);

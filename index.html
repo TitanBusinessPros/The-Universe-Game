@@ -1026,16 +1026,25 @@
 
         const COUNTRY_BONUSES = {
             0: {
+                // Balance pass (2026-08-24): wavecrusher had an HP bonus but no
+                // attack payoff, and nothing helped USA respond quickly - see
+                // tests/balance/ for the survival-rate finding this addresses.
                 hpMultiplier: { 'skyfortress': 1.3, 'stormbreaker': 1.2, 'wavecrusher': 1.2 },
-                attackMultiplier: { 'skyfortress': 1.1, 'stormbreaker': 1.2 },
-                speedMultiplier: {},
+                attackMultiplier: { 'skyfortress': 1.1, 'stormbreaker': 1.2, 'wavecrusher': 1.15 },
+                speedMultiplier: { 'stormbreaker': 1.15 },
                 rangeMultiplier: { 'stormbreaker': 1.2 }
             },
             1: {
-                hpMultiplier: { 'blazefalcon': 1.2 },
-                attackMultiplier: { 'blazefalcon': 1.1, 'thunderwing': 1.1 },
+                // Balance pass (2026-08-24): every bonus was offense/speed only,
+                // nothing gave China's fighters the durability to survive an
+                // actual fight - lowest Hard-mode survival rate in the roster.
+                // Thunderwing already has real range/HP on its own; giving it a
+                // matching HP+range bonus turns it into an actual home-defense
+                // asset instead of just a hit-and-run raider.
+                hpMultiplier: { 'blazefalcon': 1.25, 'thunderwing': 1.3 },
+                attackMultiplier: { 'blazefalcon': 1.15, 'thunderwing': 1.2 },
                 speedMultiplier: { 'blazefalcon': 1.5, 'thunderwing': 1.3 },
-                rangeMultiplier: {}
+                rangeMultiplier: { 'thunderwing': 1.15 }
             },
             2: {
                 hpMultiplier: { 'ironbeast': 1.4, 'boomcannon': 1.3, 'groundpounders': 1.2 },
@@ -1068,16 +1077,29 @@
                 rangeMultiplier: { 'deepglider': 1.2 }
             },
             7: {
-                hpMultiplier: { 'groundpounders': 1.1 },
-                attackMultiplier: { 'groundpounders': 1.2, 'boomcannon': 1.2 },
+                // Balance pass (2026-08-24): every bonus here was on ground
+                // units - but ground units can never attack a non-ground unit
+                // (see Unit.canAttackUnit()), so none of it could ever help
+                // fend off the ships/aircraft that actually besiege a
+                // homeworld. Added a real naval component so India has
+                // something capable of intercepting an incoming fleet at all,
+                // while keeping the ground-invasion flavor intact.
+                hpMultiplier: { 'groundpounders': 1.15, 'ironbeast': 1.25, 'stormbreaker': 1.2 },
+                attackMultiplier: { 'groundpounders': 1.2, 'boomcannon': 1.25, 'stormbreaker': 1.15 },
                 speedMultiplier: { 'groundpounders': 1.2 },
-                rangeMultiplier: {}
+                rangeMultiplier: { 'stormbreaker': 1.15 }
             },
             8: {
-                hpMultiplier: { 'stormbreaker': 1.1, 'blazefalcon': 1.1, 'groundpounders': 1.1 },
-                attackMultiplier: {},
-                speedMultiplier: {},
-                rangeMultiplier: {}
+                // Balance pass (2026-08-24): this was the thinnest bonus
+                // package in the roster - small HP-only bumps spread across
+                // 3 unit types, zero attack/speed/range bonus anywhere. Gave
+                // stormbreaker (already the HP-bumped pick, and a solid
+                // building-capable all-rounder) a real payoff across the
+                // board instead of just passive HP.
+                hpMultiplier: { 'stormbreaker': 1.15, 'blazefalcon': 1.15, 'groundpounders': 1.15 },
+                attackMultiplier: { 'stormbreaker': 1.2, 'blazefalcon': 1.15 },
+                speedMultiplier: { 'stormbreaker': 1.1 },
+                rangeMultiplier: { 'stormbreaker': 1.15 }
             },
             9: {
                 hpMultiplier: { 'wavecrusher': 1.3, 'stormbreaker': 1.2, 'groundpounders': 1.2 },
@@ -3507,7 +3529,14 @@
             addAll(b.attackMultiplier, 'ATK');
             addAll(b.speedMultiplier, 'speed');
             addAll(b.rangeMultiplier, 'range');
-            return perks.length ? perks.slice(0, 3) : ['Balanced - no standout bonuses.'];
+            // Was capped at 3 - fine when every nation had 3-5 total perks, but
+            // the 2026-08-24 balance pass gave some nations up to 8 (spread
+            // across HP/ATK/speed/range), and a hard 3-cap would silently hide
+            // real, active bonuses from the player choosing a country -
+            // including, for a couple of nations, the specific bonus that
+            // actually fixed their survival rate. Raised to 6, still well
+            // short of "every nation's card is a wall of text".
+            return perks.length ? perks.slice(0, 6) : ['Balanced - no standout bonuses.'];
         }
 
         // Uniform stacked lines (one <span> per perk) so every button's bonus text lines up on

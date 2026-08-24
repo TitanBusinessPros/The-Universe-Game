@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "test": "node balance-simulation.js ../../index.html --runs=1 --turns=10 --frames=200 --difficulties=normal",
-    "report": "node balance-simulation.js ../../index.html --runs=15 --turns=40 --frames=800 --difficulties=easy,normal,hard"
+    "report": "node balance-simulation.js ../../index.html --runs=30 --turns=40 --frames=800 --difficulties=easy,normal,hard"
   },
   "dependencies": {
     "jsdom": "^29.1.1"
