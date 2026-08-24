@@ -37,15 +37,15 @@ jobs:
           node-version: '20'
 
       - name: Install test dependencies
-        working-directory: tests/visual
+        working-directory: tests/browser
         run: npm install
 
-      - name: Install headless Chromium
-        working-directory: tests/visual
-        run: npx playwright install --with-deps chromium
+      - name: Install headless browsers (Chromium, Firefox, WebKit)
+        working-directory: tests/browser
+        run: npx playwright install --with-deps chromium firefox webkit
 
       - name: Run visual regression test suite against index.html
-        working-directory: tests/visual
+        working-directory: tests/browser
         run: node visual-test.js ../../index.html
 
       - name: Upload diff images on failure
@@ -54,15 +54,36 @@ jobs:
         with:
           name: visual-diff
           path: |
-            tests/visual/baseline/*-actual.png
-            tests/visual/baseline/*-diff.png
+            tests/browser/baseline/*/*-actual.png
+            tests/browser/baseline/*/*-diff.png
           if-no-files-found: ignore
 
+  interaction-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install test dependencies
+        working-directory: tests/browser
+        run: npm install
+
+      - name: Install headless browsers (Chromium, Firefox, WebKit)
+        working-directory: tests/browser
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - name: Run interaction regression test suite against index.html
+        working-directory: tests/browser
+        run: node interaction-test.js ../../index.html --engines=chromium,firefox,webkit
+
   # Regenerating the baseline is a manual, deliberate action (see
-  # tests/visual/README notes) - it must never run automatically on every
-  # push, or a real visual regression would just get silently "fixed" into
-  # the baseline instead of failing. Trigger this by hand from the Actions
-  # tab (workflow_dispatch) only when you've confirmed by eye that the new
+  # tests/README.md) - it must never run automatically on every push, or a
+  # real visual regression would just get silently "fixed" into the
+  # baseline instead of failing. Trigger this by hand from the Actions tab
+  # (workflow_dispatch) only when you've confirmed by eye that the new
   # screenshots are actually correct.
   bootstrap-visual-baseline:
     if: github.event_name == 'workflow_dispatch'
@@ -77,22 +98,22 @@ jobs:
           node-version: '20'
 
       - name: Install test dependencies
-        working-directory: tests/visual
+        working-directory: tests/browser
         run: npm install
 
-      - name: Install headless Chromium
-        working-directory: tests/visual
-        run: npx playwright install --with-deps chromium
+      - name: Install headless browsers (Chromium, Firefox, WebKit)
+        working-directory: tests/browser
+        run: npx playwright install --with-deps chromium firefox webkit
 
-      - name: Regenerate baseline from this exact CI environment
-        working-directory: tests/visual
+      - name: Regenerate baseline (all engines) from this exact CI environment
+        working-directory: tests/browser
         run: node visual-test.js ../../index.html --update
 
       - name: Commit updated baseline
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add tests/visual/baseline
+          git add tests/browser/baseline
           if git diff --cached --quiet; then
             echo "Baseline already matches this environment - nothing to commit."
           else
