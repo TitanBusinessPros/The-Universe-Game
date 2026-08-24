@@ -26,3 +26,34 @@ jobs:
       - name: Run regression test suite against index.html
         working-directory: tests
         run: node regression-test.js ../index.html
+
+  visual-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install test dependencies
+        working-directory: tests/visual
+        run: npm install
+
+      - name: Install headless Chromium
+        working-directory: tests/visual
+        run: npx playwright install --with-deps chromium
+
+      - name: Run visual regression test suite against index.html
+        working-directory: tests/visual
+        run: node visual-test.js ../../index.html
+
+      - name: Upload diff images on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-diff
+          path: |
+            tests/visual/baseline/*-actual.png
+            tests/visual/baseline/*-diff.png
+          if-no-files-found: ignore
