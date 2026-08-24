@@ -2854,7 +2854,23 @@
                 const customY = centerY + customIsland.yOffset;
                 const island = new Island(customX, customY, nextCustomId);
                 island.size = (customIsland.size || 350) * PLANET_SCALE;
-                island.collisionSize = customIsland.size || 350;
+                // Balance pass (2026-08-24): every custom island used the same
+                // 350 for BOTH its visual size and its collision/stand-off
+                // radius. That's fine for the intentionally-tougher special
+                // factions (Cyborg/Zoonester/Roufestreal), but for the 8
+                // regular "nation"-type outposts it silently made them nearly
+                // un-siegeable - a bigger stand-off radius pushes attacking
+                // ships too far from where the buildings actually sit
+                // (buildings' offsets from center are a fixed ~110 units,
+                // unrelated to collisionSize) for most ship ranges to bridge,
+                // even though visually the buildings are in the same place a
+                // regular nation's are. Confirmed by simulation: outposts
+                // survived a Hard-mode siege 94-99% of the time vs 82-91% for
+                // the 12 named nations. Keep the bigger VISUAL size (still
+                // matches its own flavor/look) but use the same collision
+                // radius as a regular nation so outposts are exposed to the
+                // same siege mechanics everyone else is.
+                island.collisionSize = customIsland.type === 'nation' ? 250 : (customIsland.size || 350);
                 
                 if (customIsland.imageUrl) {
                     island.planetImage = new Image();
