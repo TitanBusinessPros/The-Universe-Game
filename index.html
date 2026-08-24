@@ -1026,12 +1026,18 @@
 
         const COUNTRY_BONUSES = {
             0: {
-                // Balance pass (2026-08-24): wavecrusher had an HP bonus but no
-                // attack payoff, and nothing helped USA respond quickly - see
-                // tests/balance/ for the survival-rate finding this addresses.
+                // Balance pass (2026-08-24, round 2): a 30-run report (up from
+                // the earlier 15) showed USA as the one real outlier left after
+                // fixing China/India/Brazil - 67% survival on Hard, backed by
+                // 10 actual eliminations (the largest sample in that report, so
+                // not just noise). Skyfortress carries USA's biggest HP/attack
+                // bonus but has the shortest base range in the game (100) and
+                // no speed bonus at all - its best unit may simply be too slow
+                // to intercept a raid before buildings take damage. Added a
+                // speed bonus to it; kept everything else as-is.
                 hpMultiplier: { 'skyfortress': 1.3, 'stormbreaker': 1.2, 'wavecrusher': 1.2 },
                 attackMultiplier: { 'skyfortress': 1.1, 'stormbreaker': 1.2, 'wavecrusher': 1.15 },
-                speedMultiplier: { 'stormbreaker': 1.15 },
+                speedMultiplier: { 'stormbreaker': 1.15, 'skyfortress': 1.2 },
                 rangeMultiplier: { 'stormbreaker': 1.2 }
             },
             1: {
