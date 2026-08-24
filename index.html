@@ -3535,14 +3535,13 @@
             addAll(b.attackMultiplier, 'ATK');
             addAll(b.speedMultiplier, 'speed');
             addAll(b.rangeMultiplier, 'range');
-            // Was capped at 3 - fine when every nation had 3-5 total perks, but
-            // the 2026-08-24 balance pass gave some nations up to 8 (spread
-            // across HP/ATK/speed/range), and a hard 3-cap would silently hide
-            // real, active bonuses from the player choosing a country -
-            // including, for a couple of nations, the specific bonus that
-            // actually fixed their survival rate. Raised to 6, still well
-            // short of "every nation's card is a wall of text".
-            return perks.length ? perks.slice(0, 6) : ['Balanced - no standout bonuses.'];
+            // Was capped at 3, then 6 - both silently hid real, active bonuses
+            // as the 2026-08-24 balance passes added more perks to some
+            // nations (USA is now at 9). A fixed cap just keeps needing to be
+            // re-bumped every time a kit grows, and can hide the exact bonus
+            // that was added to fix that nation's own survival rate - show
+            // everything a nation actually has instead of guessing a ceiling.
+            return perks.length ? perks : ['Balanced - no standout bonuses.'];
         }
 
         // Uniform stacked lines (one <span> per perk) so every button's bonus text lines up on
