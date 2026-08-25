@@ -697,7 +697,20 @@ check('every onclick="..." button in the HTML calls a function that still exists
     return problems;
 });
 
-// ---------- 11. Zero-arg smoke test: every no-parameter top-level function ----------
+// ---------- 11. Economy: starting resources ----------
+//    Supremacy-style redesign gives every nation 1000 to start (was 100) so
+//    early buildUnit() calls aren't blocked while research/mining ramp up.
+
+check('a freshly-created Country starts with 1000 resources', () => {
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'FreshStart', '#ff0000', island, true);
+    if (country.resources !== 1000) {
+        return [`expected a new Country to start with 1000 resources, got ${country.resources}`];
+    }
+    return [];
+});
+
+// ---------- 12. Zero-arg smoke test: every no-parameter top-level function ----------
 //    should be callable, from a real freshly-started game state, without
 //    throwing. Runs against every CURRENT and future zero-arg function
 //    automatically - no list to maintain.
