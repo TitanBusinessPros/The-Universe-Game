@@ -3018,6 +3018,72 @@
             });
         }
         
+        // Local hot-seat multiplayer: up to 12 humans share this one device,
+        // taking turns in the same shared galaxy - AI fills every other seat
+        // exactly as it always has (isPlayer=false countries still run
+        // aiTurn() every turn, completely unaware of how many humans there
+        // are). No video briefing - one nation's story doesn't fit a match
+        // with several human players, so this skips straight into play the
+        // same way continueFromAutosave() does.
+        function startHotSeatGame(countryIndices) {
+            if (!countryIndices || countryIndices.length < 2) {
+                alert('Hot-seat needs at least 2 players.');
+                return;
+            }
+            if (countryIndices.length > 12) {
+                alert('Hot-seat supports up to 12 players.');
+                return;
+            }
+            const ids = countryIndices.map(idx => {
+                gameState.countries[idx].isPlayer = true;
+                return gameState.countries[idx].id;
+            });
+            gameState.humanCountryIds = ids;
+            gameState.activeHumanSeatIndex = 0;
+            gameState.playerCountry = gameState.countries.find(c => c.id === ids[0]);
+            gameState.selectedCountryIdx = countryIndices[0];
+
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('videoScreen').style.display = 'none';
+            gameState.gameStarted = true;
+            camera.x = gameState.playerCountry.island.x;
+            camera.y = gameState.playerCountry.island.y;
+            startMusic();
+            createSpaceElements();
+            updateUI();
+            gameLoop();
+        }
+
+        // Hands control to the next living human seat - called by the
+        // "Pass Device" button during play. Does nothing outside hot-seat
+        // (humanCountryIds.length < 2), so ordinary Standard Game/Campaign
+        // play is completely unaffected by this function existing at all.
+        function switchToNextHumanSeat() {
+            if (!gameState.humanCountryIds || gameState.humanCountryIds.length < 2) return;
+
+            // Clear the outgoing seat's selection first - a selection made by
+            // one human must never carry over and let the next human's click
+            // accidentally move someone else's units.
+            deselectAllUnits();
+
+            const aliveHumanIds = gameState.humanCountryIds.filter(id => {
+                const c = gameState.countries.find(country => country.id === id);
+                return c && c.island.buildings.some(b => !b.destroyed);
+            });
+            if (aliveHumanIds.length === 0) return; // checkGameOver() should already have ended the match by now
+
+            const currentPos = aliveHumanIds.indexOf(gameState.playerCountry.id);
+            // currentPos is -1 if the outgoing seat was JUST eliminated (no
+            // longer in aliveHumanIds) - (-1 + 1) % length correctly starts
+            // the rotation from the top of the list in that case too.
+            const nextId = aliveHumanIds[(currentPos + 1) % aliveHumanIds.length];
+
+            gameState.activeHumanSeatIndex = gameState.humanCountryIds.indexOf(nextId);
+            gameState.playerCountry = gameState.countries.find(c => c.id === nextId);
+            centerOnPlayer();
+            updateUI();
+        }
+
         function closeVideo() {
             document.getElementById('videoScreen').style.display = 'none';
 

@@ -127,11 +127,11 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat };',
     context,
     { filename: 'grab-refs.js' }
 );
-const { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver } = context.__test;
+const { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat } = context.__test;
 
 // ---------- Test data: the full combat unit roster ----------
 
@@ -416,6 +416,52 @@ check('AI hunt-targeting picks among every surviving human, not just gameState.p
     }
     if (!sawTargetOtherThanActiveSeat) {
         return ['AI never targeted the non-active human (OtherHuman) across 300 tries - hunt-targeting may still be hardcoded to gameState.playerCountry alone'];
+    }
+    return [];
+});
+
+check('switchToNextHumanSeat() rotates through every living human, skipping eliminated ones, and wraps around', () => {
+    const problems = [];
+    const islandA = new Island(0, 0, 0);
+    const countryA = new Country(0, 'SeatA', '#ff0000', islandA, true);
+    const islandB = new Island(2000, 0, 1);
+    const countryB = new Country(1, 'SeatB', '#00ff00', islandB, true);
+    const islandC = new Island(4000, 0, 2);
+    const countryC = new Country(2, 'SeatC', '#0000ff', islandC, true);
+    gameState.countries = [countryA, countryB, countryC];
+    gameState.humanCountryIds = [0, 1, 2];
+    gameState.playerCountry = countryA;
+    gameState.selectedUnits = [];
+
+    switchToNextHumanSeat();
+    if (gameState.playerCountry.id !== 1) {
+        problems.push(`expected seat to advance A -> B (id 1), got id ${gameState.playerCountry.id}`);
+    }
+
+    // Eliminate SeatC's buildings - the rotation should skip straight past it.
+    islandC.buildings.forEach(b => b.takeDamage(9999));
+    switchToNextHumanSeat(); // B -> (skip eliminated C) -> A
+    if (gameState.playerCountry.id !== 0) {
+        problems.push(`expected the rotation to skip eliminated SeatC and wrap to SeatA (id 0), got id ${gameState.playerCountry.id}`);
+    }
+
+    switchToNextHumanSeat(); // A -> B again, confirming the wrap-around is stable on a second lap
+    if (gameState.playerCountry.id !== 1) {
+        problems.push(`expected a second lap to land back on SeatB (id 1), got id ${gameState.playerCountry.id}`);
+    }
+    return problems;
+});
+
+check('switchToNextHumanSeat() is a no-op outside hot-seat (single human)', () => {
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'SoloPlayer', '#ff0000', island, true);
+    gameState.countries = [country];
+    gameState.humanCountryIds = [0];
+    gameState.playerCountry = country;
+
+    switchToNextHumanSeat();
+    if (gameState.playerCountry.id !== 0) {
+        return ['switchToNextHumanSeat() changed the active seat with only one human - should be a complete no-op outside hot-seat'];
     }
     return [];
 });
