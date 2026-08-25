@@ -127,11 +127,11 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver };',
     context,
     { filename: 'grab-refs.js' }
 );
-const { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS } = context.__test;
+const { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver } = context.__test;
 
 // ---------- Test data: the full combat unit roster ----------
 
@@ -324,7 +324,144 @@ check('AI nations fight each other, not just the player (behavioral)', () => {
     return [];
 });
 
-// ---------- 8. Function inventory: catch every function, including future ones ----------
+// ---------- 8. Multi-human (hot-seat) support: humanCountryIds generalization ----------
+//    gameState.playerCountry stays "whichever human is active right now"
+//    (fog-of-war/clicks/camera all keep working unchanged off that), but
+//    checkGameOver() and AI hunt-targeting need to reason about EVERY human
+//    via gameState.humanCountryIds. These checks would have caught the
+//    original single-playerCountry bugs this generalization fixed.
+
+check('checkGameOver() does not end the match when one of several humans is eliminated, only when ALL are', () => {
+    const problems = [];
+    const islandA = new Island(0, 0, 0);
+    const countryA = new Country(0, 'HumanA', '#ff0000', islandA, true);
+    const islandB = new Island(2000, 0, 1);
+    const countryB = new Country(1, 'HumanB', '#00ff00', islandB, true);
+    const islandC = new Island(4000, 0, 2);
+    const countryC = new Country(2, 'AI-rival', '#0000ff', islandC, false);
+    gameState.countries = [countryA, countryB, countryC];
+    gameState.playerCountry = countryA;
+    gameState.humanCountryIds = [0, 1];
+    gameState.campaignActive = false;
+
+    // Wipe out HumanA's buildings only - HumanB and the AI rival still stand.
+    islandA.buildings.forEach(b => b.takeDamage(9999));
+
+    let gameOverFired = false;
+    const originalPaused = gameState.paused;
+    checkGameOver();
+    if (gameState.paused) gameOverFired = true;
+
+    if (gameOverFired) {
+        problems.push('match ended (gameState.paused set) after only ONE of two humans was eliminated - should continue for the survivor');
+    }
+    gameState.paused = originalPaused; // don't leak state into later checks
+
+    // Now wipe out BOTH humans - this SHOULD end the match.
+    islandB.buildings.forEach(b => b.takeDamage(9999));
+    checkGameOver();
+    if (!gameState.paused) {
+        problems.push('match did NOT end after every human was eliminated - checkGameOver() should have called showGameOver(false, ...)');
+    }
+    gameState.paused = false;
+    return problems;
+});
+
+check('checkGameOver() does not fire premature victory while 2+ humans are still alive and fighting', () => {
+    const problems = [];
+    const islandA = new Island(0, 0, 0);
+    const countryA = new Country(0, 'HumanA', '#ff0000', islandA, true);
+    const islandB = new Island(2000, 0, 1);
+    const countryB = new Country(1, 'HumanB', '#00ff00', islandB, true);
+    gameState.countries = [countryA, countryB];
+    gameState.playerCountry = countryA;
+    gameState.humanCountryIds = [0, 1];
+    gameState.campaignActive = false;
+    gameState.paused = false;
+
+    // Zero AI nations remain, but BOTH humans are still alive - the match
+    // must keep going (they aren't allied), not declare an early winner.
+    checkGameOver();
+    if (gameState.paused) {
+        problems.push('match ended even though two unallied humans are both still alive - "no AI left" alone should not be victory with 2+ humans standing');
+    }
+    gameState.paused = false;
+    return problems;
+});
+
+check('AI hunt-targeting picks among every surviving human, not just gameState.playerCountry', () => {
+    setDifficulty('hard'); // highest attack/movement chance, fastest to observe
+    const islandA = new Island(0, 0, 0);
+    const countryA = new Country(0, 'ActiveSeat', '#ff0000', islandA, true);
+    const islandB = new Island(3000, 3000, 1);
+    const countryB = new Country(1, 'OtherHuman', '#00ff00', islandB, true);
+    const islandAI = new Island(-3000, -3000, 2);
+    const countryAI = new Country(2, 'AI', '#0000ff', islandAI, false);
+    gameState.countries = [countryA, countryB, countryAI];
+    gameState.playerCountry = countryA; // the ACTIVE seat is A - B is still human, just not active right now
+    gameState.humanCountryIds = [0, 1];
+
+    const aiUnit = new Unit(-2900, -2900, 'stormbreaker', 2);
+    countryAI.units.push(aiUnit);
+
+    let sawTargetOtherThanActiveSeat = false;
+    for (let i = 0; i < 300 && !sawTargetOtherThanActiveSeat; i++) {
+        countryAI.aiTurn();
+        // huntApproachPosition/buildingApproachPosition aim near the target
+        // island - closer to islandB (3000,3000) than islandA (0,0) means the
+        // AI targeted the non-active human, not just gameState.playerCountry.
+        const distToB = Math.hypot(aiUnit.targetX - islandB.x, aiUnit.targetY - islandB.y);
+        const distToA = Math.hypot(aiUnit.targetX - islandA.x, aiUnit.targetY - islandA.y);
+        if (distToB < distToA) sawTargetOtherThanActiveSeat = true;
+    }
+    if (!sawTargetOtherThanActiveSeat) {
+        return ['AI never targeted the non-active human (OtherHuman) across 300 tries - hunt-targeting may still be hardcoded to gameState.playerCountry alone'];
+    }
+    return [];
+});
+
+// ---------- 9. Unit/missile movement must scale with real elapsed time ----------
+//    UNIT_SPEEDS/Missile.speed used to move a fixed amount per update() call
+//    regardless of how much real time had passed since the last one -
+//    invisible with a single local player, but a real bug once simulation
+//    speed needs to be consistent regardless of frame rate/hardware (a
+//    networked host running at a different fps than usual would otherwise
+//    make the whole match visibly speed up or slow down). frameDeltaTime is
+//    a top-level `let` inside the game script (not on gameState), so it's
+//    set/read directly in the same vm context the script runs in, rather
+//    than through the Node-side destructured reference (which only captures
+//    a value once, not a live binding back into the script's own scope).
+
+check('unit movement scales with frameDeltaTime, not a fixed amount per update() call', () => {
+    const problems = [];
+    // gameState.countries is shared global state earlier checks also set up
+    // (e.g. islands sitting at/near (0,0)) - a stormbreaker's own naval
+    // collision check would otherwise block ALL movement against a leftover
+    // island from a previous check, masking whatever this check is actually
+    // trying to measure. Clear it since this check only cares about
+    // Unit.update()'s own math, not collision against any island.
+    gameState.countries = [];
+    const u1 = makeUnit('stormbreaker', 0);
+    u1.x = 0; u1.y = 0; u1.targetX = 100000; u1.targetY = 0;
+    vm.runInContext('frameDeltaTime = 1 / 60;', context); // baseline: unchanged default (60fps-equivalent)
+    u1.update();
+    const distAtBaseline = u1.x;
+
+    const u2 = makeUnit('stormbreaker', 0);
+    u2.x = 0; u2.y = 0; u2.targetX = 100000; u2.targetY = 0;
+    vm.runInContext('frameDeltaTime = (1 / 60) * 3;', context); // a frame that took 3x as long (e.g. 20fps)
+    u2.update();
+    const distAtSlowFrame = u2.x;
+
+    vm.runInContext('frameDeltaTime = 1 / 60;', context); // restore default for every check that runs after this one
+
+    if (distAtBaseline <= 0 || Math.abs(distAtSlowFrame - distAtBaseline * 3) > 0.01) {
+        problems.push(`a 3x-longer frame should move a unit ~3x as far in one update() call (baseline moved ${distAtBaseline}, 3x-frame moved ${distAtSlowFrame}) - movement may be a fixed per-call amount again, not scaled by real elapsed time`);
+    }
+    return problems;
+});
+
+// ---------- 10. Function inventory: catch every function, including future ones ----------
 //    Auto-discovers every top-level function and every class method by scanning
 //    the source itself (not a hand-typed list), so newly-added functions are
 //    picked up automatically with zero maintenance. Two things fall out of this:
@@ -514,7 +651,7 @@ check('every onclick="..." button in the HTML calls a function that still exists
     return problems;
 });
 
-// ---------- 9. Zero-arg smoke test: every no-parameter top-level function ----------
+// ---------- 11. Zero-arg smoke test: every no-parameter top-level function ----------
 //    should be callable, from a real freshly-started game state, without
 //    throwing. Runs against every CURRENT and future zero-arg function
 //    automatically - no list to maintain.

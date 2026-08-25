@@ -1248,6 +1248,19 @@
             zoom: 0.3
         };
 
+        // Real elapsed time (in seconds) since the last frame, refreshed once
+        // per gameLoop() tick by updateTimer(). Unit/Missile movement used to
+        // advance by a fixed per-call amount regardless of how much real time
+        // had actually passed - invisible with one local player (only one
+        // perspective to notice), but a real problem once simulation speed
+        // needs to be consistent across different machines/frame rates (a
+        // networked host running at 30fps vs 144fps would otherwise make the
+        // whole match run at very different speeds depending on whose
+        // hardware happens to be simulating it). Defaults to a 60fps-equivalent
+        // step so behavior is unchanged on a typical 60Hz display - the speed
+        // constants were always implicitly tuned assuming that rate.
+        let frameDeltaTime = 1 / 60;
+
         let mouseWorldX = 0;
         let mouseWorldY = 0;
 
@@ -1256,6 +1269,17 @@
         let nextMineId = 0;
         let missiles = [];
         let nextMissileId = 0;
+        // Was Date.now() + Math.random() on Unit itself (see Unit constructor) -
+        // fine as a same-browser-only unique key, but not something a second
+        // player's browser could ever agree with (two clients constructing a
+        // unit in the same millisecond had a real chance of colliding, and
+        // there was no way for an order like "attack unit X" to reference a
+        // specific unit across machines at all). A simple incrementing counter
+        // is deterministic and collision-free as long as it's only ever
+        // incremented by the single authoritative simulation (the host, once
+        // networked multiplayer lands) - exactly the same reasoning as
+        // nextMineId/nextMissileId above, just applied to units too.
+        let nextUnitId = 1;
         let laserEffects = []; // {startX, startY, endX, endY, createdAt, duration, color}
 
         const COUNTRY_NAMES = [
@@ -1435,6 +1459,16 @@
         let gameState = {
             countries: [],
             playerCountry: null,
+            // Every human-controlled country, by id - length 1 for ordinary
+            // Standard Game/Campaign (kept in sync with playerCountry for
+            // backward compatibility), up to 12 for local hot-seat multiplayer.
+            // gameState.playerCountry itself still means "whichever human's
+            // turn is active right now" - fog-of-war, click handlers, and the
+            // camera all keep working unchanged off that one value; only the
+            // few things that genuinely need to reason about EVERY human
+            // (win/loss, AI hunt targeting) read this array instead.
+            humanCountryIds: [],
+            activeHumanSeatIndex: 0,
             turn: 1,
             paused: false,
             selectedUnit: null,
@@ -1505,7 +1539,7 @@
 
         class Missile {
             constructor(startX,startY,targetX,targetY,countryId,damage=25,imageUrl=null){ this.id=nextMissileId++;this.x=startX;this.y=startY;this.targetX=targetX;this.targetY=targetY;this.countryId=countryId;this.damage=damage;this.speed=0.5;this.size=6;this.active=true;this.hp=10;this.maxHp=10;this.sprite=null;if(imageUrl){this.sprite=new Image();this.sprite.src=imageUrl;}this.angle=Math.atan2(targetY-startY,targetX-startX); }
-            update(){ if(!this.active)return;this.x+=Math.cos(this.angle)*this.speed;this.y+=Math.sin(this.angle)*this.speed;const dx=this.targetX-this.x,dy=this.targetY-this.y;if(Math.sqrt(dx*dx+dy*dy)<10)this.active=false; }
+            update(){ if(!this.active)return;const s=this.speed*frameDeltaTime*60;/* frame-rate-independent, see frameDeltaTime's declaration */this.x+=Math.cos(this.angle)*s;this.y+=Math.sin(this.angle)*s;const dx=this.targetX-this.x,dy=this.targetY-this.y;if(Math.sqrt(dx*dx+dy*dy)<10)this.active=false; }
             draw(){ const screenX=(this.x-camera.x)*camera.zoom+canvas.width/2,screenY=(this.y-camera.y)*camera.zoom+canvas.height/2; if(this.sprite&&this.sprite.complete&&this.sprite.naturalWidth>0){ctx.save();ctx.translate(screenX,screenY);ctx.rotate(this.angle);ctx.drawImage(this.sprite,-this.size*camera.zoom/2,-this.size*camera.zoom/2,this.size*camera.zoom,this.size*camera.zoom);ctx.restore();}else{ const pulse=Math.sin(Date.now()/100)*0.3+0.7; ctx.fillStyle=`rgba(200,0,255,${pulse*0.4})`;ctx.beginPath();ctx.arc(screenX,screenY,this.size*camera.zoom*2,0,Math.PI*2);ctx.fill(); ctx.fillStyle=`rgba(220,50,255,${pulse*0.7})`;ctx.beginPath();ctx.arc(screenX,screenY,this.size*camera.zoom*1.5,0,Math.PI*2);ctx.fill(); ctx.fillStyle=`rgba(255,100,255,${pulse})`;ctx.beginPath();ctx.arc(screenX,screenY,this.size*camera.zoom,0,Math.PI*2);ctx.fill(); ctx.strokeStyle=`rgba(200,0,255,${pulse*0.5})`;ctx.lineWidth=2*camera.zoom;ctx.beginPath();ctx.moveTo(screenX,screenY);ctx.lineTo(screenX-Math.cos(this.angle)*20*camera.zoom,screenY-Math.sin(this.angle)*20*camera.zoom);ctx.stroke();} }
         }
 
@@ -1738,7 +1772,7 @@
                 this.targetY = y;
                 this.maxHp = this.getMaxHP();
                 this.hp = this.maxHp;
-                this.id = Date.now() + Math.random();
+                this.id = nextUnitId++;
                 this.hasAttacked = false;
                 this.cargo = [];
                 this.selected = false;
@@ -1954,12 +1988,18 @@
                     this.facingAngle += angleDiff * 0.15;
 
                     let speed = UNIT_SPEEDS[this.type] || 2;
-                    
+
                     const countryBonus = COUNTRY_BONUSES[this.countryId];
                     if (countryBonus && countryBonus.speedMultiplier[this.type]) {
                         speed *= countryBonus.speedMultiplier[this.type];
                     }
-                    
+                    // UNIT_SPEEDS was always implicitly tuned as "units per
+                    // frame at 60fps" - scaling by frameDeltaTime*60 keeps
+                    // that exact behavior unchanged on a 60Hz display while
+                    // making real movement speed consistent at any other
+                    // frame rate too (see frameDeltaTime's declaration).
+                    speed *= frameDeltaTime * 60;
+
                     const newX = this.x + (dx / dist) * speed;
                     const newY = this.y + (dy / dist) * speed;
                     
@@ -2609,14 +2649,18 @@
                             if (nearestEnemyUnit) {
                                 unit.moveTo(nearestEnemyUnit.x, nearestEnemyUnit.y);
                             } else {
-                                // Nothing in sight - push toward the player's planet most of the
-                                // time (so the AI actively hunts instead of drifting), otherwise
-                                // toward a random rival to keep the map lively.
-                                const huntPlayer = gameState.playerCountry &&
-                                    gameState.playerCountry.id !== this.id &&
+                                // Nothing in sight - push toward a human player's planet most of
+                                // the time (so the AI actively hunts instead of drifting), otherwise
+                                // toward a random rival to keep the map lively. Picks among EVERY
+                                // surviving human (not just one hardcoded playerCountry) so hot-seat
+                                // games with several humans don't all get ignored but one.
+                                const survivingHumanRivals = (gameState.humanCountryIds || [])
+                                    .map(id => gameState.countries.find(c => c.id === id))
+                                    .filter(c => c && c.id !== this.id && c.island.buildings.some(b => !b.destroyed));
+                                const huntHuman = survivingHumanRivals.length > 0 &&
                                     Math.random() < AI_HUNT_PLAYER_BIAS;
-                                const targetCountry = huntPlayer
-                                    ? gameState.playerCountry
+                                const targetCountry = huntHuman
+                                    ? survivingHumanRivals[Math.floor(Math.random() * survivingHumanRivals.length)]
                                     : gameState.countries[Math.floor(Math.random() * gameState.countries.length)];
 
                                 if (targetCountry.id !== this.id) {
@@ -2957,6 +3001,11 @@
             gameState.countries[countryIdx].isPlayer = true;
             gameState.playerCountry = gameState.countries[countryIdx];
             gameState.selectedCountryIdx = countryIdx;
+            // Ordinary single-human start - one-entry humanCountryIds keeps
+            // checkGameOver()/AI hunt-targeting's multi-human logic correct
+            // without them needing a separate "am I in hot-seat mode" branch.
+            gameState.humanCountryIds = [gameState.countries[countryIdx].id];
+            gameState.activeHumanSeatIndex = 0;
             
             // Hide country selection and show video
             document.getElementById('startScreen').style.display = 'none';
@@ -3254,11 +3303,33 @@
         }
 
         function checkGameOver() {
-            const playerBuildings = gameState.playerCountry.island.buildings.filter(b => !b.destroyed);
-            if (playerBuildings.length === 0) {
+            // Multi-human support: humanCountryIds holds every human-controlled
+            // country - length 1 for ordinary Standard Game/Campaign, up to 12
+            // for local hot-seat. Each is tracked individually so one player
+            // being eliminated doesn't end the match for everyone else; the
+            // game only truly ends in defeat once every human is gone.
+            const humanIds = (gameState.humanCountryIds && gameState.humanCountryIds.length)
+                ? gameState.humanCountryIds
+                : [gameState.playerCountry.id];
+            const humanCountries = humanIds.map(id => gameState.countries.find(c => c.id === id)).filter(Boolean);
+            const stillAliveHumans = humanCountries.filter(c => c.island.buildings.some(b => !b.destroyed));
+
+            humanCountries.forEach(c => {
+                const alive = c.island.buildings.some(b => !b.destroyed);
+                if (!alive && !c.eliminationAnnounced) {
+                    c.eliminationAnnounced = true;
+                    // TODO(hot-seat UI): surface a per-player "you're
+                    // eliminated, spectating" notice here instead of only the
+                    // full-match game-over modal below - a UI piece to build
+                    // alongside the hot-seat seat-switching screen, not part
+                    // of this state-model refactor.
+                }
+            });
+
+            if (stillAliveHumans.length === 0) {
                 showGameOver(false, gameState.campaignActive
                     ? `Your forces were wiped out on Stage ${gameState.campaignStageIndex + 1}.`
-                    : 'All your buildings have been destroyed!');
+                    : (humanIds.length > 1 ? 'Every human player has been eliminated!' : 'All your buildings have been destroyed!'));
                 return;
             }
 
@@ -3283,8 +3354,13 @@
                 }
             });
 
-            if (enemiesRemaining === 0) {
-                showGameOver(true, 'You have destroyed all enemy nations!');
+            // With more than one human, "every AI is dead" alone isn't victory
+            // yet - humans aren't allied, so 2+ surviving humans just means the
+            // match continues between them until only one (or zero) is left.
+            if (enemiesRemaining === 0 && stillAliveHumans.length <= 1) {
+                showGameOver(true, humanIds.length > 1
+                    ? 'You are the last one standing!'
+                    : 'You have destroyed all enemy nations!');
             }
         }
 
@@ -3980,14 +4056,24 @@
         }
 
         function updateTimer() {
-            if (!AUTO_TURN_ENABLED || gameState.paused || !gameState.gameStarted) return;
-            
+            // Real elapsed time is measured every frame regardless of the
+            // early-return below, so a pause never "banks up" silent real
+            // time that would otherwise show up as one huge jump the moment
+            // AUTO_TURN_ENABLED/paused/gameStarted next allow it through.
             const currentTime = Date.now();
             const deltaTime = (currentTime - gameState.lastFrameTime) / 1000;
             gameState.lastFrameTime = currentTime;
-            
+            // Movement scaling only (see frameDeltaTime's declaration) -
+            // clamped so a backgrounded/throttled tab, or the very first
+            // frame, can't make a unit teleport a large distance in one
+            // single update() call. The turn countdown below is intentionally
+            // left unclamped/untouched - same behavior as before this change.
+            frameDeltaTime = Math.min(deltaTime, 0.25);
+
+            if (!AUTO_TURN_ENABLED || gameState.paused || !gameState.gameStarted) return;
+
             gameState.turnTimeRemaining -= deltaTime;
-            
+
             if (gameState.turnTimeRemaining <= 0) {
                 nextTurn();
             }
