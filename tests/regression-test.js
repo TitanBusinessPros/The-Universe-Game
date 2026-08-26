@@ -863,7 +863,73 @@ check('MAP_WIDTH/HEIGHT honor GALAXY_SPACING_SCALE', () => {
     return [];
 });
 
-// ---------- 14. Zero-arg smoke test: every no-parameter top-level function ----------
+// ---------- 14. AI mining economy ----------
+//    "AI should have the same system of play" (2026-08-25): regular-nation AI
+//    (not the Cyborg/Zoonester/Roufestreal special factions, which never used
+//    the resources economy at all) researches Mining Operations, builds
+//    Mining Ships, and keeps them parked at a live deposit - same rules a
+//    human plays under, just gated by AI_RESEARCH_CHANCE/AI_MINING_SHIP_CHANCE
+//    per turn instead of happening the instant it's affordable.
+
+check('a regular-nation AI eventually researches Mining Operations and builds a Mining Ship', () => {
+    const problems = [];
+    const island = new Island(0, 0, 5); // id 5: not Cyborg(12-15)/Zoonester(16)/Roufestreal
+    const country = new Country(5, 'TestNation', '#ff0000', island, false);
+    gameState.countries = [country];
+    resourceDeposits.length = 0; // isolating research/build gating, not mining logistics
+
+    let builtMiningShip = false;
+    for (let i = 0; i < 200 && !builtMiningShip; i++) {
+        country.resources = Math.max(country.resources, 1000); // keep it flush so the random
+        country.aiTurn();                                       // per-turn chances are the only gate
+        country.updateResearch(1000); // fast-forward any in-progress research to completion
+        builtMiningShip = country.units.some(u => u.type === 'miningship');
+    }
+
+    if (!country.researchedTech.has('mining_ops')) {
+        problems.push('AI never researched Mining Operations after 200 turns with ample resources');
+    }
+    if (!builtMiningShip) problems.push('AI never built a Mining Ship after researching Mining Operations');
+    return problems;
+});
+
+check('aiTurn() sends an idle Mining Ship toward the nearest live deposit, not chasing a visible enemy', () => {
+    const problems = [];
+    // Island placed well away from the deposits below so naval collision-avoidance
+    // doesn't block the move being tested for an unrelated reason.
+    const island = new Island(-50000, -50000, 5);
+    const country = new Country(5, 'TestMiner', '#ff0000', island, false);
+    country.researchedTech.add('mining_ops'); // isolate logistics from the research gate
+
+    // A visible enemy, well within AI_HUNT_RADIUS - gives the generic hunt-movement
+    // logic later in aiTurn() a real target it WOULD send the mining ship toward if
+    // the miningship exclusion in that loop weren't there.
+    const enemyIsland = new Island(-49000, -50000, 6);
+    const enemyCountry = new Country(6, 'Enemy', '#00ff00', enemyIsland, false);
+    enemyCountry.units = [new Unit(200, 0, 'stormbreaker', 6)];
+    gameState.countries = [country, enemyCountry];
+
+    const nearDeposit = new ResourceDeposit(100, 0);
+    const farDeposit = new ResourceDeposit(5000, 5000);
+    resourceDeposits.length = 0;
+    resourceDeposits.push(nearDeposit, farDeposit);
+
+    const ship = new Unit(0, 0, 'miningship', 5);
+    ship.targetX = 0; ship.targetY = 0; // not already heading anywhere
+    country.units = [ship];
+
+    vm.runInContext('AI_MOVEMENT_CHANCE = 1;', context); // make the generic hunt logic deterministic for this check
+    country.aiTurn();
+    vm.runInContext('AI_MOVEMENT_CHANCE = DIFFICULTY_PRESETS.normal.movement;', context); // restore for later checks
+
+    const distToNear = Math.hypot(ship.targetX - nearDeposit.x, ship.targetY - nearDeposit.y);
+    if (distToNear > 1) {
+        problems.push(`expected the idle mining ship to be sent toward the nearer deposit (100,0) instead of the visible enemy, got targetX=${ship.targetX}, targetY=${ship.targetY}`);
+    }
+    return problems;
+});
+
+// ---------- 15. Zero-arg smoke test: every no-parameter top-level function ----------
 //    should be callable, from a real freshly-started game state, without
 //    throwing. Runs against every CURRENT and future zero-arg function
 //    automatically - no list to maintain.

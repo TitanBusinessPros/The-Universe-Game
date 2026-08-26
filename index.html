@@ -986,6 +986,14 @@
         let AI_SPECIAL_AGGRESSION_MULT = DIFFICULTY_PRESETS.normal.specialMult;
         const AI_HUNT_RADIUS = 2500;      // how far a unit can "see" an enemy to chase it
         const AI_HUNT_PLAYER_BIAS = 0.7;  // chance to head for the player instead of a random rival when nothing is in sight
+        // Tech tree / mining economy (2026-08-25) - regular nations only (not the Cyborg/
+        // Zoonester/Roufestreal special factions, which never used the resources economy to
+        // begin with and return out of aiTurn() before reaching this). Same system a human
+        // plays with: research, then build, then station at a deposit - just gated by chance
+        // per turn instead of happening the instant it's affordable, so AI nations don't all
+        // research/build in lockstep on turn 1.
+        const AI_RESEARCH_CHANCE = 0.3;
+        const AI_MINING_SHIP_CHANCE = 0.25;
 
         // A move target picked as "the target planet's center plus a small random offset" lands
         // *inside* that planet's own collision radius far more often than not (the offset has to
@@ -2765,6 +2773,32 @@
                     return;
                 }
                 
+                // Tech tree / mining economy - same system a human plays with (see the
+                // AI_RESEARCH_CHANCE/AI_MINING_SHIP_CHANCE comment above).
+                if (!this.activeResearch && !this.researchedTech.has('mining_ops') &&
+                    this.resources >= TECH_TREE.mining_ops.cost && Math.random() < AI_RESEARCH_CHANCE) {
+                    this.startResearch('mining_ops');
+                }
+                if (this.canBuildUnit('miningship') && this.resources >= 80 && Math.random() < AI_MINING_SHIP_CHANCE) {
+                    this.buildUnit('miningship');
+                }
+                // Keep every mining ship parked at a live deposit - if the one it's on (or
+                // heading to) runs dry, or it was never assigned one, send it to the nearest
+                // deposit that still has resources left.
+                this.units.forEach(unit => {
+                    if (unit.type !== 'miningship') return;
+                    const atLiveDeposit = resourceDeposits.some(d =>
+                        !d.isDepleted() && Math.hypot(unit.x - d.x, unit.y - d.y) <= DEPOSIT_COLLECT_RANGE);
+                    if (atLiveDeposit) return;
+                    let nearest = null, nearestDist = Infinity;
+                    resourceDeposits.forEach(d => {
+                        if (d.isDepleted()) return;
+                        const dist = Math.hypot(unit.x - d.x, unit.y - d.y);
+                        if (dist < nearestDist) { nearestDist = dist; nearest = d; }
+                    });
+                    if (nearest) unit.moveTo(nearest.x, nearest.y);
+                });
+
                 const buildAttempts = AI_BUILD_CHANCE > 1.0 ? Math.ceil(AI_BUILD_CHANCE) : 1;
                 for (let i = 0; i < buildAttempts; i++) {
                     if (Math.random() < (AI_BUILD_CHANCE % 1 || 1) && this.resources >= 50) {
@@ -2802,6 +2836,10 @@
                     this.units.forEach(unit => {
                         if (unit.isGroundUnit() && unit.isInHarbor) return;
                         if (unit.hasAttacked) return;
+                        // Mining ships already got their own move-to-nearest-live-deposit order
+                        // above - don't let the generic hunt logic immediately override it and
+                        // send an unarmed mining ship off chasing enemies instead of mining.
+                        if (unit.type === 'miningship') return;
 
                         if (Math.random() < (AI_MOVEMENT_CHANCE % 1 || 1)) {
                             // Hunt: chase the nearest visible enemy unit first.
