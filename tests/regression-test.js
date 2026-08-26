@@ -127,7 +127,7 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, GALAXY_SPACING_SCALE, MAP_WIDTH, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, GALAXY_SPACING_SCALE, MAP_WIDTH, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS };',
     context,
     { filename: 'grab-refs.js' }
 );
@@ -135,7 +135,7 @@ const {
     Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat,
     ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS,
     DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, GALAXY_SPACING_SCALE, MAP_WIDTH, canvas,
-    canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES
+    canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS
 } = context.__test;
 
 // ---------- Test data: the full combat unit roster ----------
@@ -1171,6 +1171,93 @@ check('COUNTRY_BONUSES: total bonus-entry count per nation (informational drift 
         fs.writeFileSync(BONUS_SNAPSHOT_PATH, JSON.stringify(counts, null, 2) + '\n');
     }
     return []; // informational only - never fails the suite by itself
+});
+
+// ---------- 18. Four specific bug fixes (2026-08-26) ----------
+//    Home-screen/UI audit fixes: a redundant timer row, stale naval-era
+//    terminology, a build-menu icon that renders blank, and mining-ship
+//    movement tuning. Each gets its own check so it can't silently regress.
+
+check('the section info panel no longer shows a redundant "Time Remaining" row (the header timer at #timerDisplay already covers this)', () => {
+    // newGame() is the in-game "discard progress and reload" button handler
+    // (gated on confirm(), stubbed to false here) - it does NOT set up a
+    // fresh galaxy. initGame() is the actual one-time setup function normally
+    // invoked on page load (suppressed above so tests can call it on demand).
+    vm.runInContext("initGame(); startGame(0);", context, { filename: 'time-remaining-setup.js' });
+    updateUI();
+    const infoHtml = document.getElementById('countryInfo').innerHTML;
+    if (/Time Remaining/i.test(infoHtml)) {
+        return ['countryInfo still renders a "Time Remaining" row - that belongs only in the header, not duplicated here'];
+    }
+    return [];
+});
+
+check('the section info panel labels the buildings list "PLANET BUILDINGS", not the old naval-era "ISLAND BUILDINGS"', () => {
+    vm.runInContext("initGame(); startGame(0);", context, { filename: 'planet-buildings-setup.js' });
+    updateUI();
+    const infoHtml = document.getElementById('countryInfo').innerHTML;
+    const problems = [];
+    if (!/PLANET BUILDINGS/.test(infoHtml)) problems.push('expected a "PLANET BUILDINGS" heading in countryInfo');
+    if (/ISLAND BUILDINGS/.test(infoHtml)) problems.push('countryInfo still says "ISLAND BUILDINGS" - stale terminology');
+    return problems;
+});
+// Note: "Island" survives as the internal planet class name (Island, .island,
+// ISLAND_IMAGES, etc. - 180+ call sites) - that's an implementation detail no
+// player ever sees, not stale UI text, so it's intentionally left alone here
+// (same reasoning as the still-deferred Harbor rename). The check above only
+// guards the one string a player actually reads.
+
+check('no build-menu button uses an emoji glyph confirmed (via real headless-browser screenshot, 2026-08-26) to render as a blank icon', () => {
+    // U+1FA96 MILITARY HELMET - was Groundpounders' icon, screenshotted as an
+    // empty tofu box while every sibling button's emoji (medal, bomb, etc.)
+    // rendered fine in the same browser. Swapped for a shield instead.
+    const KNOWN_BLANK_EMOJI = ['\u{1FA96}'];
+    const problems = [];
+    KNOWN_BLANK_EMOJI.forEach(glyph => {
+        if (html.includes(glyph)) {
+            problems.push(`index.html still contains U+${glyph.codePointAt(0).toString(16).toUpperCase()}, confirmed to render blank`);
+        }
+    });
+    return problems;
+});
+
+check('UNIT_SPEEDS defines an explicit, positive speed for miningship (not the untuned generic fallback)', () => {
+    if (UNIT_SPEEDS.miningship === undefined) return ['UNIT_SPEEDS has no entry for miningship - silently falls back to the generic default'];
+    if (!(UNIT_SPEEDS.miningship > 0)) return [`UNIT_SPEEDS.miningship must be a positive number, got ${UNIT_SPEEDS.miningship}`];
+    return [];
+});
+
+check('a mining ship actually covers real distance toward a far move order over many update() ticks', () => {
+    const island = new Island(-100000, -100000, 0); // far out of the way - no collision interference
+    const country = new Country(0, 'NavTest', '#ff0000', island, true);
+    gameState.countries = [country];
+    const ship = new Unit(0, 0, 'miningship', 0);
+    ship.moveTo(2000, 0);
+    const problems = [];
+    if (ship.targetX !== 2000 || ship.targetY !== 0) {
+        problems.push(`moveTo(2000, 0) didn't set the target - got targetX=${ship.targetX}, targetY=${ship.targetY}`);
+    }
+    for (let i = 0; i < 120; i++) ship.update();
+    if (ship.x < 100) {
+        problems.push(`expected meaningful progress toward (2000,0) after 120 update() ticks, only reached x=${ship.x.toFixed(2)}`);
+    }
+    return problems;
+});
+
+check("every country's home resource deposit spawns outside its own island's no-fly collision zone (moveTo() silently refuses any target inside collisionSize, so a deposit placed any closer could never actually be reached)", () => {
+    vm.runInContext('initGame();', context, { filename: 'deposit-clearance-setup.js' });
+    const problems = [];
+    gameState.countries.forEach(country => {
+        const homeDeposit = resourceDeposits
+            .slice()
+            .sort((a, b) => Math.hypot(a.x - country.island.x, a.y - country.island.y) - Math.hypot(b.x - country.island.x, b.y - country.island.y))[0];
+        if (!homeDeposit) { problems.push(`no deposits exist at all for ${country.name}`); return; }
+        const distFromCenter = Math.hypot(homeDeposit.x - country.island.x, homeDeposit.y - country.island.y);
+        if (distFromCenter <= country.island.collisionSize + DEPOSIT_COLLECT_RANGE) {
+            problems.push(`${country.name}'s nearest deposit is only ${distFromCenter.toFixed(0)} from its island center - within collisionSize (${country.island.collisionSize}) + DEPOSIT_COLLECT_RANGE (${DEPOSIT_COLLECT_RANGE}), a mining ship could never park there`);
+        }
+    });
+    return problems;
 });
 
 // ---------- 17. Zero-arg smoke test: every no-parameter top-level function ----------

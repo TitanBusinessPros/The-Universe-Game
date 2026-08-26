@@ -697,7 +697,7 @@
             
             <div id="groundTab" class="tab-content">
                 <h3>GROUND FORCES:</h3>
-                <button onclick="buildUnit('groundpounders')">🪖 Groundpounders (20💰)</button>
+                <button onclick="buildUnit('groundpounders')">🛡️ Groundpounders (20💰)</button>
                 <button onclick="buildUnit('ironbeast')">🎖️ Ironbeast (80💰)</button>
                 <button onclick="buildUnit('boomcannon')">💣 Boomcannon (100💰)</button>
                 <p style="font-size: 10px; margin-top: 10px; color: #ffaa00;">
@@ -999,7 +999,15 @@
             'ironbeast': 1.5,
             'boomcannon': 0.8,
         'zoonparasite': 5.0,
-        'roufestreal': 2.0
+        'roufestreal': 2.0,
+        // Was missing entirely - every other buildable unit has a tuned entry
+        // here, but 'miningship' fell through to the generic default (2) in
+        // Unit.update() instead. It happened to still move, just untuned and
+        // easy to mistake for "navigation doesn't work" once the galaxy got
+        // much bigger (GALAXY_SPACING_SCALE) and a slow, silent ship is stuck
+        // crawling across it. Deliberately a bit slower than combat vessels -
+        // it's a workhorse, not a fighter, matching its 0 attack/40 HP stats.
+        'miningship': 1.6
         };
 
         const HARBOR_LOAD_RANGE = 300;
@@ -4642,10 +4650,9 @@
             
             let infoHtml = `
                 <div class="stat"><strong>Turn:</strong> ${gameState.turn}</div>
-                ${AUTO_TURN_ENABLED ? `<div class="stat"><strong>Time Remaining:</strong> ${formatTime(gameState.turnTimeRemaining)}</div>` : ''}
                 <div class="stat"><strong>Resources:</strong> ${Math.floor(country.resources)} 💰</div>
                 <div class="stat"><strong>Per Turn:</strong> +${country.resourceRate} 💰</div>
-                <h3>ISLAND BUILDINGS:</h3>
+                <h3>PLANET BUILDINGS:</h3>
             `;
             
             country.island.buildings.forEach((building, idx) => {
