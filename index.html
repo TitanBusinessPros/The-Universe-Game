@@ -619,7 +619,7 @@
             <h2 id="countryTitle"></h2>
             <div class="tabs">
                 <button class="tab active" onclick="switchTab('info')">INFO</button>
-                <button class="tab" onclick="switchTab('naval')">NAVAL</button>
+                <button class="tab" onclick="switchTab('vessels')">VESSELS</button>
                 <button class="tab" onclick="switchTab('ground')">GROUND</button>
                 <button class="tab" onclick="switchTab('aircraft')">AIRCRAFT</button>
                 <button class="tab" onclick="switchTab('units')">UNITS</button>
@@ -641,8 +641,8 @@
                 </div>
             </div>
             
-            <div id="navalTab" class="tab-content">
-                <h3>NAVAL UNITS:</h3>
+            <div id="vesselsTab" class="tab-content">
+                <h3>VESSELS:</h3>
                 <button onclick="buildUnit('deepglider')">🔷 Deepglider (50💰)</button>
                 <button onclick="buildUnit('stormbreaker')">🔷 Stormbreaker (100💰)</button>
                 <button onclick="buildUnit('wavecrusher')">🔷 Wavecrusher (150💰)</button>
@@ -655,7 +655,7 @@
                     Mining Operations research - see the RESEARCH tab.
                 </p>
 
-                <h3>ADVANCED NAVAL:</h3>
+                <h3>ADVANCED VESSELS:</h3>
                 <button onclick="buildUnit('tidebreaker')">⚓️ Tidebreaker (200💰)</button>
                 <button onclick="buildUnit('whisperwind')">🌊 Whisperwind (160💰)</button>
                 <p style="font-size: 9px; margin-top: 10px; color: #ffaa00;">
@@ -998,7 +998,7 @@
         // A move target picked as "the target planet's center plus a small random offset" lands
         // *inside* that planet's own collision radius far more often than not (the offset has to
         // land in the four corners of its range to clear a typical 250-350 size planet) - and
-        // moveTo() silently refuses naval units any target inside a collision radius. That left
+        // moveTo() silently refuses vessels any target inside a collision radius. That left
         // ships that had no specific enemy unit to chase (the common case whenever the player has
         // no units out, e.g. early campaign) permanently stuck. This always aims just outside the
         // target planet's edge instead, which moveTo() will actually accept.
@@ -1141,7 +1141,7 @@
                 // units - but ground units can never attack a non-ground unit
                 // (see Unit.canAttackUnit()), so none of it could ever help
                 // fend off the ships/aircraft that actually besiege a
-                // homeworld. Added a real naval component so India has
+                // homeworld. Added a real fleet component so India has
                 // something capable of intercepting an incoming fleet at all,
                 // while keeping the ground-invasion flavor intact.
                 hpMultiplier: { 'groundpounders': 1.15, 'ironbeast': 1.25, 'stormbreaker': 1.2 },
@@ -1382,7 +1382,7 @@
             ['Radar Tower', 'Command Bunker', 'Harbor', 'Marine Base', 'War Factory', 'Defense Gun'],
             ['Missile Silo', 'Airfield', 'Harbor', 'Marine Base', 'War Factory', 'Defense Gun'],
             ['Fortress', 'Deepglider Pen', 'Harbor', 'Marine Base', 'War Factory', 'Defense Gun'],
-            ['Naval Base', 'Barracks', 'Harbor', 'Marine Base', 'War Factory', 'Defense Gun'],
+            ['Fleet Base', 'Barracks', 'Harbor', 'Marine Base', 'War Factory', 'Defense Gun'],
             ['Command Center', 'Hangar Bay', 'Harbor', 'Marine Base', 'War Factory', 'Defense Gun'],
             ['Defense Turret', 'Airstrip', 'Harbor', 'Marine Base', 'War Factory', 'Defense Gun'],
             ['Radar Dome', 'Warehouse', 'Harbor', 'Marine Base', 'War Factory', 'Defense Gun'],
@@ -1913,7 +1913,11 @@
                 return ['groundpounders', 'ironbeast', 'boomcannon'].includes(this.type);
             }
 
-            isNaval() {
+            // Was isNaval() - "naval" doesn't fit a space game. isVessel() covers the same
+            // category (ships that fly through open space and collide with planets, as
+            // opposed to ground units or atmospheric aircraft) under a name that doesn't
+            // imply a navy.
+            isVessel() {
                 return ['deepglider', 'stormbreaker', 'wavecrusher', 'skyfortress', 'cargohauler', 'tidebreaker', 'whisperwind', 'cyborgdreadnought', 'zoonparasite', 'roufestreal', 'miningship'].includes(this.type);
             }
 
@@ -2056,7 +2060,7 @@
                     return;
                 }
                 
-                if (this.isNaval()) {
+                if (this.isVessel()) {
                     let blocked = false;
                     gameState.countries.forEach(country => {
                         if (country.island.collidesWith(x, y)) {
@@ -2125,7 +2129,7 @@
                     const newX = this.x + (dx / dist) * speed;
                     const newY = this.y + (dy / dist) * speed;
                     
-                    if (this.isNaval()) {
+                    if (this.isVessel()) {
                         let canMove = true;
                         gameState.countries.forEach(country => {
                             if (country.island.collidesWith(newX, newY)) {

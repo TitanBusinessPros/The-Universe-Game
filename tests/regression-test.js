@@ -485,7 +485,7 @@ check('switchToNextHumanSeat() is a no-op outside hot-seat (single human)', () =
 check('unit movement scales with frameDeltaTime, not a fixed amount per update() call', () => {
     const problems = [];
     // gameState.countries is shared global state earlier checks also set up
-    // (e.g. islands sitting at/near (0,0)) - a stormbreaker's own naval
+    // (e.g. islands sitting at/near (0,0)) - a stormbreaker's own vessel
     // collision check would otherwise block ALL movement against a leftover
     // island from a previous check, masking whatever this check is actually
     // trying to measure. Clear it since this check only cares about
@@ -895,7 +895,7 @@ check('a regular-nation AI eventually researches Mining Operations and builds a 
 
 check('aiTurn() sends an idle Mining Ship toward the nearest live deposit, not chasing a visible enemy', () => {
     const problems = [];
-    // Island placed well away from the deposits below so naval collision-avoidance
+    // Island placed well away from the deposits below so vessel collision-avoidance
     // doesn't block the move being tested for an unrelated reason.
     const island = new Island(-50000, -50000, 5);
     const country = new Country(5, 'TestMiner', '#ff0000', island, false);
