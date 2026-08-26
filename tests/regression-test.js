@@ -127,7 +127,7 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, GALAXY_SPACING_SCALE, MAP_WIDTH, canvas, canPause, togglePause, buildUnit, researchTech };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, GALAXY_SPACING_SCALE, MAP_WIDTH, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES };',
     context,
     { filename: 'grab-refs.js' }
 );
@@ -135,7 +135,7 @@ const {
     Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat,
     ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS,
     DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, GALAXY_SPACING_SCALE, MAP_WIDTH, canvas,
-    canPause, togglePause, buildUnit, researchTech
+    canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES
 } = context.__test;
 
 // ---------- Test data: the full combat unit roster ----------
@@ -1089,7 +1089,71 @@ check('researchTech() (the global wrapper) refuses to start research while pause
     return problems;
 });
 
-// ---------- 16. Zero-arg smoke test: every no-parameter top-level function ----------
+// ---------- 16. COUNTRY_BONUSES schema guardrail ----------
+//    2026-08-25, added in direct response to a question about how CI would
+//    catch a nation's bonus kit silently growing or breaking. Two layers,
+//    matching this file's existing philosophy (see the function-inventory
+//    check above) of failing on real bugs but only INFORMING on legitimate
+//    design changes, never blocking them:
+//      a) HARD FAIL - malformed data: a missing category, a non-number
+//         value, or a value outside a sane multiplier range. This is a real
+//         bug class (a typo like 15 instead of 1.5), not a design choice.
+//      b) INFORMATIONAL ONLY - total bonus-entry count per nation, diffed
+//         against a committed snapshot. Never fails the build on its own -
+//         intentional balance work (like the 2026-08-23 passes that took
+//         nations from ~3 to ~9-10 entries) must stay possible - but it
+//         puts the count-change in every single CI run's log instead of
+//         only being noticed by accident.
+
+const BONUS_CATEGORIES = ['hpMultiplier', 'attackMultiplier', 'speedMultiplier', 'rangeMultiplier'];
+const MIN_SANE_MULTIPLIER = 0.5;
+const MAX_SANE_MULTIPLIER = 2.5;
+
+check('COUNTRY_BONUSES: every entry has all 4 categories with sane numeric values', () => {
+    const problems = [];
+    Object.entries(COUNTRY_BONUSES).forEach(([id, bonus]) => {
+        BONUS_CATEGORIES.forEach(cat => {
+            if (!bonus[cat] || typeof bonus[cat] !== 'object') {
+                problems.push(`country ${id}: missing or malformed "${cat}"`);
+                return;
+            }
+            Object.entries(bonus[cat]).forEach(([type, value]) => {
+                if (typeof value !== 'number' || Number.isNaN(value)) {
+                    problems.push(`country ${id}.${cat}.${type} = ${value} (not a number)`);
+                } else if (value < MIN_SANE_MULTIPLIER || value > MAX_SANE_MULTIPLIER) {
+                    problems.push(`country ${id}.${cat}.${type} = ${value} (outside sane range ${MIN_SANE_MULTIPLIER}-${MAX_SANE_MULTIPLIER} - likely a typo, e.g. 15 instead of 1.5)`);
+                }
+            });
+        });
+    });
+    return problems;
+});
+
+const BONUS_SNAPSHOT_PATH = path.join(__dirname, 'country-bonus-count-snapshot.json');
+check('COUNTRY_BONUSES: total bonus-entry count per nation (informational drift tracker)', () => {
+    const counts = {};
+    Object.entries(COUNTRY_BONUSES).forEach(([id, bonus]) => {
+        counts[id] = BONUS_CATEGORIES.reduce((sum, cat) => sum + Object.keys(bonus[cat] || {}).length, 0);
+    });
+
+    if (!fs.existsSync(BONUS_SNAPSHOT_PATH)) {
+        fs.writeFileSync(BONUS_SNAPSHOT_PATH, JSON.stringify(counts, null, 2) + '\n');
+        console.log(`  (no snapshot yet - wrote a fresh one to ${path.basename(BONUS_SNAPSHOT_PATH)})`);
+        return [];
+    }
+
+    const previous = JSON.parse(fs.readFileSync(BONUS_SNAPSHOT_PATH, 'utf8'));
+    const changed = Object.keys(counts).filter(id => previous[id] !== undefined && previous[id] !== counts[id]);
+    if (changed.length) {
+        console.log('  Bonus-entry counts changed since last snapshot:');
+        changed.forEach(id => console.log(`    country ${id}: ${previous[id]} -> ${counts[id]}`));
+        console.log("  (snapshot updated - if any of the above was accidental, that's your signal)");
+        fs.writeFileSync(BONUS_SNAPSHOT_PATH, JSON.stringify(counts, null, 2) + '\n');
+    }
+    return []; // informational only - never fails the suite by itself
+});
+
+// ---------- 17. Zero-arg smoke test: every no-parameter top-level function ----------
 //    should be callable, from a real freshly-started game state, without
 //    throwing. Runs against every CURRENT and future zero-arg function
 //    automatically - no list to maintain.
