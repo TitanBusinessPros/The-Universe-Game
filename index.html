@@ -1108,53 +1108,62 @@
         // zero durability bonus anywhere; USA's best unit having no speed bonus) are
         // real and still true of these reverted numbers - this is a deliberate
         // rollback, not a fix.
+        //
+        // Trimmed further 2026-08-26, at the user's explicit request: exactly 3 bonus
+        // entries per nation, no more. Rule applied mechanically and identically to
+        // every nation (0-11) so it's not a subjective per-nation judgment call: flatten
+        // each nation's entries in a fixed hpMultiplier -> attackMultiplier ->
+        // speedMultiplier -> rangeMultiplier order, keep the first 3, drop the rest.
+        // Nations 12-15 (Cyborg) aren't player-selectable countries and were already at
+        // 0 before any of this - left untouched. Enforced going forward by the
+        // "exactly 3" hard-fail check in tests/regression-test.js.
         const COUNTRY_BONUSES = {
             0: {
                 hpMultiplier: { 'skyfortress': 1.3, 'stormbreaker': 1.2, 'wavecrusher': 1.2 },
-                attackMultiplier: { 'skyfortress': 1.1, 'stormbreaker': 1.2 },
+                attackMultiplier: {},
                 speedMultiplier: {},
-                rangeMultiplier: { 'stormbreaker': 1.2 }
+                rangeMultiplier: {}
             },
             1: {
                 hpMultiplier: { 'blazefalcon': 1.2 },
                 attackMultiplier: { 'blazefalcon': 1.1, 'thunderwing': 1.1 },
-                speedMultiplier: { 'blazefalcon': 1.5, 'thunderwing': 1.3 },
+                speedMultiplier: {},
                 rangeMultiplier: {}
             },
             2: {
                 hpMultiplier: { 'ironbeast': 1.4, 'boomcannon': 1.3, 'groundpounders': 1.2 },
-                attackMultiplier: { 'ironbeast': 1.3, 'boomcannon': 1.4 },
-                speedMultiplier: { 'ironbeast': 0.9 },
-                rangeMultiplier: { 'boomcannon': 1.3 }
+                attackMultiplier: {},
+                speedMultiplier: {},
+                rangeMultiplier: {}
             },
             3: {
                 hpMultiplier: { 'stormbreaker': 1.2, 'deepglider': 1.2 },
-                attackMultiplier: { 'stormbreaker': 1.2, 'deepglider': 1.1 },
-                speedMultiplier: { 'stormbreaker': 1.1 },
+                attackMultiplier: { 'stormbreaker': 1.2 },
+                speedMultiplier: {},
                 rangeMultiplier: {}
             },
             4: {
                 hpMultiplier: { 'thunderwing': 1.3, 'skyfortress': 1.2 },
                 attackMultiplier: { 'thunderwing': 1.4 },
                 speedMultiplier: {},
-                rangeMultiplier: { 'thunderwing': 1.2 }
+                rangeMultiplier: {}
             },
             5: {
                 hpMultiplier: { 'skyfortress': 1.2, 'deepglider': 1.1 },
                 attackMultiplier: { 'deepglider': 1.3 },
-                speedMultiplier: { 'deepglider': 1.4, 'skyfortress': 1.2 },
+                speedMultiplier: {},
                 rangeMultiplier: {}
             },
             6: {
                 hpMultiplier: { 'ironbeast': 1.4, 'deepglider': 1.3 },
-                attackMultiplier: { 'ironbeast': 1.3, 'deepglider': 1.4 },
+                attackMultiplier: { 'ironbeast': 1.3 },
                 speedMultiplier: {},
-                rangeMultiplier: { 'deepglider': 1.2 }
+                rangeMultiplier: {}
             },
             7: {
                 hpMultiplier: { 'groundpounders': 1.1 },
                 attackMultiplier: { 'groundpounders': 1.2, 'boomcannon': 1.2 },
-                speedMultiplier: { 'groundpounders': 1.2 },
+                speedMultiplier: {},
                 rangeMultiplier: {}
             },
             8: {
@@ -1165,20 +1174,20 @@
             },
             9: {
                 hpMultiplier: { 'wavecrusher': 1.3, 'stormbreaker': 1.2, 'groundpounders': 1.2 },
-                attackMultiplier: { 'wavecrusher': 1.1 },
+                attackMultiplier: {},
                 speedMultiplier: {},
-                rangeMultiplier: { 'wavecrusher': 1.2 }
+                rangeMultiplier: {}
             },
             10: {
                 hpMultiplier: { 'groundpounders': 1.3, 'ironbeast': 1.2 },
-                attackMultiplier: { 'groundpounders': 1.1, 'boomcannon': 1.2 },
-                speedMultiplier: { 'groundpounders': 1.1 },
+                attackMultiplier: { 'groundpounders': 1.1 },
+                speedMultiplier: {},
                 rangeMultiplier: {}
             },
             11: {
                 hpMultiplier: { 'wavecrusher': 1.2, 'thunderwing': 1.1 },
                 attackMultiplier: { 'wavecrusher': 1.2 },
-                speedMultiplier: { 'wavecrusher': 1.3, 'blazefalcon': 1.2 },
+                speedMultiplier: {},
                 rangeMultiplier: {}
             },
             12: {

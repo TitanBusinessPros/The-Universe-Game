@@ -1091,23 +1091,27 @@ check('researchTech() (the global wrapper) refuses to start research while pause
 
 // ---------- 16. COUNTRY_BONUSES schema guardrail ----------
 //    2026-08-25, added in direct response to a question about how CI would
-//    catch a nation's bonus kit silently growing or breaking. Two layers,
-//    matching this file's existing philosophy (see the function-inventory
-//    check above) of failing on real bugs but only INFORMING on legitimate
-//    design changes, never blocking them:
+//    catch a nation's bonus kit silently growing or breaking. Originally two
+//    layers (hard-fail on malformed data, informational-only on count drift,
+//    matching the function-inventory check's philosophy of never blocking a
+//    legitimate design change). Tightened 2026-08-26 at the user's explicit,
+//    repeated request: every playable nation must have EXACTLY 3 bonus
+//    entries, no more - now a real hard cap, not just a logged observation.
 //      a) HARD FAIL - malformed data: a missing category, a non-number
-//         value, or a value outside a sane multiplier range. This is a real
-//         bug class (a typo like 15 instead of 1.5), not a design choice.
-//      b) INFORMATIONAL ONLY - total bonus-entry count per nation, diffed
-//         against a committed snapshot. Never fails the build on its own -
-//         intentional balance work (like the 2026-08-23 passes that took
-//         nations from ~3 to ~9-10 entries) must stay possible - but it
-//         puts the count-change in every single CI run's log instead of
-//         only being noticed by accident.
+//         value, or a value outside a sane multiplier range. A real bug
+//         class (a typo like 15 instead of 1.5), not a design choice.
+//      b) HARD FAIL - any of the 12 playable nations (0-11) with other than
+//         exactly 3 total bonus entries. Nations 12-15 (Cyborg) aren't
+//         player-selectable and are intentionally exempt at 0.
+//      c) INFORMATIONAL ONLY - the count-per-nation snapshot diff kept below
+//         as a secondary audit trail (also covers the exempt Cyborg ids,
+//         which (b) doesn't watch) - never fails the build by itself.
 
 const BONUS_CATEGORIES = ['hpMultiplier', 'attackMultiplier', 'speedMultiplier', 'rangeMultiplier'];
 const MIN_SANE_MULTIPLIER = 0.5;
 const MAX_SANE_MULTIPLIER = 2.5;
+const PLAYABLE_NATION_IDS = Array.from({ length: 12 }, (_, i) => i); // 0-11 only - see comment above
+const REQUIRED_BONUS_COUNT = 3;
 
 check('COUNTRY_BONUSES: every entry has all 4 categories with sane numeric values', () => {
     const problems = [];
@@ -1125,6 +1129,22 @@ check('COUNTRY_BONUSES: every entry has all 4 categories with sane numeric value
                 }
             });
         });
+    });
+    return problems;
+});
+
+check(`COUNTRY_BONUSES: every playable nation (0-11) has exactly ${REQUIRED_BONUS_COUNT} bonus entries`, () => {
+    const problems = [];
+    PLAYABLE_NATION_IDS.forEach(id => {
+        const bonus = COUNTRY_BONUSES[id];
+        if (!bonus) {
+            problems.push(`country ${id}: missing from COUNTRY_BONUSES entirely`);
+            return;
+        }
+        const count = BONUS_CATEGORIES.reduce((sum, cat) => sum + Object.keys(bonus[cat] || {}).length, 0);
+        if (count !== REQUIRED_BONUS_COUNT) {
+            problems.push(`country ${id} has ${count} bonus entries, expected exactly ${REQUIRED_BONUS_COUNT}`);
+        }
     });
     return problems;
 });
