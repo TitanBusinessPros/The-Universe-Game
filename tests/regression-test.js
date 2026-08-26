@@ -127,11 +127,15 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, GALAXY_SPACING_SCALE, MAP_WIDTH, canvas };',
     context,
     { filename: 'grab-refs.js' }
 );
-const { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat } = context.__test;
+const {
+    Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat,
+    ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS,
+    DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, GALAXY_SPACING_SCALE, MAP_WIDTH, canvas
+} = context.__test;
 
 // ---------- Test data: the full combat unit roster ----------
 
@@ -140,7 +144,7 @@ const ALL_TYPES = [
     'razorwing', 'shadowglider', 'stormbreakerbomber', 'frostwing', 'deepglider',
     'stormbreaker', 'wavecrusher', 'skyfortress', 'tidebreaker', 'whisperwind',
     'cargohauler', 'cyborgdreadnought', 'groundpounders', 'ironbeast', 'boomcannon',
-    'zoonparasite', 'roufestreal',
+    'zoonparasite', 'roufestreal', 'miningship',
 ];
 const GROUND_TYPES = ['groundpounders', 'ironbeast', 'boomcannon'];
 const COMBAT_TYPES = ALL_TYPES.filter(t => t !== 'radar' && t !== 'cargohauler');
@@ -710,7 +714,156 @@ check('a freshly-created Country starts with 1000 resources', () => {
     return [];
 });
 
-// ---------- 12. Zero-arg smoke test: every no-parameter top-level function ----------
+// ---------- 12. Resource deposits ("mines") + mining ships ----------
+//    Supremacy-style redesign (2026-08-25): a mining ship stationed within
+//    DEPOSIT_COLLECT_RANGE of a deposit drains it in real time (scaled by
+//    frameDeltaTime, same model as unit/missile movement), independent of turns.
+
+check('a mining ship stationed at a deposit collects income scaled by frameDeltaTime, depleting the deposit', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'Miner', '#ff0000', island, true);
+    gameState.countries = [country];
+    const dep = new ResourceDeposit(500, 500);
+    resourceDeposits.length = 0;
+    resourceDeposits.push(dep);
+    const ship = new Unit(500, 500, 'miningship', 0); // exactly at the deposit
+    country.units = [ship];
+    const startResources = country.resources;
+
+    vm.runInContext('frameDeltaTime = 3600;', context); // pretend a whole hour passed in one tick
+    updateMiningAndResearch();
+    vm.runInContext('frameDeltaTime = 1 / 60;', context); // restore default for later checks
+
+    const gained = country.resources - startResources;
+    if (Math.abs(gained - DEPOSIT_INCOME_PER_HOUR) > 0.01) {
+        problems.push(`expected ~${DEPOSIT_INCOME_PER_HOUR} resources gained for a full hour at the deposit, got ${gained}`);
+    }
+    if (Math.abs(dep.resources - (DEPOSIT_STARTING_RESOURCES - DEPOSIT_INCOME_PER_HOUR)) > 0.01) {
+        problems.push(`expected the deposit to drop by that same ${DEPOSIT_INCOME_PER_HOUR}, got resources=${dep.resources}`);
+    }
+    return problems;
+});
+
+check('a mining ship outside DEPOSIT_COLLECT_RANGE collects nothing', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'FarMiner', '#ff0000', island, true);
+    gameState.countries = [country];
+    const dep = new ResourceDeposit(0, 0);
+    resourceDeposits.length = 0;
+    resourceDeposits.push(dep);
+    const ship = new Unit(DEPOSIT_COLLECT_RANGE * 5, 0, 'miningship', 0); // well outside range
+    country.units = [ship];
+    const startResources = country.resources;
+
+    vm.runInContext('frameDeltaTime = 3600;', context);
+    updateMiningAndResearch();
+    vm.runInContext('frameDeltaTime = 1 / 60;', context);
+
+    if (country.resources !== startResources) problems.push(`expected no income while out of range, resources changed from ${startResources} to ${country.resources}`);
+    if (dep.resources !== DEPOSIT_STARTING_RESOURCES) problems.push(`expected the deposit untouched while no ship is in range, got ${dep.resources}`);
+    return problems;
+});
+
+check('a deposit never goes negative and stops producing once depleted', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'Drainer', '#ff0000', island, true);
+    gameState.countries = [country];
+    const dep = new ResourceDeposit(0, 0);
+    dep.resources = 10; // almost empty
+    resourceDeposits.length = 0;
+    resourceDeposits.push(dep);
+    const ship = new Unit(0, 0, 'miningship', 0);
+    country.units = [ship];
+    const startResources = country.resources;
+
+    vm.runInContext('frameDeltaTime = 3600;', context); // would drain 100 at full rate, only 10 left
+    updateMiningAndResearch();
+    vm.runInContext('frameDeltaTime = 1 / 60;', context);
+
+    const gained = country.resources - startResources;
+    if (dep.resources !== 0) problems.push(`expected the deposit to floor at 0, got ${dep.resources}`);
+    if (!dep.isDepleted()) problems.push('expected isDepleted() to be true once resources hit 0');
+    if (gained !== 10) problems.push(`expected the country to gain only the remaining 10 (not a full hour's rate), got ${gained}`);
+    return problems;
+});
+
+check('spawnResourceDeposits() gives every country a deposit near home', () => {
+    const problems = [];
+    const island1 = new Island(0, 0, 0);
+    const island2 = new Island(2000, 2000, 1);
+    const c1 = new Country(0, 'DepositTestA', '#ff0000', island1, true);
+    const c2 = new Country(1, 'DepositTestB', '#00ff00', island2, false);
+    gameState.countries = [c1, c2];
+
+    spawnResourceDeposits();
+
+    gameState.countries.forEach(c => {
+        const nearHome = resourceDeposits.some(d => Math.hypot(d.x - c.island.x, d.y - c.island.y) < c.island.size + 200);
+        if (!nearHome) problems.push(`expected a resource deposit near ${c.name}'s home island, found none within range`);
+    });
+    if (resourceDeposits.length < gameState.countries.length) {
+        problems.push(`expected at least one deposit per country (${gameState.countries.length}), got ${resourceDeposits.length} total`);
+    }
+    return problems;
+});
+
+// ---------- 13. Tech tree / research ----------
+//    Research runs in real time (like mining) via a country's Research Lab
+//    building. UNIT_TECH_REQUIREMENTS gates buildUnit() on whichever node (if
+//    any) a type needs - only 'miningship' is gated as of this redesign.
+
+check('buildUnit blocks a tech-gated unit type until its research is complete', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'Researcher', '#ff0000', island, true);
+    gameState.countries = [country];
+
+    if (country.canBuildUnit('miningship')) problems.push('expected miningship to be locked before research');
+    if (country.buildUnit('miningship')) problems.push('expected buildUnit(miningship) to fail before research, but it succeeded');
+
+    if (!country.startResearch('mining_ops')) problems.push('expected startResearch(mining_ops) to succeed for a fresh country (has resources, has a lab)');
+    if (country.canBuildUnit('miningship')) problems.push('expected miningship to still be locked mid-research');
+
+    country.updateResearch(TECH_TREE.mining_ops.timeSeconds + 1); // finish it
+    if (!country.researchedTech.has('mining_ops')) problems.push('expected mining_ops to be marked researched once enough time passed');
+    if (!country.canBuildUnit('miningship')) problems.push('expected miningship to be unlocked once mining_ops is researched');
+    if (!country.buildUnit('miningship')) problems.push('expected buildUnit(miningship) to succeed once researched and affordable');
+    return problems;
+});
+
+check('startResearch() refuses a second concurrent node, insufficient funds, and a destroyed Research Lab', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'Budget', '#ff0000', island, true);
+    gameState.countries = [country];
+
+    country.resources = 0;
+    if (country.startResearch('mining_ops')) problems.push('expected startResearch to fail with insufficient resources');
+
+    country.resources = 1000;
+    if (!country.startResearch('mining_ops')) problems.push('expected startResearch to succeed with enough resources and an intact lab');
+    if (country.startResearch('mining_ops')) problems.push('expected a second startResearch call to fail while one is already in flight');
+
+    country.activeResearch = null; // pretend the first was cleared/cancelled
+    const lab = country.island.getResearchLab();
+    lab.takeDamage(9999);
+    if (country.startResearch('mining_ops')) problems.push('expected startResearch to fail once the Research Lab is destroyed');
+    return problems;
+});
+
+check('MAP_WIDTH/HEIGHT honor GALAXY_SPACING_SCALE', () => {
+    if (GALAXY_SPACING_SCALE <= 1) return ['expected GALAXY_SPACING_SCALE > 1 for the Supremacy-style further-apart redesign'];
+    const expectedWidth = canvas.width * 50 * GALAXY_SPACING_SCALE;
+    if (Math.abs(MAP_WIDTH - expectedWidth) > 0.001) {
+        return [`expected MAP_WIDTH to equal canvas.width*50*GALAXY_SPACING_SCALE (${expectedWidth}), got ${MAP_WIDTH}`];
+    }
+    return [];
+});
+
+// ---------- 14. Zero-arg smoke test: every no-parameter top-level function ----------
 //    should be callable, from a real freshly-started game state, without
 //    throwing. Runs against every CURRENT and future zero-arg function
 //    automatically - no list to maintain.

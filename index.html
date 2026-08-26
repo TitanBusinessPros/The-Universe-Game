@@ -623,6 +623,7 @@
                 <button class="tab" onclick="switchTab('ground')">GROUND</button>
                 <button class="tab" onclick="switchTab('aircraft')">AIRCRAFT</button>
                 <button class="tab" onclick="switchTab('units')">UNITS</button>
+                <button class="tab" onclick="switchTab('research')">RESEARCH</button>
             </div>
             
             <div id="infoTab" class="tab-content active">
@@ -647,6 +648,12 @@
                 <button onclick="buildUnit('wavecrusher')">🔷 Wavecrusher (150💰)</button>
                 <button onclick="buildUnit('skyfortress')">🔷 Skyfortress (250💰)</button>
                 <button onclick="buildUnit('cargohauler')">🚢 Cargohauler Ship (120💰)</button>
+                <button onclick="buildUnit('miningship')">⛏️ Mining Ship (80💰)</button>
+                <p style="font-size: 9px; margin-top: 5px; color: #ffaa00;">
+                    Mining Ship: No weapons, no defense. Station it at a resource deposit
+                    (see the map) to collect 100💰/hour until the deposit runs dry. Requires
+                    Mining Operations research - see the RESEARCH tab.
+                </p>
 
                 <h3>ADVANCED NAVAL:</h3>
                 <button onclick="buildUnit('tidebreaker')">⚓️ Tidebreaker (200💰)</button>
@@ -699,6 +706,11 @@
                     <button onclick="cancelAction()">CANCEL</button>
                 </div>
                 <div id="unitsList"></div>
+            </div>
+
+            <div id="researchTab" class="tab-content">
+                <h3>RESEARCH LAB:</h3>
+                <div id="researchStatus"></div>
             </div>
         </div>
 
@@ -780,8 +792,14 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        const MAP_WIDTH = canvas.width * 50;   // 10x the original spacing - the galaxy is a lot bigger now
-        const MAP_HEIGHT = canvas.height * 50;
+        // Supremacy-style redesign (2026-08-25): planets pulled much further apart so travel
+        // between them takes real time and mining ships (see ResourceDeposit below) actually
+        // have distance to cover. Also used to scale the Cyborg/Zoonester/CUSTOM_ISLANDS
+        // frontier-planet offsets in initGame() so their relative distance from the home grid
+        // doesn't collapse just because the home grid itself got bigger.
+        const GALAXY_SPACING_SCALE = 2.5;
+        const MAP_WIDTH = canvas.width * 50 * GALAXY_SPACING_SCALE;   // 10x the original spacing, now x2.5 more on top
+        const MAP_HEIGHT = canvas.height * 50 * GALAXY_SPACING_SCALE;
 
         // --- Parallax starfield / nebula background --------------------------------
         // Purely cosmetic, drawn in plain screen space (not the pan/zoomed world
@@ -879,6 +897,34 @@
         // planet/unit size gets set stays proportional and this is easy to retune.
         const PLANET_SCALE = 1.5;
         const UNIT_SCALE = 4;
+
+        // Resource deposit ("mine") economics - Supremacy-style redesign (2026-08-25).
+        // A mining ship stationed within DEPOSIT_COLLECT_RANGE of a deposit drains it at
+        // DEPOSIT_INCOME_PER_HOUR real-time gold/hour (accrued every frame via
+        // frameDeltaTime, not per-turn) until the deposit's pool hits zero. Multiple ships
+        // at the same deposit each draw independently, so they deplete it faster together.
+        const DEPOSIT_INCOME_PER_HOUR = 100;
+        const DEPOSIT_STARTING_RESOURCES = 10000;
+        const DEPOSIT_COLLECT_RANGE = 60;
+
+        // Tech tree (2026-08-25 Supremacy-style redesign). Research happens in real time
+        // (like mining) via a country's Research Lab building (Island.getResearchLab()),
+        // one node in flight at a time - see Country.startResearch()/updateResearch().
+        // UNIT_TECH_REQUIREMENTS gates buildUnit() on whichever node (if any) a unit type
+        // needs; a type with no entry here is ungated, so all 20 pre-existing ship types
+        // are unaffected by this system until they're deliberately added to the tree.
+        const TECH_TREE = {
+            mining_ops: {
+                name: 'Mining Operations',
+                cost: 300,
+                timeSeconds: 60,
+                prereq: null,
+                description: 'Unlocks the Mining Ship - stations at a resource deposit and collects 100/hour.'
+            }
+        };
+        const UNIT_TECH_REQUIREMENTS = {
+            'miningship': 'mining_ops'
+        };
 
         const UNIT_SPEEDS = {
             'blazefalcon': 3.5,
@@ -1280,6 +1326,12 @@
         // networked multiplayer lands) - exactly the same reasoning as
         // nextMineId/nextMissileId above, just applied to units too.
         let nextUnitId = 1;
+        // Resource deposits ("mines" in player-facing text) - named ResourceDeposit, not
+        // reusing SpaceMine, because that class is already the unrelated explosive
+        // proximity mine roufestreal lays (spaceMines above). Neutral, unowned map
+        // objects: any country's mining ship can station at one and draw it down.
+        let resourceDeposits = [];
+        let nextResourceDepositId = 0;
         let laserEffects = []; // {startX, startY, endX, endY, createdAt, duration, color}
 
         const COUNTRY_NAMES = [
@@ -1487,7 +1539,7 @@
         };
 
         class Building {
-            constructor(name, x, y, isHarbor = false, isDefenseGun = false) {
+            constructor(name, x, y, isHarbor = false, isDefenseGun = false, isResearchLab = false) {
                 this.name = name;
                 this.x = x;
                 this.y = y;
@@ -1504,6 +1556,12 @@
                 this.destroyed = false;
                 this.isHarbor = isHarbor;
                 this.isDefenseGun = isDefenseGun;
+                // Research Lab (2026-08-25 tech tree redesign) - mechanical flag only, same
+                // pattern as isHarbor/isDefenseGun. It's always the FIRST of the six fixed
+                // building slots (see Island.createBuildings()), regardless of that slot's
+                // flavor name for a given nation - the tech tree doesn't care what the
+                // building is called locally, only that every nation has exactly one.
+                this.isResearchLab = isResearchLab;
                 this.range = 500;
                 this.attackPower = 15;
                 this.hasAttacked = false;
@@ -1520,6 +1578,47 @@
             }
         }
 
+
+        class ResourceDeposit {
+            // Neutral map object ("mine" in player-facing text). Not owned by any country -
+            // whichever mining ships station nearby draw it down. imageUrl is optional so this
+            // renders with a placeholder until real art is supplied.
+            constructor(x, y, imageUrl = null) {
+                this.id = nextResourceDepositId++;
+                this.x = x;
+                this.y = y;
+                this.resources = DEPOSIT_STARTING_RESOURCES;
+                this.maxResources = DEPOSIT_STARTING_RESOURCES;
+                this.size = 14;
+                this.sprite = null;
+                if (imageUrl) { this.sprite = new Image(); this.sprite.src = imageUrl; }
+            }
+            isDepleted() { return this.resources <= 0; }
+            draw() {
+                const screenX = (this.x - camera.x) * camera.zoom + canvas.width / 2;
+                const screenY = (this.y - camera.y) * camera.zoom + canvas.height / 2;
+                if (this.sprite && this.sprite.complete && this.sprite.naturalWidth > 0) {
+                    ctx.drawImage(this.sprite, screenX - this.size * camera.zoom, screenY - this.size * camera.zoom, this.size * camera.zoom * 2, this.size * camera.zoom * 2);
+                } else {
+                    ctx.fillStyle = this.isDepleted() ? '#555533' : '#ffd700';
+                    ctx.beginPath();
+                    ctx.arc(screenX, screenY, this.size * camera.zoom, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#aa8800';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    ctx.fillStyle = '#000';
+                    ctx.font = 'bold 10px Courier New';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('$', screenX, screenY + 4);
+                }
+                const barWidth = 30, hpPercent = this.resources / this.maxResources;
+                ctx.fillStyle = '#333';
+                ctx.fillRect(screenX - barWidth / 2, screenY - this.size * camera.zoom - 10, barWidth, 4);
+                ctx.fillStyle = '#ffd700';
+                ctx.fillRect(screenX - barWidth / 2, screenY - this.size * camera.zoom - 10, barWidth * hpPercent, 4);
+            }
+        }
 
         class SpaceMine {
             constructor(x, y, countryId, imageUrl = null) {
@@ -1579,7 +1678,9 @@
                 // proportionally on the now-larger planet body instead of clustering
                 // near the center.
                 return [
-                    new Building(this.structureNames[0], -60 * PLANET_SCALE, -45 * PLANET_SCALE, false, false),
+                    // Slot 0 doubles as every nation's Research Lab (isResearchLab=true),
+                    // regardless of what its flavor name happens to be for that nation.
+                    new Building(this.structureNames[0], -60 * PLANET_SCALE, -45 * PLANET_SCALE, false, false, true),
                     new Building(this.structureNames[1], 30 * PLANET_SCALE, -60 * PLANET_SCALE, false, false),
                     new Building(this.structureNames[2], -30 * PLANET_SCALE, 30 * PLANET_SCALE, true, false),
                     new Building(this.structureNames[3], 50 * PLANET_SCALE, 20 * PLANET_SCALE, false, false),
@@ -1594,6 +1695,10 @@
 
             getDefenseGun() {
                 return this.buildings.find(b => b.isDefenseGun && !b.destroyed);
+            }
+
+            getResearchLab() {
+                return this.buildings.find(b => b.isResearchLab && !b.destroyed);
             }
 
             getHarborWorldPosition() {
@@ -1801,7 +1906,11 @@
             }
 
             isNaval() {
-                return ['deepglider', 'stormbreaker', 'wavecrusher', 'skyfortress', 'cargohauler', 'tidebreaker', 'whisperwind', 'cyborgdreadnought', 'zoonparasite', 'roufestreal'].includes(this.type);
+                return ['deepglider', 'stormbreaker', 'wavecrusher', 'skyfortress', 'cargohauler', 'tidebreaker', 'whisperwind', 'cyborgdreadnought', 'zoonparasite', 'roufestreal', 'miningship'].includes(this.type);
+            }
+
+            isMiningShip() {
+                return this.type === 'miningship';
             }
 
             isAircraft() {
@@ -1820,7 +1929,8 @@
                     'cyborgdreadnought': 300,
                     'groundpounders': 40, 'ironbeast': 100, 'boomcannon': 70,
                 'zoonparasite': 200,
-                'roufestreal': 100
+                'roufestreal': 100,
+                'miningship': 40 // deliberately fragile - "no defense" per the mining economy redesign
                 };
                 const baseHP = hpMap[this.type] || 100;
                 
@@ -1843,7 +1953,8 @@
                     'cyborgdreadnought': 210,
                     'groundpounders': 15, 'ironbeast': 45, 'boomcannon': 60,
                 'zoonparasite': 0,
-                'roufestreal': 0
+                'roufestreal': 0,
+                'miningship': 0 // no weapons - "no defense" per the mining economy redesign
                 };
                 const basePower = powerMap[this.type] || 20;
                 
@@ -1878,7 +1989,8 @@
                     'cyborgdreadnought': 500,
                     'groundpounders': 60, 'ironbeast': 90, 'boomcannon': 180,
                 'zoonparasite': 500,
-                'roufestreal': 150
+                'roufestreal': 150,
+                'miningship': 0
                 };
                 const baseRange = rangeMap[this.type] || 100;
                 
@@ -1899,7 +2011,8 @@
                     'cyborgdreadnought': 20,
                     'roufestreal': 12,
                     'groundpounders': 5, 'ironbeast': 7, 'boomcannon': 6,
-                'zoonparasite': 8
+                'zoonparasite': 8,
+                'miningship': 9
                 };
                 return (sizeMap[this.type] || 5) * UNIT_SCALE;
             }
@@ -1923,7 +2036,8 @@
                     'groundpounders': '#44ff44',
                     'ironbeast': '#666666',
                     'boomcannon': '#ff8844',
-                'zoonparasite': '#9d00ff'
+                'zoonparasite': '#9d00ff',
+                'miningship': '#ffd700'
                 };
                 return colorMap[this.type] || '#ffffff';
             }
@@ -2226,6 +2340,28 @@
         // hasAttacked to reset next turn and does it again - so "select troops, click an
         // enemy" now actually sends them there and keeps them fighting, instead of just
         // alerting "out of range" and doing nothing when the target isn't already adjacent.
+        // Real-time economy tick (2026-08-25 Supremacy-style redesign) - runs every frame,
+        // scaled by frameDeltaTime so it's frame-rate independent like unit/missile
+        // movement. Mining ships stationed within DEPOSIT_COLLECT_RANGE of a deposit drain
+        // it continuously; every country's research (if any is active) ticks down the same
+        // way, independent of the turn timer.
+        function updateMiningAndResearch() {
+            gameState.countries.forEach(country => {
+                country.updateResearch(frameDeltaTime);
+                country.units.forEach(unit => {
+                    if (!unit.isMiningShip()) return;
+                    resourceDeposits.forEach(dep => {
+                        if (dep.isDepleted()) return;
+                        const dist = Math.hypot(unit.x - dep.x, unit.y - dep.y);
+                        if (dist > DEPOSIT_COLLECT_RANGE) return;
+                        const amount = Math.min(dep.resources, (DEPOSIT_INCOME_PER_HOUR / 3600) * frameDeltaTime);
+                        dep.resources -= amount;
+                        country.resources += amount;
+                    });
+                });
+            });
+        }
+
         function processAttackMoveOrders() {
             gameState.countries.forEach(attackerCountry => {
                 attackerCountry.units.forEach(unit => {
@@ -2301,10 +2437,47 @@
                 // assigns a rival's outposts the same team as their homeworld, below, so they
                 // don't perpetually "fight" their own garrison instead of the player.
                 this.team = id;
+                // Tech tree (2026-08-25 Supremacy-style redesign). researchedTech holds
+                // TECH_TREE keys this country has finished; activeResearch is either null or
+                // { id, remaining } counting down in real time via updateResearch().
+                this.researchedTech = new Set();
+                this.activeResearch = null;
             }
 
             collectResources() {
                 this.resources += this.resourceRate;
+            }
+
+            // Tech-gate check only - doesn't touch resources. Unlisted unit types (every
+            // pre-existing ship) have no entry in UNIT_TECH_REQUIREMENTS and are always true.
+            canBuildUnit(type) {
+                const req = UNIT_TECH_REQUIREMENTS[type];
+                return !req || this.researchedTech.has(req);
+            }
+
+            startResearch(techId) {
+                if (this.activeResearch) return false; // one node in flight at a time
+                const tech = TECH_TREE[techId];
+                if (!tech) return false;
+                if (this.researchedTech.has(techId)) return false;
+                if (tech.prereq && !this.researchedTech.has(tech.prereq)) return false;
+                if (!this.island.getResearchLab()) return false;
+                if (this.resources < tech.cost) return false;
+                this.resources -= tech.cost;
+                this.activeResearch = { id: techId, remaining: tech.timeSeconds };
+                return true;
+            }
+
+            // Called every frame with real elapsed seconds (frameDeltaTime), same real-time
+            // model as ResourceDeposit collection - research progresses whether or not a
+            // turn has passed.
+            updateResearch(dt) {
+                if (!this.activeResearch) return;
+                this.activeResearch.remaining -= dt;
+                if (this.activeResearch.remaining <= 0) {
+                    this.researchedTech.add(this.activeResearch.id);
+                    this.activeResearch = null;
+                }
             }
 
             buildUnit(type) {
@@ -2316,8 +2489,11 @@
                     'wavecrusher': 150, 'skyfortress': 250,
                     'tidebreaker': 200, 'whisperwind': 160,
                     'cargohauler': 120,
-                    'groundpounders': 20, 'ironbeast': 80, 'boomcannon': 100
+                    'groundpounders': 20, 'ironbeast': 80, 'boomcannon': 100,
+                    'miningship': 80
                 };
+
+                if (!this.canBuildUnit(type)) return false;
 
                 const cost = costs[type];
                 if (this.resources >= cost) {
@@ -2811,6 +2987,40 @@
             });
         }
         
+        // Called once from initGame() after every country/island exists. Gives every
+        // country a deposit close to home, then scatters extra ones further out across
+        // the (now much bigger, see GALAXY_SPACING_SCALE) galaxy for players to expand
+        // toward once a home deposit runs dry or gets contested.
+        function spawnResourceDeposits() {
+            resourceDeposits.length = 0;
+            nextResourceDepositId = 0;
+
+            gameState.countries.forEach(country => {
+                const angle = Math.random() * Math.PI * 2;
+                const dist = country.island.size + 120;
+                resourceDeposits.push(new ResourceDeposit(
+                    country.island.x + Math.cos(angle) * dist,
+                    country.island.y + Math.sin(angle) * dist
+                ));
+            });
+
+            const extraCount = gameState.countries.length;
+            let placed = 0, attempts = 0;
+            while (placed < extraCount && attempts < extraCount * 30) {
+                attempts++;
+                const x = Math.random() * MAP_WIDTH;
+                const y = Math.random() * MAP_HEIGHT;
+                const tooCloseToIsland = gameState.countries.some(c =>
+                    Math.hypot(x - c.island.x, y - c.island.y) < c.island.collisionSize + 300
+                );
+                const tooCloseToOtherDeposit = resourceDeposits.some(d => Math.hypot(x - d.x, y - d.y) < 400);
+                if (!tooCloseToIsland && !tooCloseToOtherDeposit) {
+                    resourceDeposits.push(new ResourceDeposit(x, y));
+                    placed++;
+                }
+            }
+        }
+
         function initGame() {
             // Initialize audio
             initAudio();
@@ -2840,10 +3050,10 @@
             const centerY = MAP_HEIGHT / 2;
             
             const cyborgPlanets = [
-                { x: centerX, y: centerY - 30000, name: 'Cyborg Planet North', id: 12 },
-                { x: centerX, y: centerY + 30000, name: 'Cyborg Planet South', id: 13 },
-                { x: centerX + 30000, y: centerY, name: 'Cyborg Planet East', id: 14 },
-                { x: centerX - 30000, y: centerY, name: 'Cyborg Planet West', id: 15 }
+                { x: centerX, y: centerY - 30000 * GALAXY_SPACING_SCALE, name: 'Cyborg Planet North', id: 12 },
+                { x: centerX, y: centerY + 30000 * GALAXY_SPACING_SCALE, name: 'Cyborg Planet South', id: 13 },
+                { x: centerX + 30000 * GALAXY_SPACING_SCALE, y: centerY, name: 'Cyborg Planet East', id: 14 },
+                { x: centerX - 30000 * GALAXY_SPACING_SCALE, y: centerY, name: 'Cyborg Planet West', id: 15 }
             ];
 
             cyborgPlanets.forEach(planet => {
@@ -2855,7 +3065,7 @@
             });
             
             // Add Zoonester planet 1000 units north of northernmost Cyborg planet
-            const zoonesterY = centerY - 30000 - 10000;
+            const zoonesterY = centerY - 30000 * GALAXY_SPACING_SCALE - 10000 * GALAXY_SPACING_SCALE;
             const zoonesterIsland = new Island(centerX, zoonesterY, 16);
             zoonesterIsland.size = 350 * PLANET_SCALE;
             zoonesterIsland.collisionSize = 350;
@@ -2894,8 +3104,8 @@
                     ISLAND_STRUCTURES[nextCustomId] = ['Custom Structure 1', 'Custom Structure 2', 'Harbor', 'Marine Base', 'War Factory', 'Defense Gun'];
                 }
 
-                const customX = centerX + customIsland.xOffset;
-                const customY = centerY + customIsland.yOffset;
+                const customX = centerX + customIsland.xOffset * GALAXY_SPACING_SCALE;
+                const customY = centerY + customIsland.yOffset * GALAXY_SPACING_SCALE;
                 const island = new Island(customX, customY, nextCustomId);
                 island.size = (customIsland.size || 350) * PLANET_SCALE;
                 // Balance pass (2026-08-24): every custom island used the same
@@ -2942,6 +3152,8 @@
                 nextCustomId++;
             });
             // =====================================================================
+
+            spawnResourceDeposits();
 
             const selectDiv = document.getElementById('countrySelect');
 
@@ -3140,6 +3352,12 @@
         }
 
         function buildUnit(type) {
+            if (!gameState.playerCountry.canBuildUnit(type)) {
+                const techId = UNIT_TECH_REQUIREMENTS[type];
+                const tech = TECH_TREE[techId];
+                alert(`Research required: ${tech ? tech.name : techId}`);
+                return;
+            }
             if (gameState.playerCountry.buildUnit(type)) {
                 lifetimeStats.unitsBuilt++;
                 saveLifetimeStats();
@@ -3147,6 +3365,23 @@
             } else {
                 alert('Not enough resources!');
             }
+        }
+
+        function researchTech(techId) {
+            const country = gameState.playerCountry;
+            if (country.activeResearch) {
+                alert('Research already in progress - only one node at a time.');
+                return;
+            }
+            if (!country.island.getResearchLab()) {
+                alert('Research Lab destroyed - it must be standing to research.');
+                return;
+            }
+            if (!country.startResearch(techId)) {
+                alert('Not enough resources for that research.');
+                return;
+            }
+            updateUI();
         }
 
         function selectUnit(unit) {
@@ -3549,12 +3784,15 @@
                 playerCountryId: gameState.playerCountry.id,
                 camera: { x: camera.x, y: camera.y, zoom: camera.zoom },
                 spaceMines: spaceMines.map(m => ({ x: m.x, y: m.y, countryId: m.countryId, hp: m.hp })),
+                resourceDeposits: resourceDeposits.map(d => ({ x: d.x, y: d.y, resources: d.resources })),
                 countries: gameState.countries.map(c => ({
                     id: c.id,
                     resources: c.resources,
                     cyborgTurnCounter: c.cyborgTurnCounter,
                     zoonesterTurnCounter: c.zoonesterTurnCounter,
                     roufestrealTurnCounter: c.roufestrealTurnCounter,
+                    researchedTech: Array.from(c.researchedTech),
+                    activeResearch: c.activeResearch,
                     units: c.units.map(u => ({
                         x: u.x,
                         y: u.y,
@@ -3600,6 +3838,19 @@
                 });
             }
 
+            if (saveData.resourceDeposits) {
+                resourceDeposits.length = 0;
+                saveData.resourceDeposits.forEach(d => {
+                    const dep = new ResourceDeposit(d.x, d.y);
+                    dep.resources = d.resources;
+                    resourceDeposits.push(dep);
+                });
+            } else {
+                // Save from before the Supremacy-style economy redesign - regenerate deposits
+                // fresh rather than leaving the loaded game with none at all.
+                spawnResourceDeposits();
+            }
+
             saveData.countries.forEach((savedCountry, idx) => {
                 const country = gameState.countries[idx];
                 if (!country) return;
@@ -3607,6 +3858,8 @@
                 country.cyborgTurnCounter = savedCountry.cyborgTurnCounter || 0;
                 country.zoonesterTurnCounter = savedCountry.zoonesterTurnCounter || 0;
                 country.roufestrealTurnCounter = savedCountry.roufestrealTurnCounter || 0;
+                country.researchedTech = new Set(savedCountry.researchedTech || []);
+                country.activeResearch = savedCountry.activeResearch || null;
 
                 savedCountry.buildings.forEach((savedBuilding, bIdx) => {
                     if (country.island.buildings[bIdx]) {
@@ -4253,7 +4506,7 @@
             let infoHtml = `
                 <div class="stat"><strong>Turn:</strong> ${gameState.turn}</div>
                 ${AUTO_TURN_ENABLED ? `<div class="stat"><strong>Time Remaining:</strong> ${formatTime(gameState.turnTimeRemaining)}</div>` : ''}
-                <div class="stat"><strong>Resources:</strong> ${country.resources} 💰</div>
+                <div class="stat"><strong>Resources:</strong> ${Math.floor(country.resources)} 💰</div>
                 <div class="stat"><strong>Per Turn:</strong> +${country.resourceRate} 💰</div>
                 <h3>ISLAND BUILDINGS:</h3>
             `;
@@ -4261,6 +4514,7 @@
             country.island.buildings.forEach((building, idx) => {
                 infoHtml += `<div class="building-item ${building.destroyed ? 'destroyed' : ''}">
                     ${building.name} - HP: ${building.hp}/${building.maxHp}
+                    ${building.isResearchLab ? ' 🔬 [RESEARCH LAB]' : ''}
                     ${building.destroyed ? ' [DESTROYED]' : ''}
                 </div>`;
             });
@@ -4313,6 +4567,42 @@
             }
             
             document.getElementById('unitsList').innerHTML = unitsHtml;
+
+            const researchEl = document.getElementById('researchStatus');
+            if (researchEl) researchEl.innerHTML = buildResearchStatusHtml(country);
+        }
+
+        // Separate from updateUI() proper so the regression suite can call it directly
+        // without needing a live document with every panel element present.
+        function buildResearchStatusHtml(country) {
+            const lab = country.island.getResearchLab();
+            if (!lab) {
+                return `<p style="color:#ff4444;">Research Lab destroyed - research unavailable until it's rebuilt (not yet possible).</p>`;
+            }
+            let html = '';
+            if (country.activeResearch) {
+                const tech = TECH_TREE[country.activeResearch.id];
+                html += `<div class="stat">🔬 Researching <strong>${tech.name}</strong> - ${Math.ceil(country.activeResearch.remaining)}s remaining</div>`;
+            } else {
+                html += `<div class="stat">No active research.</div>`;
+            }
+            html += '<h3>AVAILABLE:</h3>';
+            Object.entries(TECH_TREE).forEach(([id, tech]) => {
+                if (country.researchedTech.has(id)) {
+                    html += `<div class="stat">✅ ${tech.name} (researched)</div>`;
+                    return;
+                }
+                const prereqMet = !tech.prereq || country.researchedTech.has(tech.prereq);
+                const disabled = !prereqMet || !!country.activeResearch || country.resources < tech.cost;
+                html += `
+                    <div class="stat">
+                        <strong>${tech.name}</strong> (${tech.cost}💰, ${tech.timeSeconds}s)<br>
+                        <span style="font-size: 9px; color: #ffaa00;">${tech.description}</span><br>
+                        <button onclick="researchTech('${id}')" ${disabled ? 'disabled' : ''}>RESEARCH</button>
+                    </div>
+                `;
+            });
+            return html;
         }
 
         // Small always-on solar-system overview in the top-right corner: every planet as a dot
@@ -4498,12 +4788,14 @@
 
             if (!gameState.paused) {
                 processAttackMoveOrders();
+                updateMiningAndResearch();
             }
 
             drawRadarPulses();
             const now=Date.now();laserEffects=laserEffects.filter(l=>{const age=now-l.createdAt;if(age>l.duration)return false;const alpha=1-(age/l.duration);const isBlue=l.color==='blue';const c1=isBlue?`rgba(0,150,255,${alpha*0.3})`:`rgba(0,255,0,${alpha*0.3})`;const c2=isBlue?`rgba(50,200,255,${alpha*0.6})`:`rgba(50,255,50,${alpha*0.6})`;const c3=isBlue?`rgba(150,230,255,${alpha})`:`rgba(150,255,150,${alpha})`;ctx.strokeStyle=c1;ctx.lineWidth=12*camera.zoom;ctx.beginPath();ctx.moveTo(l.startX,l.startY);ctx.lineTo(l.endX,l.endY);ctx.stroke();ctx.strokeStyle=c2;ctx.lineWidth=6*camera.zoom;ctx.beginPath();ctx.moveTo(l.startX,l.startY);ctx.lineTo(l.endX,l.endY);ctx.stroke();ctx.strokeStyle=c3;ctx.lineWidth=2*camera.zoom;ctx.beginPath();ctx.moveTo(l.startX,l.startY);ctx.lineTo(l.endX,l.endY);ctx.stroke();return true;});
             if(!gameState.paused){spaceMines.forEach(mine=>{gameState.countries.forEach(country=>{country.units.forEach(unit=>{if(unit.isGroundUnit()&&unit.isInHarbor)return;const dx=unit.x-mine.x,dy=unit.y-mine.y,dist=Math.sqrt(dx*dx+dy*dy);if(dist<mine.detectionRange&&mine.countryId!==country.id){unit.hp-=Math.ceil(unit.hp*mine.damage);mine.hp=0;}});});});spaceMines=spaceMines.filter(m=>m.hp>0);}
             spaceMines.forEach(m=>m.draw());
+            resourceDeposits.forEach(d=>d.draw());
             if(!gameState.paused){missiles.forEach(m=>{m.update();if(!m.active&&m.targetBuilding&&m.targetCountry&&!m.targetBuilding.destroyed)m.targetBuilding.takeDamage(m.damage);});missiles=missiles.filter(m=>m.active);}
             missiles.forEach(m=>m.draw());
 
