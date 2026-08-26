@@ -80,6 +80,23 @@
             overflow-y: auto;
             z-index: 1000;
         }
+        .modeSection {
+            border: 2px solid #00ff00;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        .modeSection h2 {
+            color: #ffff00;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+        .modeSection .modeDesc {
+            font-size: 12px;
+            color: #88ff88;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
         #gameOverScreen {
             position: absolute;
             top: 50%;
@@ -554,16 +571,31 @@
 
         <div id="startScreen">
             <h1>🌌 AFTER EARTH 🌌</h1>
-            <p style="margin-bottom: 10px;">Difficulty:</p>
-            <div id="difficultySelect" style="display:flex; gap:10px; justify-content:center; margin-bottom:20px;">
-                <button id="diffBtn-easy" class="difficultyBtn" onclick="chooseDifficulty('easy')">Easy</button>
-                <button id="diffBtn-normal" class="difficultyBtn" onclick="chooseDifficulty('normal')">Normal</button>
-                <button id="diffBtn-hard" class="difficultyBtn" onclick="chooseDifficulty('hard')">Hard</button>
+            <p style="margin-bottom: 20px; color:#88ff88; font-size:13px;">Choose how you want to play:</p>
+
+            <div class="modeSection">
+                <h2>🌌 SINGLE MAP CHALLENGE</h2>
+                <p class="modeDesc">One galaxy, one sitting. Pick a difficulty and a nation, then build up,
+                    research, and take out every other nation on the map.</p>
+                <p style="margin-bottom: 10px;">Difficulty:</p>
+                <div id="difficultySelect" style="display:flex; gap:10px; justify-content:center; margin-bottom:20px;">
+                    <button id="diffBtn-easy" class="difficultyBtn" onclick="chooseDifficulty('easy')">Easy</button>
+                    <button id="diffBtn-normal" class="difficultyBtn" onclick="chooseDifficulty('normal')">Normal</button>
+                    <button id="diffBtn-hard" class="difficultyBtn" onclick="chooseDifficulty('hard')">Hard</button>
+                </div>
+                <p style="margin-bottom: 20px;">Select Your Country:</p>
+                <div id="countrySelect"></div>
             </div>
-            <button id="campaignEntryBtn" class="countryBtn" style="width:100%; text-align:center; background:#ff8800; border-color:#ff8800; margin-bottom:20px;" onclick="openCampaignNationSelect()">🎖️ CAMPAIGN MODE</button>
-            <button class="countryBtn" style="width:100%; text-align:center; background:#00aaff; border-color:#00aaff; margin-bottom:20px;" onclick="openStatsScreen()">📊 YOUR STATS</button>
-            <p style="margin-bottom: 20px;">Select Your Country:</p>
-            <div id="countrySelect"></div>
+
+            <div class="modeSection">
+                <h2>🎖️ CAMPAIGN MODE</h2>
+                <p class="modeDesc">A scripted string of battles against one rival at a time, with alien
+                    threats mixed into every stage. Built for players who want a story to follow, not just
+                    a sandbox.</p>
+                <button id="campaignEntryBtn" class="countryBtn" style="width:100%; text-align:center; background:#ff8800; border-color:#ff8800;" onclick="openCampaignNationSelect()">🎖️ START CAMPAIGN</button>
+            </div>
+
+            <button class="countryBtn" style="width:100%; text-align:center; background:#00aaff; border-color:#00aaff;" onclick="openStatsScreen()">📊 YOUR STATS</button>
         </div>
 
         <div id="statsScreen" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.95); color:#00ff00; padding:30px; border-radius:12px; text-align:center; max-width:500px; max-height:90vh; overflow-y:auto; z-index:1000;">
@@ -594,7 +626,7 @@
         <div id="videoScreen">
             <h2 style="color: #ffff00; margin-bottom: 20px;">MISSION BRIEFING</h2>
             <video id="briefingVideo" controls preload="none">
-                <source src="https://raw.githubusercontent.com/TitanBusinessPros/SGA-1/main/Untitled%20video%20-%20Made%20with%20Clipchamp%20(4).mp4" type="video/mp4">
+                <source src="https://github.com/TitanBusinessPros/DeepSeaGems/raw/main/NG-Ad-1.mp4" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
             <button onclick="closeVideo()" style="background: #00ff00;">START GAME</button>

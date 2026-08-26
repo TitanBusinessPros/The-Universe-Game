@@ -5,6 +5,7 @@
     "autoSaveGame",
     "beginCampaignFromBriefing",
     "buildCampaignStages",
+    "buildResearchStatusHtml",
     "buildSaveData",
     "buildStageObjectives",
     "buildUnit",
@@ -13,6 +14,7 @@
     "campaignCountryName",
     "campaignNationPosition",
     "campaignOutpostPosition",
+    "canPause",
     "cancelAction",
     "centerOnPlayer",
     "checkGameOver",
@@ -53,6 +55,7 @@
     "pollLoadingScreen",
     "processAttackMoveOrders",
     "queueImageLoad",
+    "researchTech",
     "resumeCampaign",
     "saveCampaignProgress",
     "saveGame",
@@ -66,15 +69,20 @@
     "showCampaignStageComplete",
     "showGameOver",
     "spawnCampaignGarrison",
+    "spawnResourceDeposits",
     "startCampaignStage",
     "startGame",
+    "startHotSeatGame",
     "startMusic",
     "switchTab",
+    "switchToNextHumanSeat",
     "toggleCampaignObjectives",
     "toggleLegend",
+    "togglePause",
     "toggleSound",
     "toggleUI",
     "updateCampaignObjectivesPanel",
+    "updateMiningAndResearch",
     "updateSpaceElements",
     "updateTimer",
     "updateUI",
@@ -85,6 +93,10 @@
   "classes": {
     "Building": [
       "takeDamage"
+    ],
+    "ResourceDeposit": [
+      "draw",
+      "isDepleted"
     ],
     "SpaceMine": [
       "draw",
@@ -101,7 +113,8 @@
       "generateShape",
       "getDefenseGun",
       "getHarbor",
-      "getHarborWorldPosition"
+      "getHarborWorldPosition",
+      "getResearchLab"
     ],
     "Unit": [
       "canAttackBuildings",
@@ -115,7 +128,8 @@
       "isAircraft",
       "isGroundUnit",
       "isHovered",
-      "isNaval",
+      "isMiningShip",
+      "isVessel",
       "loadIntoCargohauler",
       "moveTo",
       "unloadFromCargohauler",
@@ -124,10 +138,13 @@
     "Country": [
       "aiTurn",
       "buildUnit",
+      "canBuildUnit",
       "collectResources",
       "countUnits",
       "defenseGunAttack",
-      "resetAttacks"
+      "resetAttacks",
+      "startResearch",
+      "updateResearch"
     ]
   }
 }
