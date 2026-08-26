@@ -628,8 +628,8 @@
             
             <div id="infoTab" class="tab-content active">
                 <div id="countryInfo"></div>
-                <div style="margin-top: 15px;">
-                    <button onclick="gameState.paused = !gameState.paused; updateUI();">⏸️ PAUSE TIMER</button>
+                <div id="pauseControls" style="margin-top: 15px;">
+                    <button onclick="togglePause()">⏸️ PAUSE TIMER</button>
                 </div>
                 <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #00ff00;">
                     <h3 style="color: #ffff00;">GAME CONTROLS:</h3>
@@ -920,6 +920,24 @@
                 timeSeconds: 60,
                 prereq: null,
                 description: 'Unlocks the Mining Ship - stations at a resource deposit and collects 100/hour.'
+            },
+            // First branch: an economy tier built ON TOP of Mining Operations (prereq
+            // gated), so the tree actually chains instead of just listing options.
+            improved_extraction: {
+                name: 'Improved Extraction',
+                cost: 500,
+                timeSeconds: 90,
+                prereq: 'mining_ops',
+                description: 'Boosts Mining Ship income from 100/hour to 150/hour.'
+            },
+            // Second branch: independent of mining entirely (no prereq) - a combat-side
+            // upgrade so the tree visibly branches into more than one domain.
+            vessel_plating: {
+                name: 'Vessel Plating',
+                cost: 400,
+                timeSeconds: 90,
+                prereq: null,
+                description: '+15% HP on every vessel-class ship you build from now on (already-built ships are unaffected).'
             }
         };
         const UNIT_TECH_REQUIREMENTS = {
@@ -1945,12 +1963,22 @@
                 'miningship': 40 // deliberately fragile - "no defense" per the mining economy redesign
                 };
                 const baseHP = hpMap[this.type] || 100;
-                
+
                 const countryBonus = COUNTRY_BONUSES[this.countryId];
-                if (countryBonus && countryBonus.hpMultiplier[this.type]) {
-                    return Math.round(baseHP * countryBonus.hpMultiplier[this.type]);
+                let hp = (countryBonus && countryBonus.hpMultiplier[this.type])
+                    ? Math.round(baseHP * countryBonus.hpMultiplier[this.type])
+                    : baseHP;
+
+                // Vessel Plating research (+15% HP, vessel-class only - see TECH_TREE).
+                // Applied here at construction time, same as the country bonus above, so it
+                // only affects ships built AFTER the research completes, not retroactively.
+                if (this.isVessel()) {
+                    const country = gameState.countries.find(c => c.id === this.countryId);
+                    if (country && country.researchedTech.has('vessel_plating')) {
+                        hp = Math.round(hp * 1.15);
+                    }
                 }
-                return baseHP;
+                return hp;
             }
 
             getAttackPower() {
@@ -2360,13 +2388,17 @@
         function updateMiningAndResearch() {
             gameState.countries.forEach(country => {
                 country.updateResearch(frameDeltaTime);
+                // Improved Extraction research (+50% mining rate, per country - see TECH_TREE).
+                const hourlyRate = country.researchedTech.has('improved_extraction')
+                    ? DEPOSIT_INCOME_PER_HOUR * 1.5
+                    : DEPOSIT_INCOME_PER_HOUR;
                 country.units.forEach(unit => {
                     if (!unit.isMiningShip()) return;
                     resourceDeposits.forEach(dep => {
                         if (dep.isDepleted()) return;
                         const dist = Math.hypot(unit.x - dep.x, unit.y - dep.y);
                         if (dist > DEPOSIT_COLLECT_RANGE) return;
-                        const amount = Math.min(dep.resources, (DEPOSIT_INCOME_PER_HOUR / 3600) * frameDeltaTime);
+                        const amount = Math.min(dep.resources, (hourlyRate / 3600) * frameDeltaTime);
                         dep.resources -= amount;
                         country.resources += amount;
                     });
@@ -2778,10 +2810,18 @@
                 }
                 
                 // Tech tree / mining economy - same system a human plays with (see the
-                // AI_RESEARCH_CHANCE/AI_MINING_SHIP_CHANCE comment above).
-                if (!this.activeResearch && !this.researchedTech.has('mining_ops') &&
-                    this.resources >= TECH_TREE.mining_ops.cost && Math.random() < AI_RESEARCH_CHANCE) {
-                    this.startResearch('mining_ops');
+                // AI_RESEARCH_CHANCE/AI_MINING_SHIP_CHANCE comment above). Picks randomly
+                // among whichever nodes are actually available (prereq met, affordable) so
+                // this doesn't need updating every time a new TECH_TREE node is added.
+                if (!this.activeResearch && Math.random() < AI_RESEARCH_CHANCE) {
+                    const available = Object.keys(TECH_TREE).filter(id =>
+                        !this.researchedTech.has(id) &&
+                        (!TECH_TREE[id].prereq || this.researchedTech.has(TECH_TREE[id].prereq)) &&
+                        this.resources >= TECH_TREE[id].cost
+                    );
+                    if (available.length > 0) {
+                        this.startResearch(available[Math.floor(Math.random() * available.length)]);
+                    }
                 }
                 if (this.canBuildUnit('miningship') && this.resources >= 80 && Math.random() < AI_MINING_SHIP_CHANCE) {
                     this.buildUnit('miningship');
@@ -3393,7 +3433,30 @@
             document.getElementById(tab + 'Tab').classList.add('active');
         }
 
+        // Pause is a single-player/campaign convenience only (2026-08-25) - Standard Game
+        // with exactly one human, or Campaign (always one human by construction). Hot-seat
+        // multiplayer shares one real-time clock across every human seat (mining/research
+        // both run on frameDeltaTime regardless of whose turn it is - see
+        // updateMiningAndResearch()), same as a future online match would, so one seat
+        // freezing it would freeze it for everyone else too. Not exposed there.
+        function canPause() {
+            return gameState.campaignActive || (gameState.humanCountryIds || []).length <= 1;
+        }
+
+        function togglePause() {
+            if (!canPause()) {
+                alert("Pause isn't available in hot-seat/multiplayer - it would freeze the shared clock for every player, not just you.");
+                return;
+            }
+            gameState.paused = !gameState.paused;
+            updateUI();
+        }
+
         function buildUnit(type) {
+            if (gameState.paused) {
+                alert('Game is paused - unpause to build.');
+                return;
+            }
             if (!gameState.playerCountry.canBuildUnit(type)) {
                 const techId = UNIT_TECH_REQUIREMENTS[type];
                 const tech = TECH_TREE[techId];
@@ -3410,6 +3473,10 @@
         }
 
         function researchTech(techId) {
+            if (gameState.paused) {
+                alert('Game is paused - unpause to research.');
+                return;
+            }
             const country = gameState.playerCountry;
             if (country.activeResearch) {
                 alert('Research already in progress - only one node at a time.');
@@ -4542,7 +4609,10 @@
             const country = gameState.playerCountry;
             document.getElementById('countryTitle').textContent = `${country.name}`;
             updateCampaignObjectivesPanel();
-            
+
+            const pauseControls = document.getElementById('pauseControls');
+            if (pauseControls) pauseControls.style.display = canPause() ? '' : 'none';
+
             const counts = country.countUnits();
             
             let infoHtml = `

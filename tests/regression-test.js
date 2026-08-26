@@ -127,14 +127,15 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, GALAXY_SPACING_SCALE, MAP_WIDTH, canvas };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, GALAXY_SPACING_SCALE, MAP_WIDTH, canvas, canPause, togglePause, buildUnit, researchTech };',
     context,
     { filename: 'grab-refs.js' }
 );
 const {
     Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat,
     ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS,
-    DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, GALAXY_SPACING_SCALE, MAP_WIDTH, canvas
+    DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, GALAXY_SPACING_SCALE, MAP_WIDTH, canvas,
+    canPause, togglePause, buildUnit, researchTech
 } = context.__test;
 
 // ---------- Test data: the full combat unit roster ----------
@@ -863,6 +864,79 @@ check('MAP_WIDTH/HEIGHT honor GALAXY_SPACING_SCALE', () => {
     return [];
 });
 
+// The tree's first two branches (2026-08-25): Improved Extraction chains off Mining
+// Operations (an economy tier), Vessel Plating stands alone (a combat-side tier) -
+// together proving the tree actually branches, not just lists options.
+
+check("Improved Extraction cannot be researched before Mining Operations, but can once it's done", () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'NoPrereq', '#ff0000', island, true);
+    gameState.countries = [country];
+
+    if (country.startResearch('improved_extraction')) {
+        problems.push('expected startResearch(improved_extraction) to fail without mining_ops researched first');
+    }
+    country.researchedTech.add('mining_ops');
+    if (!country.startResearch('improved_extraction')) {
+        problems.push('expected startResearch(improved_extraction) to succeed once mining_ops is researched and resources allow');
+    }
+    return problems;
+});
+
+check("Improved Extraction research boosts a country's mining rate by 50%", () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'Upgraded', '#ff0000', island, true);
+    country.researchedTech.add('improved_extraction');
+    gameState.countries = [country];
+
+    const dep = new ResourceDeposit(0, 0);
+    resourceDeposits.length = 0;
+    resourceDeposits.push(dep);
+    const ship = new Unit(0, 0, 'miningship', 0);
+    country.units = [ship];
+    const startResources = country.resources;
+
+    vm.runInContext('frameDeltaTime = 3600;', context); // a full hour in one tick
+    updateMiningAndResearch();
+    vm.runInContext('frameDeltaTime = 1 / 60;', context);
+
+    const gained = country.resources - startResources;
+    const expected = DEPOSIT_INCOME_PER_HOUR * 1.5;
+    if (Math.abs(gained - expected) > 0.01) {
+        problems.push(`expected ${expected} resources (150% of the base rate) for a country with Improved Extraction, got ${gained}`);
+    }
+    return problems;
+});
+
+check('Vessel Plating research gives +15% HP to vessel-class ships only, applied at construction time', () => {
+    const problems = [];
+    // Same country, before vs. after researching - isolates the vessel_plating effect
+    // from any country-specific hpMultiplier in COUNTRY_BONUSES (comparing across two
+    // different country ids would confound the two).
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'PlatingTest', '#ff0000', island, true);
+    gameState.countries = [country];
+
+    const baselineVesselHp = new Unit(0, 0, 'stormbreaker', 0).getMaxHP();
+    const baselineGroundHp = new Unit(0, 0, 'groundpounders', 0).getMaxHP();
+
+    country.researchedTech.add('vessel_plating');
+
+    const platedVesselHp = new Unit(0, 0, 'stormbreaker', 0).getMaxHP();
+    const platedGroundHp = new Unit(0, 0, 'groundpounders', 0).getMaxHP();
+
+    const expectedVesselHp = Math.round(baselineVesselHp * 1.15);
+    if (platedVesselHp !== expectedVesselHp) {
+        problems.push(`expected +15% HP after Vessel Plating (baseline ${baselineVesselHp} -> ${expectedVesselHp}), got ${platedVesselHp}`);
+    }
+    if (platedGroundHp !== baselineGroundHp) {
+        problems.push(`expected Vessel Plating to leave a non-vessel (ground) unit's HP unchanged (baseline ${baselineGroundHp}), got ${platedGroundHp}`);
+    }
+    return problems;
+});
+
 // ---------- 14. AI mining economy ----------
 //    "AI should have the same system of play" (2026-08-25): regular-nation AI
 //    (not the Cyborg/Zoonester/Roufestreal special factions, which never used
@@ -929,7 +1003,93 @@ check('aiTurn() sends an idle Mining Ship toward the nearest live deposit, not c
     return problems;
 });
 
-// ---------- 15. Zero-arg smoke test: every no-parameter top-level function ----------
+// ---------- 15. Pause discipline ----------
+//    2026-08-25: pause is a single-player/campaign-only convenience - hot-seat
+//    multiplayer shares one real-time clock (mining/research both run on
+//    frameDeltaTime regardless of whose turn it is) across every human seat, same
+//    as a future online match would, so one seat pausing would freeze it for
+//    everyone else too. Also fixes a real bug: buildUnit() used to spend
+//    resources and spawn a unit even while gameState.paused was true, because
+//    the pause button only ever gated movement/combat/mining, never building.
+
+check('canPause() allows single-player Standard Game and Campaign, refuses hot-seat (2+ humans)', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'Solo', '#ff0000', island, true);
+    gameState.countries = [country];
+    gameState.playerCountry = country;
+
+    gameState.campaignActive = false;
+    gameState.humanCountryIds = [0];
+    if (!canPause()) problems.push('expected canPause() to be true for single-player Standard Game');
+
+    gameState.campaignActive = true;
+    gameState.humanCountryIds = [0];
+    if (!canPause()) problems.push('expected canPause() to be true for Campaign mode');
+
+    gameState.campaignActive = false;
+    gameState.humanCountryIds = [0, 1];
+    if (canPause()) problems.push('expected canPause() to be false for hot-seat multiplayer (2+ humans)');
+
+    gameState.campaignActive = false; // restore for later checks
+    gameState.humanCountryIds = [0];
+    return problems;
+});
+
+check('buildUnit() (the global wrapper) refuses to spend resources or spawn a unit while paused', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'PausedBuilder', '#ff0000', island, true);
+    gameState.countries = [country];
+    gameState.playerCountry = country;
+    gameState.humanCountryIds = [0];
+    gameState.campaignActive = false;
+    gameState.paused = true;
+
+    const startResources = country.resources;
+    const startUnitCount = country.units.length;
+    buildUnit('deepglider');
+
+    if (country.resources !== startResources) {
+        problems.push(`expected resources unchanged while paused, went from ${startResources} to ${country.resources}`);
+    }
+    if (country.units.length !== startUnitCount) {
+        problems.push(`expected no unit built while paused, unit count went from ${startUnitCount} to ${country.units.length}`);
+    }
+
+    gameState.paused = false;
+    buildUnit('deepglider');
+    if (country.units.length !== startUnitCount + 1) {
+        problems.push('expected buildUnit to succeed normally once unpaused');
+    }
+
+    gameState.paused = false; // restore for later checks
+    return problems;
+});
+
+check('researchTech() (the global wrapper) refuses to start research while paused', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'PausedResearcher', '#ff0000', island, true);
+    gameState.countries = [country];
+    gameState.playerCountry = country;
+    gameState.paused = true;
+
+    const startResources = country.resources;
+    researchTech('mining_ops');
+    if (country.activeResearch || country.resources !== startResources) {
+        problems.push('expected researchTech() to do nothing while paused');
+    }
+
+    gameState.paused = false;
+    researchTech('mining_ops');
+    if (!country.activeResearch) problems.push('expected researchTech() to succeed normally once unpaused');
+
+    gameState.paused = false; // restore for later checks
+    return problems;
+});
+
+// ---------- 16. Zero-arg smoke test: every no-parameter top-level function ----------
 //    should be callable, from a real freshly-started game state, without
 //    throwing. Runs against every CURRENT and future zero-arg function
 //    automatically - no list to maintain.
