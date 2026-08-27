@@ -816,6 +816,42 @@ check('spawnResourceDeposits() gives every country a deposit near home', () => {
 //    building. UNIT_TECH_REQUIREMENTS gates buildUnit() on whichever node (if
 //    any) a type needs - only 'miningship' is gated as of this redesign.
 
+// Data-integrity guardrail (2026-08-26) - same shape as the COUNTRY_BONUSES
+// schema check below: hard-fails if TECH_TREE ever shrinks below its current
+// known-good node count, if any of the 3 nodes that exist today disappears,
+// or if a node's required fields go missing/malformed (a bad merge, an
+// accidental object-literal truncation, a typo'd key, etc). Bump
+// MIN_TECH_TREE_SIZE and add to REQUIRED_TECH_IDS when a new node is
+// deliberately added - that's the signal this is meant to force.
+const REQUIRED_TECH_IDS = ['mining_ops', 'improved_extraction', 'vessel_plating'];
+const MIN_TECH_TREE_SIZE = REQUIRED_TECH_IDS.length;
+
+check(`TECH_TREE has at least ${MIN_TECH_TREE_SIZE} node(s) and never loses a required one`, () => {
+    const problems = [];
+    const actualIds = Object.keys(TECH_TREE);
+
+    if (actualIds.length < MIN_TECH_TREE_SIZE) {
+        problems.push(`TECH_TREE has only ${actualIds.length} node(s) - [${actualIds.join(', ')}] - expected at least ${MIN_TECH_TREE_SIZE}`);
+    }
+    REQUIRED_TECH_IDS.forEach(id => {
+        if (!(id in TECH_TREE)) problems.push(`TECH_TREE is missing required node "${id}"`);
+    });
+    return problems;
+});
+
+check('every TECH_TREE node has valid required fields (name, cost, timeSeconds, description, a real prereq or null)', () => {
+    const problems = [];
+    Object.entries(TECH_TREE).forEach(([id, node]) => {
+        if (!node || typeof node !== 'object') { problems.push(`TECH_TREE.${id} is not an object`); return; }
+        if (typeof node.name !== 'string' || node.name.trim() === '') problems.push(`TECH_TREE.${id}.name is missing/empty`);
+        if (typeof node.description !== 'string' || node.description.trim() === '') problems.push(`TECH_TREE.${id}.description is missing/empty`);
+        if (typeof node.cost !== 'number' || !(node.cost > 0)) problems.push(`TECH_TREE.${id}.cost must be a positive number, got ${JSON.stringify(node.cost)}`);
+        if (typeof node.timeSeconds !== 'number' || !(node.timeSeconds > 0)) problems.push(`TECH_TREE.${id}.timeSeconds must be a positive number, got ${JSON.stringify(node.timeSeconds)}`);
+        if (node.prereq !== null && !(node.prereq in TECH_TREE)) problems.push(`TECH_TREE.${id}.prereq references unknown node "${node.prereq}"`);
+    });
+    return problems;
+});
+
 check('buildUnit blocks a tech-gated unit type until its research is complete', () => {
     const problems = [];
     const island = new Island(0, 0, 0);
