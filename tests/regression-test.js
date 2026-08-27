@@ -127,7 +127,7 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, GALAXY_SPACING_SCALE, MAP_WIDTH, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, GALAXY_SPACING_SCALE, MAP_WIDTH, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS };',
     context,
     { filename: 'grab-refs.js' }
 );
@@ -136,7 +136,12 @@ const {
     ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS,
     DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, GALAXY_SPACING_SCALE, MAP_WIDTH, canvas,
     canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS,
-    AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame
+    AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame,
+    buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete,
+    saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats,
+    saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera,
+    TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect,
+    CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS
 } = context.__test;
 
 // ---------- Test data: the full combat unit roster ----------
@@ -1346,6 +1351,301 @@ check('an existing autosave offers "Continue" on the main landing screen, not bu
     } finally {
         localStorage.removeItem(AUTOSAVE_KEY);
     }
+    return problems;
+});
+
+// ---------- 20. Campaign Mode (2026-08-27) ----------
+//    Before this, the entire mode had exactly one test in this file
+//    (startCampaignStage() calls startMusic() - checked by regexing its
+//    source text, never actually run) plus a couple of canPause() branch
+//    checks. Nothing exercised stage generation, starting a stage, clearing
+//    one, failing one, or resuming a saved campaign. These do, end to end,
+//    using the real functions - not reimplemented logic.
+
+check('buildCampaignStages() produces 12 stages: one per rival nation, then a 5-target finale', () => {
+    const problems = [];
+    const playerNationId = 3;
+    const stages = buildCampaignStages(playerNationId);
+
+    if (stages.length !== 12) problems.push(`expected 12 stages, got ${stages.length}`);
+
+    const rivalStages = stages.slice(0, 11);
+    const rivalIds = rivalStages.map(s => s.rivalId);
+    if (rivalIds.includes(playerNationId)) problems.push('a stage targets the player\'s own nation as the rival');
+    const uniqueRivals = new Set(rivalIds);
+    if (uniqueRivals.size !== 11) problems.push(`expected 11 distinct rivals, got ${uniqueRivals.size}: [${rivalIds.join(', ')}]`);
+    for (let i = 0; i < 12; i++) {
+        if (i !== playerNationId && !uniqueRivals.has(i)) problems.push(`nation ${i} never appears as a rival stage`);
+    }
+
+    rivalStages.forEach((stage, idx) => {
+        const outpostCount = stage.objectives.filter(o => o.kind === 'outpost').length;
+        const expectedOutposts = CAMPAIGN_OUTPOST_COUNTS[idx] || 1;
+        if (outpostCount !== expectedOutposts) {
+            problems.push(`stage ${idx + 1}: expected ${expectedOutposts} outpost objective(s), got ${outpostCount}`);
+        }
+        const alienIds = stage.objectives.filter(o => o.kind === 'alien').map(o => o.id);
+        const expectedAliens = CAMPAIGN_ALIEN_WAVES[idx] || [12];
+        if (JSON.stringify(alienIds) !== JSON.stringify(expectedAliens)) {
+            problems.push(`stage ${idx + 1}: expected alien wave [${expectedAliens}], got [${alienIds}]`);
+        }
+        const homeworldObjs = stage.objectives.filter(o => o.kind === 'homeworld');
+        if (homeworldObjs.length !== 1 || homeworldObjs[0].id !== stage.rivalId) {
+            problems.push(`stage ${idx + 1}: expected exactly one homeworld objective targeting the rival (${stage.rivalId})`);
+        }
+    });
+
+    const finale = stages[11];
+    if (finale.rivalId !== null) problems.push('finale stage should have rivalId null');
+    const finaleTargets = finale.objectives.map(o => o.id).sort((a, b) => a - b);
+    if (JSON.stringify(finaleTargets) !== JSON.stringify([12, 13, 14, 15, 16])) {
+        problems.push(`finale should target ids [12,13,14,15,16], got [${finaleTargets}]`);
+    }
+    if (!finale.objectives.every(o => o.kind === 'alien')) problems.push('every finale objective should be kind "alien"');
+
+    return problems;
+});
+
+check('selectCampaignNation() sets up campaign state and opens the intro briefing for stage 1', () => {
+    const problems = [];
+    selectCampaignNation(2);
+    if (gameState.campaignNationId !== 2) problems.push(`expected campaignNationId 2, got ${gameState.campaignNationId}`);
+    if (!gameState.campaignStages || gameState.campaignStages.length !== 12) problems.push('expected 12 campaignStages to be built');
+    if (gameState.campaignStageIndex !== 0) problems.push(`expected campaignStageIndex 0, got ${gameState.campaignStageIndex}`);
+    if (document.getElementById('campaignNationSelect').style.display !== 'none') problems.push('expected the nation-select panel to be hidden');
+    if (document.getElementById('campaignBriefingScreen').style.display !== 'block') problems.push('expected the briefing screen to be shown');
+    const briefingText = document.getElementById('campaignBriefingText').textContent;
+    if (!/Earth is gone/.test(briefingText)) problems.push('expected the stage-1 briefing to include the campaign intro text');
+    return problems;
+});
+
+check('startCampaignStage() spawns the player plus exactly the stage\'s objective countries, garrisoned', () => {
+    const problems = [];
+    selectCampaignNation(0);
+    startCampaignStage(0);
+
+    const stage = gameState.campaignStages[0];
+    if (!gameState.campaignActive) problems.push('expected campaignActive to be true');
+    if (gameState.countries.length !== stage.objectives.length + 1) {
+        problems.push(`expected ${stage.objectives.length + 1} countries (player + objectives), got ${gameState.countries.length}`);
+    }
+    if (!gameState.playerCountry || gameState.playerCountry.id !== 0 || !gameState.playerCountry.isPlayer) {
+        problems.push('expected the player country to be nation 0 and marked isPlayer');
+    }
+    stage.objectives.forEach(obj => {
+        const country = gameState.countries.find(c => c.id === obj.id);
+        if (!country) { problems.push(`no country spawned for objective id ${obj.id} (${obj.kind})`); return; }
+        if (country.isPlayer) problems.push(`objective country ${obj.id} should not be marked isPlayer`);
+        if (country.units.length === 0) problems.push(`objective country ${obj.id} (${obj.kind}) has no garrison units`);
+        if (obj.kind === 'outpost' && country.team !== stage.rivalId) {
+            problems.push(`outpost ${obj.id} should share team with its rival homeworld (${stage.rivalId}), got team ${country.team}`);
+        }
+    });
+    return problems;
+});
+
+check('clearing every objective in a mid-campaign stage advances progress without ending the campaign', () => {
+    const problems = [];
+    selectCampaignNation(1);
+    startCampaignStage(0); // stage 1 of 12 - not the finale
+    // A real game only ever reaches campaign play after a fresh page load
+    // (every exit path is a location.reload()), so humanCountryIds is always
+    // [] at this point in practice; reset it here too since this shared test
+    // context can carry a stale value over from an earlier hot-seat check.
+    gameState.humanCountryIds = [];
+    const stage = gameState.campaignStages[0];
+
+    stage.objectives.forEach(obj => {
+        const country = gameState.countries.find(c => c.id === obj.id);
+        country.island.buildings.forEach(b => { b.destroyed = true; });
+    });
+
+    const statsBefore = lifetimeStats.campaign.stagesCleared;
+    localStorage.removeItem(CAMPAIGN_KEY);
+    checkGameOver();
+
+    if (lifetimeStats.campaign.stagesCleared !== statsBefore + 1) problems.push('expected lifetimeStats.campaign.stagesCleared to increment');
+    if (!gameState.paused) problems.push('expected the game to pause on stage clear');
+    const saved = JSON.parse(localStorage.getItem(CAMPAIGN_KEY) || 'null');
+    if (!saved || saved.nationId !== 1 || saved.stageIndex !== 1) {
+        problems.push(`expected saved campaign progress {nationId:1, stageIndex:1}, got ${JSON.stringify(saved)}`);
+    }
+    const title = document.getElementById('campaignStageTitle').textContent;
+    if (!/STAGE 1 CLEARED/.test(title)) problems.push(`expected "STAGE 1 CLEARED" in title, got "${title}"`);
+    const btnText = document.getElementById('campaignStageContinueBtn').textContent;
+    if (!/CONTINUE/.test(btnText)) problems.push(`expected a CONTINUE button, got "${btnText}"`);
+    return problems;
+});
+
+check('clearing the final stage (stage 12) completes the campaign instead of advancing', () => {
+    const problems = [];
+    selectCampaignNation(4);
+    startCampaignStage(11); // the finale
+    gameState.humanCountryIds = []; // see note on the mid-campaign check above
+    const stage = gameState.campaignStages[11];
+
+    stage.objectives.forEach(obj => {
+        const country = gameState.countries.find(c => c.id === obj.id);
+        country.island.buildings.forEach(b => { b.destroyed = true; });
+    });
+
+    const completedBefore = lifetimeStats.campaign.campaignsCompleted;
+    checkGameOver();
+
+    if (lifetimeStats.campaign.campaignsCompleted !== completedBefore + 1) problems.push('expected campaignsCompleted to increment');
+    const title = document.getElementById('campaignStageTitle').textContent;
+    if (!/CAMPAIGN COMPLETE/.test(title)) problems.push(`expected "CAMPAIGN COMPLETE" in title, got "${title}"`);
+    const btnText = document.getElementById('campaignStageContinueBtn').textContent;
+    if (!/RETURN TO MENU/.test(btnText)) problems.push(`expected a RETURN TO MENU button, got "${btnText}"`);
+    return problems;
+});
+
+check('losing all buildings during a campaign stage counts as a stage failure, not a Standard Game loss', () => {
+    const problems = [];
+    selectCampaignNation(5);
+    startCampaignStage(2);
+    gameState.humanCountryIds = []; // see note on the mid-campaign check above
+
+    const failedBefore = lifetimeStats.campaign.stagesFailed;
+    const standardLossBefore = lifetimeStats.standard.gamesLost;
+    gameState.playerCountry.island.buildings.forEach(b => { b.destroyed = true; });
+    checkGameOver();
+
+    if (lifetimeStats.campaign.stagesFailed !== failedBefore + 1) problems.push('expected lifetimeStats.campaign.stagesFailed to increment');
+    if (lifetimeStats.standard.gamesLost !== standardLossBefore) problems.push('a campaign loss should NOT increment the Standard Game loss counter');
+    const message = document.getElementById('gameOverMessage').textContent;
+    if (!/Stage 3/.test(message)) problems.push(`expected the defeat message to reference "Stage 3", got "${message}"`);
+    return problems;
+});
+
+check('resumeCampaign() rebuilds stages for the saved nation and clamps an out-of-range stage index', () => {
+    const problems = [];
+    resumeCampaign({ nationId: 6, stageIndex: 999 }); // simulate a corrupted/out-of-range save
+    if (gameState.campaignNationId !== 6) problems.push(`expected campaignNationId 6, got ${gameState.campaignNationId}`);
+    if (gameState.campaignStageIndex !== 11) problems.push(`expected the out-of-range index clamped to 11 (last stage), got ${gameState.campaignStageIndex}`);
+    if (!gameState.campaignActive) problems.push('expected resumeCampaign() to actually start the clamped stage');
+
+    resumeCampaign({ nationId: 7, stageIndex: 3 });
+    if (gameState.campaignStageIndex !== 3) problems.push(`expected a valid saved stageIndex (3) to be honored as-is, got ${gameState.campaignStageIndex}`);
+    return problems;
+});
+
+// ---------- 21. Save / load round-trip ----------
+//    buildSaveData() was smoke-tested (doesn't throw); applySaveData() - the
+//    actual load path - had no test at all. A save/load bug could ship silently.
+
+check('buildSaveData() -> applySaveData() round-trips turn, resources, research, units, and deposits correctly', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'SaveTest', '#ff0000', island, true);
+    gameState.countries = [country];
+    gameState.playerCountry = country;
+    gameState.turn = 17;
+    setDifficulty('hard');
+    camera.x = 1234; camera.y = -500; camera.zoom = 1.5;
+
+    country.resources = 4321;
+    country.researchedTech = new Set(['mining_ops', 'vessel_plating']);
+    country.activeResearch = { id: 'improved_extraction', remaining: 42 };
+    country.island.buildings[0].hp = 3;
+    country.island.buildings[0].destroyed = false;
+    country.island.buildings[1].destroyed = true;
+
+    const combatUnit = new Unit(10, 20, 'stormbreaker', 0);
+    combatUnit.hp = 55;
+    combatUnit.hasAttacked = true;
+    const cargoUnit = new Unit(0, 0, 'groundpounders', 0);
+    const hauler = new Unit(30, 40, 'cargohauler', 0);
+    hauler.cargo = [cargoUnit];
+    country.units = [combatUnit, hauler];
+
+    resourceDeposits.length = 0;
+    resourceDeposits.push(new ResourceDeposit(500, 500));
+    resourceDeposits[0].resources = 3333;
+
+    const saveData = buildSaveData();
+
+    // Now scramble everything the save is supposed to restore, so a
+    // no-op applySaveData() (or one that silently does nothing) can't
+    // pass this check by coincidence.
+    gameState.turn = 1;
+    setDifficulty('easy');
+    camera.x = 0; camera.y = 0; camera.zoom = 1;
+    country.resources = 0;
+    country.researchedTech = new Set();
+    country.activeResearch = null;
+    country.island.buildings[0].hp = 999;
+    country.units = [];
+    resourceDeposits.length = 0;
+
+    applySaveData(saveData);
+
+    if (gameState.turn !== 17) problems.push(`expected turn 17 restored, got ${gameState.turn}`);
+    // currentDifficulty is a top-level `let` (primitive string) - the destructured
+    // copy grabbed once at startup doesn't track reassignments, so re-read it live.
+    const liveDifficulty = vm.runInContext('currentDifficulty', context);
+    if (liveDifficulty !== 'hard') problems.push(`expected difficulty "hard" restored, got "${liveDifficulty}"`);
+    if (camera.x !== 1234 || camera.y !== -500 || camera.zoom !== 1.5) problems.push(`expected camera restored, got ${JSON.stringify(camera)}`);
+
+    const restored = gameState.countries[0];
+    if (restored.resources !== 4321) problems.push(`expected resources 4321, got ${restored.resources}`);
+    if (!restored.researchedTech.has('mining_ops') || !restored.researchedTech.has('vessel_plating')) {
+        problems.push('expected both researched techs restored');
+    }
+    if (!restored.activeResearch || restored.activeResearch.id !== 'improved_extraction' || restored.activeResearch.remaining !== 42) {
+        problems.push(`expected activeResearch restored, got ${JSON.stringify(restored.activeResearch)}`);
+    }
+    if (restored.island.buildings[0].hp !== 3 || restored.island.buildings[0].destroyed !== false) {
+        problems.push('expected building 0 hp/destroyed restored');
+    }
+    if (restored.island.buildings[1].destroyed !== true) problems.push('expected building 1 to remain destroyed after restore');
+
+    if (restored.units.length !== 2) {
+        problems.push(`expected 2 units restored, got ${restored.units.length}`);
+    } else {
+        const restoredCombat = restored.units.find(u => u.type === 'stormbreaker');
+        if (!restoredCombat || restoredCombat.hp !== 55 || !restoredCombat.hasAttacked || restoredCombat.x !== 10 || restoredCombat.y !== 20) {
+            problems.push(`expected the stormbreaker restored with hp=55, hasAttacked=true, x=10, y=20 - got ${JSON.stringify(restoredCombat)}`);
+        }
+        const restoredHauler = restored.units.find(u => u.type === 'cargohauler');
+        if (!restoredHauler || restoredHauler.cargo.length !== 1 || restoredHauler.cargo[0].type !== 'groundpounders') {
+            problems.push('expected the cargohauler restored with its groundpounders cargo intact');
+        }
+    }
+
+    if (resourceDeposits.length !== 1 || resourceDeposits[0].resources !== 3333) {
+        problems.push(`expected 1 resource deposit with 3333 resources restored, got ${JSON.stringify(resourceDeposits.map(d => d.resources))}`);
+    }
+
+    if (!gameState.playerCountry || gameState.playerCountry.id !== 0 || !gameState.playerCountry.isPlayer) {
+        problems.push('expected playerCountry re-identified from playerCountryId and marked isPlayer');
+    }
+    return problems;
+});
+
+check('autoSaveGame() writes a load-able snapshot to localStorage under AUTOSAVE_KEY', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'AutosaveTest', '#00ff00', island, true);
+    gameState.countries = [country];
+    gameState.playerCountry = country;
+    gameState.turn = 9;
+    localStorage.removeItem(AUTOSAVE_KEY);
+
+    autoSaveGame();
+    const raw = localStorage.getItem(AUTOSAVE_KEY);
+    if (!raw) { problems.push('autoSaveGame() did not write anything to AUTOSAVE_KEY'); return problems; }
+    let parsed;
+    try { parsed = JSON.parse(raw); } catch (e) { problems.push(`autosave is not valid JSON: ${e.message}`); return problems; }
+    if (parsed.turn !== 9) problems.push(`expected autosave turn 9, got ${parsed.turn}`);
+    if (parsed.playerCountryId !== 0) problems.push(`expected autosave playerCountryId 0, got ${parsed.playerCountryId}`);
+
+    // And it has to actually be usable by applySaveData(), not just well-formed JSON.
+    gameState.turn = 1;
+    applySaveData(parsed);
+    if (gameState.turn !== 9) problems.push('the autosave could not be re-applied to restore turn 9');
+
+    localStorage.removeItem(AUTOSAVE_KEY);
     return problems;
 });
 
