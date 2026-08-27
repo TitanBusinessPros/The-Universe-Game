@@ -65,37 +65,120 @@
             font-size: 14px;
             color: #88ff88;
         }
-        #startScreen {
+        #startScreen, .overlayPanel {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.95);
+            background: radial-gradient(ellipse at top, rgba(0,40,0,0.95), rgba(0,0,0,0.97));
             color: #00ff00;
-            padding: 30px;
-            border-radius: 12px;
+            padding: 36px 40px;
+            border-radius: 14px;
             text-align: center;
-            max-width: 600px;
+            max-width: 640px;
             max-height: 90vh;
             overflow-y: auto;
             z-index: 1000;
+            border: 1px solid rgba(0,255,0,0.25);
+            box-shadow: 0 0 60px rgba(0,255,0,0.08), 0 20px 50px rgba(0,0,0,0.6);
         }
-        .modeSection {
-            border: 2px solid #00ff00;
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 20px;
+        .brandMark {
+            margin-bottom: 32px;
         }
-        .modeSection h2 {
+        .brandMark h1 {
+            font-size: 34px;
+            letter-spacing: 4px;
+            text-shadow: 0 0 16px rgba(0,255,0,0.5);
+        }
+        .brandMark .tagline {
+            margin-top: 8px;
+            color: #88ff88;
+            font-size: 13px;
+            letter-spacing: 1px;
+            opacity: 0.85;
+        }
+        .modeGrid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+        @media (max-width: 560px) {
+            .modeGrid { grid-template-columns: 1fr; }
+        }
+        .modeCard {
+            border: 1px solid rgba(0,255,0,0.35);
+            background: rgba(0,255,0,0.04);
+            border-radius: 10px;
+            padding: 24px 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: border-color 0.2s, transform 0.2s, background 0.2s;
+        }
+        .modeCard:hover {
+            border-color: #00ff00;
+            background: rgba(0,255,0,0.08);
+            transform: translateY(-3px);
+        }
+        .modeIcon {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+        .modeCard h2 {
             color: #ffff00;
-            font-size: 18px;
-            margin-bottom: 8px;
+            font-size: 16px;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
         }
-        .modeSection .modeDesc {
+        .modeCard .modeDesc {
             font-size: 12px;
             color: #88ff88;
-            line-height: 1.5;
-            margin-bottom: 16px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+        .modeCardBtn {
+            width: 100%;
+            background: #00ff00;
+            border: 2px solid #00ff00;
+            color: #000;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .modeCardBtn:hover {
+            background: #00cc00;
+            box-shadow: 0 0 16px rgba(0,255,0,0.5);
+        }
+        .modeCardBtnAlt {
+            background: #ff8800;
+            border-color: #ff8800;
+            color: #000;
+        }
+        .modeCardBtnAlt:hover {
+            background: #cc6d00;
+            box-shadow: 0 0 16px rgba(255,136,0,0.5);
+        }
+        .statsLink {
+            background: none;
+            border: none;
+            color: #66ccff;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            opacity: 0.85;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+        .statsLink:hover {
+            opacity: 1;
+            color: #99ddff;
         }
         #gameOverScreen {
             position: absolute;
@@ -570,41 +653,54 @@
         </div>
 
         <div id="startScreen">
-            <h1>🌌 AFTER EARTH 🌌</h1>
-            <p style="margin-bottom: 20px; color:#88ff88; font-size:13px;">Choose how you want to play:</p>
+            <div class="brandMark">
+                <h1>AFTER EARTH</h1>
+                <p class="tagline">Choose your path across the galaxy</p>
+            </div>
 
-            <div class="modeSection">
-                <h2>🌌 SINGLE MAP CHALLENGE</h2>
-                <p class="modeDesc">One galaxy, one sitting. Pick a difficulty and a nation, then build up,
-                    research, and take out every other nation on the map.</p>
-                <p style="margin-bottom: 10px;">Difficulty:</p>
-                <div id="difficultySelect" style="display:flex; gap:10px; justify-content:center; margin-bottom:20px;">
-                    <button id="diffBtn-easy" class="difficultyBtn" onclick="chooseDifficulty('easy')">Easy</button>
-                    <button id="diffBtn-normal" class="difficultyBtn" onclick="chooseDifficulty('normal')">Normal</button>
-                    <button id="diffBtn-hard" class="difficultyBtn" onclick="chooseDifficulty('hard')">Hard</button>
+            <div id="continueBanner"></div>
+
+            <div class="modeGrid">
+                <div class="modeCard">
+                    <div class="modeIcon">🌌</div>
+                    <h2>Single Map Challenge</h2>
+                    <p class="modeDesc">One galaxy, one sitting. Pick a difficulty and a nation, then build
+                        up, research, and take out every other nation on the map.</p>
+                    <button class="modeCardBtn" onclick="openSingleMapSetup()">Select Nation ▸</button>
                 </div>
-                <p style="margin-bottom: 20px;">Select Your Country:</p>
-                <div id="countrySelect"></div>
+
+                <div class="modeCard">
+                    <div class="modeIcon">🎖️</div>
+                    <h2>Campaign Mode</h2>
+                    <p class="modeDesc">A scripted string of battles against one rival at a time, with alien
+                        threats mixed into every stage. Built for players who want a story to follow.</p>
+                    <button id="campaignEntryBtn" class="modeCardBtn modeCardBtnAlt" onclick="openCampaignNationSelect()">Start Campaign ▸</button>
+                </div>
             </div>
 
-            <div class="modeSection">
-                <h2>🎖️ CAMPAIGN MODE</h2>
-                <p class="modeDesc">A scripted string of battles against one rival at a time, with alien
-                    threats mixed into every stage. Built for players who want a story to follow, not just
-                    a sandbox.</p>
-                <button id="campaignEntryBtn" class="countryBtn" style="width:100%; text-align:center; background:#ff8800; border-color:#ff8800;" onclick="openCampaignNationSelect()">🎖️ START CAMPAIGN</button>
-            </div>
-
-            <button class="countryBtn" style="width:100%; text-align:center; background:#00aaff; border-color:#00aaff;" onclick="openStatsScreen()">📊 YOUR STATS</button>
+            <button class="statsLink" onclick="openStatsScreen()">📊 View Your Stats</button>
         </div>
 
-        <div id="statsScreen" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.95); color:#00ff00; padding:30px; border-radius:12px; text-align:center; max-width:500px; max-height:90vh; overflow-y:auto; z-index:1000;">
+        <div id="singleMapSetup" class="overlayPanel" style="display:none; max-width:700px;">
+            <h1>🌌 SINGLE MAP CHALLENGE 🌌</h1>
+            <p style="margin-bottom: 10px;">Difficulty:</p>
+            <div id="difficultySelect" style="display:flex; gap:10px; justify-content:center; margin-bottom:24px;">
+                <button id="diffBtn-easy" class="difficultyBtn" onclick="chooseDifficulty('easy')">Easy</button>
+                <button id="diffBtn-normal" class="difficultyBtn" onclick="chooseDifficulty('normal')">Normal</button>
+                <button id="diffBtn-hard" class="difficultyBtn" onclick="chooseDifficulty('hard')">Hard</button>
+            </div>
+            <p style="margin-bottom: 20px;">Select Your Country:</p>
+            <div id="countrySelect"></div>
+            <button class="countryBtn" style="margin-top:20px; text-align:center; background:#888; border-color:#888;" onclick="closeSingleMapSetup()">← Back</button>
+        </div>
+
+        <div id="statsScreen" class="overlayPanel" style="display:none; max-width:500px;">
             <h1>📊 YOUR STATS 📊</h1>
             <div id="statsContent" style="text-align:left; margin:20px 0; line-height:1.6;"></div>
             <button class="countryBtn" style="text-align:center; background:#888; border-color:#888;" onclick="closeStatsScreen()">← Back</button>
         </div>
 
-        <div id="campaignNationSelect" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.95); color:#00ff00; padding:30px; border-radius:12px; text-align:center; max-width:700px; max-height:90vh; overflow-y:auto; z-index:1000;">
+        <div id="campaignNationSelect" class="overlayPanel" style="display:none; max-width:700px;">
             <h1>🎖️ CAMPAIGN MODE 🎖️</h1>
             <p style="margin-bottom:20px; max-width:520px;">Choose the nation you'll lead. You'll fight the other eleven, one at a time, with alien threats mixed into every stage - then face what's really out there.</p>
             <div id="campaignCountrySelect"></div>
@@ -3272,23 +3368,21 @@
 
             const selectDiv = document.getElementById('countrySelect');
 
-            // Offer to resume an in-progress game if the browser has an autosave from last time.
+            // Offer to resume an in-progress game if the browser has an autosave from last
+            // time - shown up front on the main landing screen (not buried inside the Single
+            // Map sub-panel) since nextTurn() autosaves during Campaign play too, so this
+            // could be either mode's progress.
             let autosaveRaw = null;
             try { autosaveRaw = localStorage.getItem(AUTOSAVE_KEY); } catch (e) { /* private browsing etc. */ }
             if (autosaveRaw) {
                 try {
                     const autosave = JSON.parse(autosaveRaw);
                     const continueBtn = document.createElement('button');
-                    continueBtn.className = 'countryBtn';
+                    continueBtn.className = 'modeCardBtn';
                     continueBtn.textContent = `▶ CONTINUE (Turn ${autosave.turn})`;
-                    continueBtn.style.background = '#00ff00';
-                    continueBtn.style.borderColor = '#00ff00';
-                    continueBtn.style.color = '#000';
-                    continueBtn.style.width = '100%';
-                    continueBtn.style.textAlign = 'center';
-                    continueBtn.style.marginBottom = '15px';
+                    continueBtn.style.marginBottom = '20px';
                     continueBtn.onclick = () => continueFromAutosave(autosave);
-                    selectDiv.appendChild(continueBtn);
+                    document.getElementById('continueBanner').appendChild(continueBtn);
                 } catch (e) {
                     clearAutosave(); // corrupted autosave - don't keep offering a broken continue
                 }
@@ -3336,6 +3430,7 @@
             
             // Hide country selection and show video
             document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('singleMapSetup').style.display = 'none';
             document.getElementById('videoScreen').style.display = 'block';
             
             // Auto-play video if possible
@@ -3371,6 +3466,7 @@
             gameState.selectedCountryIdx = countryIndices[0];
 
             document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('singleMapSetup').style.display = 'none';
             document.getElementById('videoScreen').style.display = 'none';
             gameState.gameStarted = true;
             camera.x = gameState.playerCountry.island.x;
@@ -3440,6 +3536,7 @@
             }
 
             document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('singleMapSetup').style.display = 'none';
             document.getElementById('videoScreen').style.display = 'none';
             const briefingVideo = document.getElementById('briefingVideo');
             briefingVideo.pause();
@@ -4152,6 +4249,16 @@
             });
 
             return stages;
+        }
+
+        function openSingleMapSetup() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('singleMapSetup').style.display = 'block';
+        }
+
+        function closeSingleMapSetup() {
+            document.getElementById('singleMapSetup').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'block';
         }
 
         function openCampaignNationSelect() {

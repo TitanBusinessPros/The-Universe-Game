@@ -127,7 +127,7 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, GALAXY_SPACING_SCALE, MAP_WIDTH, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, GALAXY_SPACING_SCALE, MAP_WIDTH, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame };',
     context,
     { filename: 'grab-refs.js' }
 );
@@ -135,7 +135,8 @@ const {
     Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat,
     ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS,
     DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, GALAXY_SPACING_SCALE, MAP_WIDTH, canvas,
-    canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS
+    canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS,
+    AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame
 } = context.__test;
 
 // ---------- Test data: the full combat unit roster ----------
@@ -1293,6 +1294,58 @@ check("every country's home resource deposit spawns outside its own island's no-
             problems.push(`${country.name}'s nearest deposit is only ${distFromCenter.toFixed(0)} from its island center - within collisionSize (${country.island.collisionSize}) + DEPOSIT_COLLECT_RANGE (${DEPOSIT_COLLECT_RANGE}), a mining ship could never park there`);
         }
     });
+    return problems;
+});
+
+// ---------- 19. Start-screen redesign (2026-08-27): mode select -> drill-down ----------
+//    The landing screen used to show difficulty + country-select + Campaign +
+//    Stats all at once. Now it's just two mode cards; picking Single Map
+//    Challenge opens a separate #singleMapSetup panel (same drill-down
+//    pattern Campaign already used). Every place that used to just hide
+//    #startScreen has to also account for this second panel now.
+
+check('openSingleMapSetup()/closeSingleMapSetup() toggle the landing screen and the setup panel together', () => {
+    const problems = [];
+    document.getElementById('startScreen').style.display = 'block';
+    document.getElementById('singleMapSetup').style.display = 'none';
+
+    openSingleMapSetup();
+    if (document.getElementById('startScreen').style.display !== 'none') problems.push('openSingleMapSetup() should hide the landing screen');
+    if (document.getElementById('singleMapSetup').style.display !== 'block') problems.push('openSingleMapSetup() should show the setup panel');
+
+    closeSingleMapSetup();
+    if (document.getElementById('singleMapSetup').style.display !== 'none') problems.push('closeSingleMapSetup() should hide the setup panel');
+    if (document.getElementById('startScreen').style.display !== 'block') problems.push('closeSingleMapSetup() should show the landing screen again');
+    return problems;
+});
+
+check('starting a game from the Single Map setup panel closes that panel too, not just the landing screen', () => {
+    vm.runInContext('initGame();', context, { filename: 'singlemap-start-setup.js' });
+    openSingleMapSetup();
+    startGame(0);
+    if (document.getElementById('singleMapSetup').style.display !== 'none') {
+        return ['#singleMapSetup is still visible after startGame() - it would sit on top of the actual game view (z-index 1000)'];
+    }
+    return [];
+});
+
+check('an existing autosave offers "Continue" on the main landing screen, not buried inside the Single Map setup panel', () => {
+    // nextTurn() autosaves every turn regardless of mode (Standard or Campaign),
+    // so this button can represent either - it belongs on the top-level screen,
+    // not nested behind a mode-specific choice.
+    const problems = [];
+    try {
+        localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({ turn: 7, playerCountryId: 0 }));
+        document.getElementById('continueBanner').innerHTML = '';
+        vm.runInContext('initGame();', context, { filename: 'continue-banner-setup.js' });
+        const banner = document.getElementById('continueBanner');
+        if (!banner.querySelector('button')) problems.push('#continueBanner has no Continue button when an autosave exists');
+        const buriedInSetup = Array.from(document.getElementById('countrySelect').querySelectorAll('button'))
+            .some(b => /CONTINUE/i.test(b.textContent));
+        if (buriedInSetup) problems.push('the Continue button ended up inside #countrySelect (the Single Map sub-panel) instead of the main landing screen');
+    } finally {
+        localStorage.removeItem(AUTOSAVE_KEY);
+    }
     return problems;
 });
 
