@@ -127,21 +127,25 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, GALAXY_SPACING_SCALE, MAP_WIDTH, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML };',
     context,
     { filename: 'grab-refs.js' }
 );
 const {
     Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat,
     ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS,
-    DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, GALAXY_SPACING_SCALE, MAP_WIDTH, canvas,
+    DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas,
     canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS,
     AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame,
     buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete,
     saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats,
     saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera,
     TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect,
-    CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS
+    CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit,
+    deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap,
+    minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP,
+    MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector,
+    hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML
 } = context.__test;
 
 // ---------- Test data: the full combat unit roster ----------
@@ -1647,6 +1651,457 @@ check('autoSaveGame() writes a load-able snapshot to localStorage under AUTOSAVE
 
     localStorage.removeItem(AUTOSAVE_KEY);
     return problems;
+});
+
+// ---------- 22. Continue / Hot-seat entry points (2026-08-27) ----------
+//    continueFromAutosave() is what the new landing-screen "Continue" button
+//    actually calls - it had zero coverage despite becoming more prominent
+//    in the redesign. startHotSeatGame() is the whole (UI-unwired-but-real)
+//    hot-seat mode's entry point.
+
+check('continueFromAutosave() restores the saved game and enters play', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'ContinueTest', '#ff0000', island, true);
+    gameState.countries = [country];
+    gameState.playerCountry = country;
+    gameState.turn = 3;
+    const saveData = buildSaveData();
+    saveData.turn = 44; // distinguish "restored" from "already was"
+
+    document.getElementById('startScreen').style.display = 'block';
+    document.getElementById('singleMapSetup').style.display = 'block';
+    document.getElementById('videoScreen').style.display = 'block';
+    gameState.gameStarted = false;
+    gameState.paused = true;
+
+    continueFromAutosave(saveData);
+
+    if (gameState.turn !== 44) problems.push(`expected turn 44 restored, got ${gameState.turn}`);
+    if (!gameState.gameStarted) problems.push('expected gameStarted to be true after continuing');
+    if (gameState.paused) problems.push('expected paused to be false after continuing');
+    ['startScreen', 'singleMapSetup', 'videoScreen'].forEach(id => {
+        if (document.getElementById(id).style.display !== 'none') problems.push(`expected #${id} hidden after continuing`);
+    });
+    return problems;
+});
+
+check('continueFromAutosave() with a corrupted save alerts and clears it instead of crashing into a broken game', () => {
+    const problems = [];
+    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({ turn: 1 })); // missing "countries" - applySaveData() will throw
+    gameState.gameStarted = false;
+    try {
+        continueFromAutosave({ turn: 1 }); // no .countries array
+    } catch (e) {
+        problems.push(`continueFromAutosave() let the exception escape instead of catching it: ${e.message}`);
+    }
+    if (gameState.gameStarted) problems.push('a corrupted autosave should not leave the game marked as started');
+    if (localStorage.getItem(AUTOSAVE_KEY) !== null) problems.push('expected the corrupted autosave to be cleared');
+    return problems;
+});
+
+check('startHotSeatGame() rejects fewer than 2 or more than 12 players without changing state', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    gameState.countries = [0, 1].map(id => new Country(id, `Nation${id}`, '#ffffff', new Island(id * 1000, 0, id), false));
+    gameState.gameStarted = false;
+
+    startHotSeatGame([0]); // only 1 player
+    if (gameState.gameStarted) problems.push('expected a single-player hot-seat request to be rejected');
+
+    startHotSeatGame(Array.from({ length: 13 }, (_, i) => i)); // 13 players
+    if (gameState.gameStarted) problems.push('expected a 13-player hot-seat request to be rejected (max 12)');
+    return problems;
+});
+
+check('startHotSeatGame() with a valid roster marks every seat as human and starts on the first one', () => {
+    const problems = [];
+    gameState.countries = [0, 1, 2].map(id => new Country(id, `Nation${id}`, '#ffffff', new Island(id * 100000, 0, id), false));
+    gameState.gameStarted = false;
+
+    startHotSeatGame([1, 2]);
+
+    if (!gameState.gameStarted) problems.push('expected gameStarted to be true');
+    if (JSON.stringify(gameState.humanCountryIds) !== JSON.stringify([1, 2])) {
+        problems.push(`expected humanCountryIds [1,2], got ${JSON.stringify(gameState.humanCountryIds)}`);
+    }
+    if (!gameState.countries[1].isPlayer || !gameState.countries[2].isPlayer) problems.push('expected both seated nations marked isPlayer');
+    if (gameState.countries[0].isPlayer) problems.push('nation 0 was never seated - should not be marked isPlayer');
+    if (gameState.playerCountry.id !== 1) problems.push(`expected the first seat (nation 1) to be the active playerCountry, got ${gameState.playerCountry && gameState.playerCountry.id}`);
+    return problems;
+});
+
+// ---------- 23. Harbor / Cargohauler / Defense Gun (2026-08-27) ----------
+//    A real gameplay subsystem (ground troops board a Cargohauler at a
+//    Harbor, get transported, disembark elsewhere; a Defense Gun
+//    auto-attacks nearby enemies) that had zero dedicated coverage. Tested
+//    through the actual player-facing entry point (setActionMode), not
+//    reimplemented - and through the real Country/Island methods it relies on.
+
+check('Island.getHarbor()/getDefenseGun()/getHarborWorldPosition() find the right building and ignore destroyed ones', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const harbor = island.getHarbor();
+    const gun = island.getDefenseGun();
+    if (!harbor || !harbor.isHarbor) problems.push('expected getHarbor() to find the Harbor building');
+    if (!gun || !gun.isDefenseGun) problems.push('expected getDefenseGun() to find the Defense Gun building');
+
+    const pos = island.getHarborWorldPosition();
+    if (!pos || pos.x !== island.x + harbor.x || pos.y !== island.y + harbor.y) {
+        problems.push('expected getHarborWorldPosition() to be the island position plus the harbor building\'s offset');
+    }
+
+    harbor.destroyed = true;
+    if (island.getHarbor()) problems.push('expected getHarbor() to return nothing once the harbor is destroyed');
+    if (island.getHarborWorldPosition()) problems.push('expected getHarborWorldPosition() to return null once the harbor is destroyed');
+    return problems;
+});
+
+check('setActionMode("load") boards nearby ground units into a selected cargohauler', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'LoadTest', '#ff0000', island, true);
+    gameState.countries = [country];
+    gameState.playerCountry = country;
+
+    const harborPos = island.getHarborWorldPosition();
+    const cargohauler = new Unit(harborPos.x + 10, harborPos.y, 'cargohauler', 0); // well within HARBOR_LOAD_RANGE
+    const trooper = new Unit(99999, 99999, 'groundpounders', 0); // position irrelevant while isInHarbor
+    trooper.isInHarbor = true;
+    country.units = [cargohauler, trooper];
+    gameState.selectedUnit = cargohauler;
+    gameState.selectedUnits = [cargohauler];
+
+    setActionMode('load');
+
+    if (cargohauler.cargo.length !== 1) problems.push(`expected 1 unit loaded, got ${cargohauler.cargo.length}`);
+    else if (cargohauler.cargo[0] !== trooper) problems.push('expected the trooper itself to be loaded, not a copy');
+    if (trooper.isInHarbor) problems.push('expected the trooper to no longer be "in harbor" once loaded');
+    return problems;
+});
+
+check('setActionMode("load") refuses when nothing is in range, and refuses a full (10/10) cargohauler', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'LoadFailTest', '#ff0000', island, true);
+    gameState.countries = [country];
+    gameState.playerCountry = country;
+
+    const farCargohauler = new Unit(50000, 50000, 'cargohauler', 0); // nowhere near the harbor or any ground unit
+    country.units = [farCargohauler];
+    gameState.selectedUnit = farCargohauler;
+    gameState.selectedUnits = [farCargohauler];
+    setActionMode('load');
+    if (farCargohauler.cargo.length !== 0) problems.push('expected no units loaded when nothing is in range');
+
+    const harborPos = island.getHarborWorldPosition();
+    const fullCargohauler = new Unit(harborPos.x, harborPos.y, 'cargohauler', 0);
+    fullCargohauler.cargo = Array.from({ length: 10 }, () => new Unit(0, 0, 'groundpounders', 0));
+    const waitingTrooper = new Unit(0, 0, 'groundpounders', 0);
+    waitingTrooper.isInHarbor = true;
+    country.units = [fullCargohauler, waitingTrooper];
+    gameState.selectedUnit = fullCargohauler;
+    gameState.selectedUnits = [fullCargohauler];
+    setActionMode('load');
+    if (fullCargohauler.cargo.length !== 10) problems.push(`expected a full cargohauler to stay at 10, got ${fullCargohauler.cargo.length}`);
+
+    return problems;
+});
+
+check('setActionMode("unload") disembarks troops near a planet and empties the cargohauler', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'UnloadTest', '#ff0000', island, true);
+    gameState.countries = [country];
+    gameState.playerCountry = country;
+
+    const cargohauler = new Unit(island.x + island.size + 20, island.y, 'cargohauler', 0); // within HARBOR_UNLOAD_RANGE of the planet
+    const troopA = new Unit(0, 0, 'groundpounders', 0);
+    const troopB = new Unit(0, 0, 'ironbeast', 0);
+    cargohauler.cargo = [troopA, troopB];
+    country.units = [cargohauler];
+    gameState.selectedUnit = cargohauler;
+    gameState.selectedUnits = [cargohauler];
+
+    setActionMode('unload');
+
+    if (cargohauler.cargo.length !== 0) problems.push(`expected the cargohauler emptied, still has ${cargohauler.cargo.length}`);
+    [troopA, troopB].forEach(troop => {
+        if (troop.isInHarbor) problems.push(`expected ${troop.type} to no longer be "in harbor" after disembarking`);
+        const distFromCenter = Math.hypot(troop.x - island.x, troop.y - island.y);
+        if (Math.abs(distFromCenter - island.collisionSize * 0.7) > 1) {
+            problems.push(`expected ${troop.type} placed at collisionSize*0.7 from the planet center, got distance ${distFromCenter.toFixed(1)}`);
+        }
+    });
+    return problems;
+});
+
+check('Country.defenseGunAttack() hits the nearest in-range enemy but leaves same-team and out-of-range units alone', () => {
+    const problems = [];
+    const homeIsland = new Island(0, 0, 0);
+    const home = new Country(0, 'Defender', '#ff0000', homeIsland, true);
+    const enemyIsland = new Island(9999999, 9999999, 1); // far away - only its unit's position matters here
+    const enemy = new Country(1, 'Attacker', '#00ff00', enemyIsland, false);
+    gameState.countries = [home, enemy];
+
+    const defenseGun = homeIsland.getDefenseGun();
+    const inRangeEnemy = new Unit(defenseGun.range - 50, 0, 'stormbreaker', 1);
+    const outOfRangeEnemy = new Unit(defenseGun.range + 500, 0, 'stormbreaker', 1);
+    enemy.units = [inRangeEnemy, outOfRangeEnemy];
+    const ownUnit = new Unit(10, 0, 'stormbreaker', 0); // same team - must never be targeted
+    home.units = [ownUnit];
+
+    const hpBefore = { inRange: inRangeEnemy.hp, outOfRange: outOfRangeEnemy.hp, own: ownUnit.hp };
+    home.defenseGunAttack();
+
+    if (inRangeEnemy.hp !== hpBefore.inRange - defenseGun.attackPower) {
+        problems.push(`expected the in-range enemy to take ${defenseGun.attackPower} damage, hp went ${hpBefore.inRange} -> ${inRangeEnemy.hp}`);
+    }
+    if (outOfRangeEnemy.hp !== hpBefore.outOfRange) problems.push('expected the out-of-range enemy to be untouched');
+    if (ownUnit.hp !== hpBefore.own) problems.push('expected the defender\'s own unit to never be targeted');
+    if (!defenseGun.hasAttacked) problems.push('expected the defense gun marked hasAttacked after firing');
+
+    // And it should refuse to fire twice in the same turn.
+    const hpAfterFirstShot = inRangeEnemy.hp;
+    home.defenseGunAttack();
+    if (inRangeEnemy.hp !== hpAfterFirstShot) problems.push('expected a second defenseGunAttack() this turn to do nothing (hasAttacked already true)');
+    return problems;
+});
+
+// ---------- 24. UI selection / mode-switching (2026-08-27) ----------
+
+check('switchTab() shows the chosen tab content and highlights the clicked tab button', () => {
+    const problems = [];
+    const vesselsBtn = Array.from(document.querySelectorAll('.tab')).find(b => /VESSELS/i.test(b.textContent));
+    if (!vesselsBtn) return ['could not find the VESSELS tab button in the real page markup'];
+    // switchTab() reads the implicit global `event` (as a real onclick="" handler
+    // would receive from the browser) rather than taking it as a parameter -
+    // simulate that the same way a dispatched click would provide it.
+    document.getElementById('infoTab').classList.add('active');
+    document.querySelector('.tab').classList.add('active');
+    window.event = { target: vesselsBtn };
+    switchTab('vessels');
+    delete window.event;
+
+    if (!vesselsBtn.classList.contains('active')) problems.push('expected the clicked tab button to gain .active');
+    if (!document.getElementById('vesselsTab').classList.contains('active')) problems.push('expected #vesselsTab to gain .active');
+    if (document.getElementById('infoTab').classList.contains('active')) problems.push('expected the previously active tab content to lose .active');
+    return problems;
+});
+
+check('selectUnit() selects exactly one unit and clears any other selection', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'SelectTest', '#ff0000', island, true);
+    const unitA = new Unit(0, 0, 'stormbreaker', 0);
+    const unitB = new Unit(0, 0, 'wavecrusher', 0);
+    unitA.selected = true;
+    country.units = [unitA, unitB];
+    gameState.playerCountry = country;
+    gameState.actionMode = 'move';
+
+    selectUnit(unitB);
+
+    if (gameState.selectedUnit !== unitB) problems.push('expected selectedUnit to be unitB');
+    if (JSON.stringify(gameState.selectedUnits) !== JSON.stringify([unitB])) problems.push('expected selectedUnits to be exactly [unitB]');
+    if (unitA.selected) problems.push('expected unitA to be deselected');
+    if (!unitB.selected) problems.push('expected unitB.selected to be true');
+    if (gameState.actionMode !== null) problems.push('expected actionMode reset to null on a fresh selection');
+    return problems;
+});
+
+check('deselectAllUnits() clears the whole selection', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'DeselectTest', '#ff0000', island, true);
+    const unit = new Unit(0, 0, 'stormbreaker', 0);
+    unit.selected = true;
+    country.units = [unit];
+    gameState.playerCountry = country;
+    gameState.selectedUnits = [unit];
+    gameState.selectedUnit = unit;
+
+    deselectAllUnits();
+
+    if (unit.selected) problems.push('expected the unit to be deselected');
+    if (gameState.selectedUnits.length !== 0) problems.push('expected selectedUnits to be empty');
+    if (gameState.selectedUnit !== null) problems.push('expected selectedUnit to be null');
+    return problems;
+});
+
+check('setActionMode() refuses to arm a mode with nothing selected, and refuses "move" for a unit that already attacked', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'ModeTest', '#ff0000', island, true);
+    gameState.playerCountry = country;
+
+    gameState.selectedUnits = [];
+    gameState.actionMode = null;
+    setActionMode('move');
+    if (gameState.actionMode !== null) problems.push('expected setActionMode() to refuse with no units selected');
+
+    const attackedUnit = new Unit(0, 0, 'stormbreaker', 0);
+    attackedUnit.hasAttacked = true;
+    country.units = [attackedUnit];
+    gameState.selectedUnits = [attackedUnit];
+    gameState.actionMode = null;
+    setActionMode('move');
+    if (gameState.actionMode !== null) problems.push('expected setActionMode("move") to refuse a unit that already attacked');
+
+    const freshUnit = new Unit(0, 0, 'stormbreaker', 0);
+    gameState.selectedUnits = [freshUnit];
+    gameState.actionMode = null;
+    setActionMode('move');
+    if (gameState.actionMode !== 'move') problems.push('expected a fresh, unattacked unit to arm "move" successfully');
+    if (document.getElementById('actionMode').style.display !== 'block') problems.push('expected the action-mode indicator to be shown');
+
+    return problems;
+});
+
+check('chooseDifficulty() applies the preset live and highlights the matching button', () => {
+    const problems = [];
+    chooseDifficulty('hard');
+    const live = vm.runInContext('AI_BUILD_CHANCE', context);
+    if (live !== DIFFICULTY_PRESETS.hard.build) problems.push(`expected AI_BUILD_CHANCE set to the hard preset (${DIFFICULTY_PRESETS.hard.build}), got ${live}`);
+    if (!document.getElementById('diffBtn-hard').classList.contains('active')) problems.push('expected the Hard button to be highlighted');
+    if (document.getElementById('diffBtn-easy').classList.contains('active')) problems.push('expected Easy to no longer be highlighted');
+
+    chooseDifficulty('easy');
+    if (!document.getElementById('diffBtn-easy').classList.contains('active')) problems.push('expected Easy to become highlighted after switching');
+    if (document.getElementById('diffBtn-hard').classList.contains('active')) problems.push('expected Hard to lose the highlight after switching');
+    setDifficulty('normal'); // restore for any later check relying on the default
+    return problems;
+});
+
+check('cancelAction() clears the armed action mode, and centerOnPlayer() recenters the camera on the player\'s homeworld', () => {
+    const problems = [];
+    gameState.actionMode = 'attack';
+    document.getElementById('actionMode').style.display = 'block';
+    cancelAction();
+    if (gameState.actionMode !== null) problems.push('expected cancelAction() to clear actionMode');
+    if (document.getElementById('actionMode').style.display !== 'none') problems.push('expected the action-mode indicator hidden');
+
+    const island = new Island(12345, -6789, 0);
+    gameState.playerCountry = new Country(0, 'CenterTest', '#ff0000', island, true);
+    camera.x = 0; camera.y = 0; camera.zoom = 3;
+    centerOnPlayer();
+    if (camera.x !== 12345 || camera.y !== -6789 || camera.zoom !== 1) {
+        problems.push(`expected the camera centered on (12345,-6789) at zoom 1, got (${camera.x}, ${camera.y}, zoom ${camera.zoom})`);
+    }
+    return problems;
+});
+
+// ---------- 25. Minimap coordinate math (2026-08-27) ----------
+
+check('isOnMinimap() matches the real rectangle from minimapBounds()', () => {
+    const problems = [];
+    const { mmX, mmY } = minimapBounds();
+    if (!isOnMinimap(mmX + 1, mmY + 1)) problems.push('expected a point just inside the top-left corner to count as on the minimap');
+    if (!isOnMinimap(mmX + MINIMAP_WIDTH - 1, mmY + MINIMAP_HEIGHT - 1)) problems.push('expected a point just inside the bottom-right corner to count as on the minimap');
+    if (isOnMinimap(mmX - 5, mmY)) problems.push('expected a point left of the minimap to be outside it');
+    if (isOnMinimap(mmX, mmY + MINIMAP_HEIGHT + 5)) problems.push('expected a point below the minimap to be outside it');
+    return problems;
+});
+
+check('worldToMinimap()/minimapToWorld() are real inverses of each other', () => {
+    const problems = [];
+    gameState.countries = [0, 1, 2].map(id => new Country(id, `N${id}`, '#fff', new Island(id * 40000, id * -25000, id), false));
+
+    const originalWorld = { x: 15000, y: -8000 };
+    const onMinimap = worldToMinimap(originalWorld.x, originalWorld.y);
+    const backToWorld = minimapToWorld(onMinimap.x, onMinimap.y);
+
+    if (Math.abs(backToWorld.x - originalWorld.x) > 1) problems.push(`expected x round-trip within 1 unit, got ${originalWorld.x} -> ${backToWorld.x}`);
+    if (Math.abs(backToWorld.y - originalWorld.y) > 1) problems.push(`expected y round-trip within 1 unit, got ${originalWorld.y} -> ${backToWorld.y}`);
+    return problems;
+});
+
+check('getGalaxyBounds() falls back to the full map when there are no countries yet', () => {
+    gameState.countries = [];
+    const b = getGalaxyBounds();
+    const problems = [];
+    if (b.minX !== 0 || b.minY !== 0 || b.maxX !== MAP_WIDTH || b.maxY !== MAP_HEIGHT) {
+        problems.push(`expected the empty-galaxy fallback bounds {0,0,${MAP_WIDTH},${MAP_HEIGHT}}, got ${JSON.stringify(b)}`);
+    }
+    return problems;
+});
+
+// ---------- 26. Small pure/display helpers (2026-08-27) ----------
+
+check('formatTime() renders mm:ss with zero-padded seconds', () => {
+    const problems = [];
+    if (formatTime(0) !== '0:00') problems.push(`formatTime(0) expected "0:00", got "${formatTime(0)}"`);
+    if (formatTime(65) !== '1:05') problems.push(`formatTime(65) expected "1:05", got "${formatTime(65)}"`);
+    if (formatTime(3661) !== '61:01') problems.push(`formatTime(3661) expected "61:01", got "${formatTime(3661)}"`);
+    return problems;
+});
+
+check('hasRadarDetection() is true only for radar, skyfortress, and cyborgdreadnought', () => {
+    const problems = [];
+    ['radar', 'skyfortress', 'cyborgdreadnought'].forEach(type => {
+        if (!hasRadarDetection(new Unit(0, 0, type, 0))) problems.push(`expected ${type} to have radar detection`);
+    });
+    ['stormbreaker', 'groundpounders', 'miningship'].forEach(type => {
+        if (hasRadarDetection(new Unit(0, 0, type, 0))) problems.push(`expected ${type} to NOT have radar detection`);
+    });
+    return problems;
+});
+
+check('describeCountryBonus()/HTML() reports exactly what COUNTRY_BONUSES has for that nation', () => {
+    const problems = [];
+    const perks = describeCountryBonus(0); // nation 0: hpMultiplier only, per the exactly-3 schema guardrail
+    if (perks.length !== 3) problems.push(`expected exactly 3 perk lines for nation 0, got ${perks.length}: ${JSON.stringify(perks)}`);
+    if (!perks.some(p => /Skyfortress HP/.test(p))) problems.push('expected a Skyfortress HP line for nation 0');
+
+    const html = describeCountryBonusHTML(0);
+    const spanCount = (html.match(/<span>/g) || []).length;
+    if (spanCount !== perks.length) problems.push(`expected one <span> per perk (${perks.length}), got ${spanCount}`);
+    return problems;
+});
+
+check('makeStarLayer() generates the requested count of stars within the given size/alpha ranges', () => {
+    const problems = [];
+    const layer = makeStarLayer(25, 900, [1.0, 2.0], [0.3, 0.6], 0.05);
+    if (layer.stars.length !== 25) problems.push(`expected 25 stars, got ${layer.stars.length}`);
+    if (layer.tileSize !== 900 || layer.parallax !== 0.05) problems.push('expected tileSize/parallax passed through unchanged');
+    layer.stars.forEach((s, i) => {
+        if (s.size < 1.0 || s.size > 2.0) problems.push(`star ${i}: size ${s.size} outside [1.0, 2.0]`);
+        if (s.baseAlpha < 0.3 || s.baseAlpha > 0.6) problems.push(`star ${i}: baseAlpha ${s.baseAlpha} outside [0.3, 0.6]`);
+        if (s.x < 0 || s.x >= 900 || s.y < 0 || s.y >= 900) problems.push(`star ${i}: position (${s.x}, ${s.y}) outside the tile`);
+    });
+    return problems;
+});
+
+check('updateUnitInspector() shows real unit stats and hides itself when passed no unit', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'InspectorTest', '#ff0000', island, true);
+    gameState.countries = [country];
+    const unit = new Unit(0, 0, 'stormbreaker', 0);
+    country.units = [unit];
+
+    updateUnitInspector(unit, 100, 200);
+    const inspector = document.getElementById('unitInspector');
+    if (inspector.style.display !== 'block') problems.push('expected the inspector shown for a real unit');
+    const html = document.getElementById('inspectorContent').innerHTML;
+    if (!/STORMBREAKER/.test(html)) problems.push('expected the unit type in the inspector content');
+    if (!html.includes(`HP: ${Math.round(unit.hp)}`)) problems.push('expected current HP shown');
+    if (inspector.style.left !== '120px' || inspector.style.top !== '220px') {
+        problems.push(`expected the inspector positioned at mouse+20, got left=${inspector.style.left} top=${inspector.style.top}`);
+    }
+
+    updateUnitInspector(null, 0, 0);
+    if (inspector.style.display !== 'none') problems.push('expected the inspector hidden when passed no unit');
+    return problems;
+});
+
+check('queueImageLoad() registers the image against the loading-screen counter', () => {
+    const before = vm.runInContext('totalImagesToLoad', context);
+    const img = new context.Image();
+    queueImageLoad(img, 'https://example.test/nonexistent.png');
+    const after = vm.runInContext('totalImagesToLoad', context);
+    if (after !== before + 1) return [`expected totalImagesToLoad to increase by 1 (${before} -> ${before + 1}), got ${after}`];
+    return [];
 });
 
 // ---------- 17. Zero-arg smoke test: every no-parameter top-level function ----------
