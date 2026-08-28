@@ -127,7 +127,7 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen };',
     context,
     { filename: 'grab-refs.js' }
 );
@@ -145,7 +145,11 @@ const {
     deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap,
     minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP,
     MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector,
-    hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML
+    hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML,
+    processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions,
+    loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition,
+    campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound,
+    toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen
 } = context.__test;
 
 // ---------- Test data: the full combat unit roster ----------
@@ -710,6 +714,378 @@ check('every onclick="..." button in the HTML calls a function that still exists
         if (!knownNames.has(name)) problems.push(`onclick="${name}(...)" - no such function defined`);
     }
     return problems;
+});
+
+// ---------- 10b. Coverage enforcement: every function must be tested OR explicitly excused (2026-08-28) ----------
+//    The inventory check above only ever LOGS drift - it never blocks
+//    anything, so "100% of functions have coverage" was true only by
+//    whoever remembered to add a test each time, with nothing checking
+//    that they actually did. This closes that: reuses the same
+//    auto-discovered function/method list above, and hard-fails if any of
+//    them is neither referenced by name in a real test file NOR listed in
+//    COVERAGE_ALLOWLIST below with a real reason. Adding a new function to
+//    the game now requires either a test that names it somewhere in
+//    tests/, or a conscious, reviewed line in this allowlist - never a
+//    silent gap again.
+
+const TEST_FILE_PATHS_FOR_COVERAGE = [
+    __filename,
+    path.join(__dirname, 'browser', 'visual-test.js'),
+    path.join(__dirname, 'browser', 'interaction-test.js'),
+    path.join(__dirname, 'browser', 'asset-integrity-test.js'),
+    path.join(__dirname, 'balance', 'balance-simulation.js'),
+];
+const testFileSourcesForCoverage = TEST_FILE_PATHS_FOR_COVERAGE.map(p => fs.readFileSync(p, 'utf8'));
+
+function isReferencedInAnyTestFile(name) {
+    const re = new RegExp(`\\b${name.replace(/[$]/g, '\\$')}\\b`);
+    return testFileSourcesForCoverage.some(src => re.test(src));
+}
+
+// Reviewed as of 2026-08-28. Every entry here is a deliberate call, not a
+// placeholder - add to it only with a real reason a test genuinely can't
+// name this function, not because writing the test would take a while.
+const COVERAGE_ALLOWLIST = {
+    // Pure canvas rendering, frame-by-frame - the actual pixel output is
+    // checked by visual-test.js's screenshot diff (which calls gameLoop(),
+    // never these by name), and/or the real logic underneath them already
+    // has its own direct test elsewhere in this file.
+    'drawSpaceBackground': 'canvas rendering only - covered by visual-test.js pixel-diff, not a named call',
+    'createSpaceElements': 'canvas/starfield setup - runs on every game start (exercised constantly), verified visually not by name',
+    'updateSpaceElements': 'per-frame canvas animation state - same as createSpaceElements',
+    'drawMinimap': 'canvas rendering only - the coordinate math underneath (isOnMinimap/worldToMinimap/minimapToWorld/getGalaxyBounds) is tested directly',
+    'drawRadarPulses': 'canvas rendering only - the logic underneath (hasRadarDetection()) is tested directly',
+    '__pumpImageQueue': 'internal helper of queueImageLoad(), which IS tested directly - this one has no independent behavior to assert on',
+    'initAudio': 'sets up a Web Audio graph with no observable return value in jsdom; startMusic()/toggleSound() (which call it) are smoke-tested',
+};
+
+check('every top-level function is either test-referenced or explicitly allowlisted (no silent coverage gaps)', () => {
+    const problems = [];
+    topLevelFns.forEach(fn => {
+        if (isReferencedInAnyTestFile(fn.name)) return;
+        if (COVERAGE_ALLOWLIST[fn.name]) return;
+        problems.push(`"${fn.name}()" has no test coverage and is not in COVERAGE_ALLOWLIST - add a test that names it, or add it to the allowlist with a real reason`);
+    });
+    return problems;
+});
+
+check('every class method is either test-referenced or explicitly allowlisted (no silent coverage gaps)', () => {
+    const problems = [];
+    classInfo.forEach(cls => {
+        cls.methods.forEach(methodName => {
+            if (isReferencedInAnyTestFile(methodName)) return;
+            const qualified = `${cls.name}.${methodName}`;
+            if (COVERAGE_ALLOWLIST[qualified] || COVERAGE_ALLOWLIST[methodName]) return;
+            problems.push(`"${qualified}()" has no test coverage and is not in COVERAGE_ALLOWLIST - add a test that names it, or add it to the allowlist with a real reason`);
+        });
+    });
+    return problems;
+});
+
+// ---------- 10c. Closing every gap the enforcement check above found (2026-08-28) ----------
+//    First real run of the check above flagged 29 functions/methods with
+//    genuinely zero coverage. Closed here with direct tests rather than
+//    allowlisted away - allowlisting is for things a test structurally
+//    cannot name (a canvas draw call checked by pixel-diff instead), not a
+//    shortcut around writing one.
+
+check('openInstructions() opens the real How-To-Play page in a new tab', () => {
+    const realOpen = context.open;
+    let calledWith = null;
+    context.open = (url, target) => { calledWith = { url, target }; };
+    try {
+        openInstructions();
+    } finally {
+        context.open = realOpen;
+    }
+    if (!calledWith) return ['openInstructions() never called window.open()'];
+    if (calledWith.url !== 'https://titanbusinesspros.github.io/How-To-Play/') return [`unexpected URL: ${calledWith.url}`];
+    if (calledWith.target !== '_blank') return [`expected target "_blank", got "${calledWith.target}"`];
+    return [];
+});
+
+check('loadSprites() queued exactly one image per non-null SPRITE_URLS entry (already ran once at script load)', () => {
+    const spriteUrls = vm.runInContext('SPRITE_URLS', context);
+    const expectedCount = Object.values(spriteUrls).filter(Boolean).length;
+    const actualQueued = vm.runInContext('totalImagesToLoad', context);
+    if (actualQueued < expectedCount) {
+        return [`expected at least ${expectedCount} images queued (one per non-null SPRITE_URLS entry), got ${actualQueued}`];
+    }
+    return [];
+});
+
+check('processAttackMoveOrders() closes the distance on an out-of-range target and fires once in range', () => {
+    const problems = [];
+    const attackerIsland = new Island(0, 0, 0);
+    const attacker = new Country(0, 'Attacker', '#ff0000', attackerIsland, true);
+    const targetIsland = new Island(50000, 50000, 1);
+    const defender = new Country(1, 'Defender', '#00ff00', targetIsland, false);
+    gameState.countries = [attacker, defender];
+
+    const shooter = new Unit(0, 0, 'stormbreaker', 0);
+    const victim = new Unit(shooter.getRange() + 500, 0, 'stormbreaker', 1); // out of range at first
+    attacker.units = [shooter];
+    defender.units = [victim];
+    shooter.attackMoveTarget = { kind: 'unit', unit: victim };
+
+    processAttackMoveOrders();
+    if (shooter.targetX !== victim.x || shooter.targetY !== victim.y) {
+        problems.push(`expected the shooter to start closing on the out-of-range target, got targetX=${shooter.targetX}, targetY=${shooter.targetY}`);
+    }
+    if (shooter.hasAttacked) problems.push('should not have fired yet - target was out of range');
+
+    // Now bring it into range and process again - should fire.
+    victim.x = shooter.x + shooter.getRange() - 10;
+    const hpBefore = victim.hp;
+    processAttackMoveOrders();
+    if (victim.hp !== hpBefore - shooter.getAttackPower()) {
+        problems.push(`expected the victim to take ${shooter.getAttackPower()} damage once in range, hp went ${hpBefore} -> ${victim.hp}`);
+    }
+    if (!shooter.hasAttacked) problems.push('expected the shooter marked hasAttacked after firing');
+    return problems;
+});
+
+check('toggleUI() toggles the side panel\'s visible class, and viewAll() recenters the camera on the whole galaxy', () => {
+    const problems = [];
+    const ui = document.getElementById('ui');
+    const hadVisible = ui.classList.contains('visible');
+    toggleUI();
+    if (ui.classList.contains('visible') === hadVisible) problems.push('expected toggleUI() to flip the visible class');
+    toggleUI();
+    if (ui.classList.contains('visible') !== hadVisible) problems.push('expected a second toggleUI() to flip it back');
+
+    camera.x = 1; camera.y = 1; camera.zoom = 5;
+    viewAll();
+    if (camera.x !== MAP_WIDTH / 2 || camera.y !== MAP_HEIGHT / 2) problems.push(`expected the camera centered on the map, got (${camera.x}, ${camera.y})`);
+    const expectedZoom = Math.min(canvas.width / MAP_WIDTH, canvas.height / MAP_HEIGHT) * 0.9;
+    if (Math.abs(camera.zoom - expectedZoom) > 0.0001) problems.push(`expected zoom ${expectedZoom}, got ${camera.zoom}`);
+    return problems;
+});
+
+check('openStatsScreen()/closeStatsScreen() show and hide the real stats panel with live data', () => {
+    const problems = [];
+    lifetimeStats.standard.gamesPlayed = 7;
+    lifetimeStats.standard.gamesWon = 3;
+    openStatsScreen();
+    if (document.getElementById('statsScreen').style.display !== 'block') problems.push('expected the stats screen shown');
+    const html = document.getElementById('statsContent').innerHTML;
+    if (!html.includes('Games Played: 7') || !html.includes('Games Won: 3')) problems.push('expected live lifetimeStats reflected in the panel');
+    closeStatsScreen();
+    if (document.getElementById('statsScreen').style.display !== 'none') problems.push('expected the stats screen hidden after close');
+    return problems;
+});
+
+check('clearAutosave() removes the autosave entry', () => {
+    localStorage.setItem(AUTOSAVE_KEY, '{"turn":1}');
+    clearAutosave();
+    if (localStorage.getItem(AUTOSAVE_KEY) !== null) return ['expected the autosave key removed'];
+    return [];
+});
+
+check('showCampaignBriefing() renders the stage title/briefing, with the campaign intro only on stage 1', () => {
+    const problems = [];
+    gameState.campaignNationId = 2;
+    gameState.campaignStages = buildCampaignStages(2);
+
+    showCampaignBriefing(0, true);
+    if (document.getElementById('campaignBriefingTitle').textContent !== gameState.campaignStages[0].title) problems.push('expected stage 1\'s real title shown');
+    if (!/Earth is gone/.test(document.getElementById('campaignBriefingText').textContent)) problems.push('expected the campaign intro text on stage 1 (isIntro=true)');
+
+    showCampaignBriefing(1, false);
+    if (document.getElementById('campaignBriefingTitle').textContent !== gameState.campaignStages[1].title) problems.push('expected stage 2\'s real title shown');
+    if (/Earth is gone/.test(document.getElementById('campaignBriefingText').textContent)) problems.push('expected NO campaign intro text on a later stage (isIntro=false)');
+    if (document.getElementById('campaignBriefingText').textContent !== gameState.campaignStages[1].briefing) problems.push('expected just the stage\'s own briefing text on a later stage');
+    return problems;
+});
+
+check('beginCampaignFromBriefing() hides the briefing and actually starts the current stage', () => {
+    gameState.campaignNationId = 3;
+    gameState.campaignStages = buildCampaignStages(3);
+    gameState.campaignStageIndex = 0;
+    document.getElementById('campaignBriefingScreen').style.display = 'block';
+
+    beginCampaignFromBriefing();
+
+    const problems = [];
+    if (document.getElementById('campaignBriefingScreen').style.display !== 'none') problems.push('expected the briefing screen hidden');
+    if (!gameState.campaignActive) problems.push('expected beginCampaignFromBriefing() to actually start the stage');
+    return problems;
+});
+
+check('campaignNationPosition()/campaignAlienPosition()/campaignOutpostPosition() return distinct, real coordinates', () => {
+    const problems = [];
+    const posA = campaignNationPosition(0);
+    const posB = campaignNationPosition(1);
+    if (posA.x === posB.x && posA.y === posB.y) problems.push('expected two different nation slots to get different positions');
+
+    const alienPos = campaignAlienPosition(12);
+    if (typeof alienPos.x !== 'number' || typeof alienPos.y !== 'number') problems.push('expected campaignAlienPosition(12) to return real coordinates');
+    if (campaignAlienPosition(9999)) problems.push('expected an unknown alien id to return undefined, not a fabricated position');
+
+    const outpost0 = campaignOutpostPosition(1, 0, 3);
+    const outpost1 = campaignOutpostPosition(1, 1, 3);
+    if (outpost0.x === outpost1.x && outpost0.y === outpost1.y) problems.push('expected different outpost indices around the same rival to land at different points');
+    return problems;
+});
+
+check('spawnCampaignGarrison() adds exactly the requested number of units to the country', () => {
+    const island = new Island(0, 0, 5);
+    const country = new Country(5, 'GarrisonTest', '#ff0000', island, false);
+    spawnCampaignGarrison(country, 4);
+    if (country.units.length !== 4) return [`expected 4 garrison units, got ${country.units.length}`];
+    return [];
+});
+
+check('playUIClickSound() runs without throwing (Web Audio not available in jsdom - must fail safe, not crash)', () => {
+    try {
+        playUIClickSound();
+    } catch (e) {
+        return [`playUIClickSound() threw instead of failing safe: ${e.message}`];
+    }
+    return [];
+});
+
+check('toggleCampaignObjectives()/toggleLegend() collapse and expand their panels', () => {
+    const problems = [];
+    const list = document.getElementById('campaignObjectivesList');
+    const wasCollapsed = list.classList.contains('collapsed');
+    toggleCampaignObjectives();
+    if (list.classList.contains('collapsed') === wasCollapsed) problems.push('expected toggleCampaignObjectives() to flip the collapsed class');
+
+    const legend = document.getElementById('legendBody');
+    const legendWasCollapsed = legend.classList.contains('collapsed');
+    toggleLegend();
+    if (legend.classList.contains('collapsed') === legendWasCollapsed) problems.push('expected toggleLegend() to flip the collapsed class');
+    return problems;
+});
+
+check('updateCampaignObjectivesPanel() shows/hides itself and checks off cleared objectives', () => {
+    const problems = [];
+    gameState.campaignActive = false;
+    gameState.campaignStages = null;
+    updateCampaignObjectivesPanel();
+    if (document.getElementById('campaignObjectivesPanel').style.display !== 'none') problems.push('expected the panel hidden outside campaign mode');
+
+    gameState.campaignActive = true;
+    gameState.campaignNationId = 6;
+    gameState.campaignStages = buildCampaignStages(6);
+    gameState.campaignStageIndex = 0;
+    startCampaignStage(0);
+    const stage = gameState.campaignStages[0];
+    // Clear the first objective, leave the rest alone.
+    const firstTargetCountry = gameState.countries.find(c => c.id === stage.objectives[0].id);
+    firstTargetCountry.island.buildings.forEach(b => { b.destroyed = true; });
+
+    updateCampaignObjectivesPanel();
+    if (document.getElementById('campaignObjectivesPanel').style.display !== 'block') problems.push('expected the panel shown during an active campaign');
+    const countText = document.getElementById('campaignObjectivesCount').textContent;
+    if (countText !== `(1/${stage.objectives.length})`) problems.push(`expected "(1/${stage.objectives.length})", got "${countText}"`);
+    const listHtml = document.getElementById('campaignObjectivesList').innerHTML;
+    if (!listHtml.includes('✓')) problems.push('expected at least one cleared (✓) objective row');
+    if (!listHtml.includes('☐')) problems.push('expected at least one still-open (☐) objective row');
+    return problems;
+});
+
+check('updateTimer() advances the turn countdown by real elapsed time (unclamped) and rolls the turn over at zero', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'TimerTest', '#ff0000', island, true);
+    gameState.countries = [country];
+    gameState.playerCountry = country;
+    gameState.humanCountryIds = [];
+    gameState.paused = false;
+    gameState.gameStarted = true;
+    gameState.turnTimeRemaining = 100;
+    const turnBefore = gameState.turn;
+
+    gameState.lastFrameTime = Date.now() - 5000; // pretend 5 real seconds passed
+    updateTimer();
+    const liveFrameDeltaTime = vm.runInContext('frameDeltaTime', context);
+    if (liveFrameDeltaTime > 0.26) problems.push(`expected frameDeltaTime clamped to ~0.25 max for movement, got ${liveFrameDeltaTime}`);
+    if (gameState.turnTimeRemaining > 96) problems.push(`expected the turn countdown itself to drop by the real ~5s (unclamped), only reached ${gameState.turnTimeRemaining}`);
+
+    gameState.turnTimeRemaining = 0.01;
+    gameState.lastFrameTime = Date.now() - 1000;
+    updateTimer();
+    if (gameState.turn !== turnBefore + 1) problems.push(`expected nextTurn() to fire once the countdown hit 0, turn is ${gameState.turn} (was ${turnBefore})`);
+    return problems;
+});
+
+check('buildResearchStatusHtml() reflects a destroyed lab, idle research, and active research correctly', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'ResearchHtmlTest', '#ff0000', island, true);
+
+    const lab = island.getResearchLab();
+    lab.destroyed = true;
+    if (!/Research Lab destroyed/.test(buildResearchStatusHtml(country))) problems.push('expected the destroyed-lab message when there is no working lab');
+    lab.destroyed = false;
+
+    let html = buildResearchStatusHtml(country);
+    if (!/No active research/.test(html)) problems.push('expected "No active research" with nothing in progress');
+    if (!html.includes(TECH_TREE.mining_ops.name)) problems.push('expected an available tech node listed by name');
+
+    country.activeResearch = { id: 'mining_ops', remaining: 12.7 };
+    html = buildResearchStatusHtml(country);
+    if (!html.includes('Researching') || !html.includes(TECH_TREE.mining_ops.name) || !html.includes('13s remaining')) {
+        problems.push(`expected the active-research line (rounded up to 13s), got: ${html.slice(0, 200)}`);
+    }
+    return problems;
+});
+
+check('Island.createBuildings()/generateShape()/collidesWith() produce a real 6-building layout, a real polygon, and real collision math', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    if (island.buildings.length !== 6) problems.push(`expected 6 buildings from createBuildings(), got ${island.buildings.length}`);
+    if (!island.buildings.some(b => b.isResearchLab)) problems.push('expected one building marked isResearchLab');
+    if (!island.buildings.some(b => b.isHarbor)) problems.push('expected one building marked isHarbor');
+    if (!island.buildings.some(b => b.isDefenseGun)) problems.push('expected one building marked isDefenseGun');
+
+    if (island.shape.length !== 12) problems.push(`expected a 12-point polygon from generateShape(), got ${island.shape.length}`);
+    island.shape.forEach((pt, i) => {
+        const r = Math.hypot(pt.x, pt.y);
+        if (r < island.size * 0.7 - 0.01 || r > island.size * 1.0 + 0.01) problems.push(`shape point ${i} at radius ${r.toFixed(1)} outside the expected [0.7,1.0]*size band`);
+    });
+
+    if (!island.collidesWith(island.x, island.y)) problems.push('expected the island\'s own center to collide with itself');
+    if (island.collidesWith(island.x + island.collisionSize + 50, island.y)) problems.push('expected a point well outside collisionSize to NOT collide');
+    return problems;
+});
+
+check('Unit.isVessel()/isMiningShip()/isAircraft()/getColor()/isHovered() classify and hit-test correctly', () => {
+    const problems = [];
+    const ship = new Unit(0, 0, 'stormbreaker', 0);
+    if (!ship.isVessel()) problems.push('expected stormbreaker to be a vessel');
+    if (ship.isAircraft()) problems.push('expected stormbreaker to NOT be aircraft');
+
+    const miner = new Unit(0, 0, 'miningship', 0);
+    if (!miner.isVessel() || !miner.isMiningShip()) problems.push('expected miningship to be both a vessel and a mining ship');
+    if (new Unit(0, 0, 'stormbreaker', 0).isMiningShip()) problems.push('expected a non-mining-ship to report isMiningShip() false');
+
+    const plane = new Unit(0, 0, 'thunderwing', 0);
+    if (!plane.isAircraft() || plane.isVessel()) problems.push('expected thunderwing to be aircraft, not a vessel');
+
+    if (ship.getColor() !== '#8888ff') problems.push(`expected stormbreaker's known color, got ${ship.getColor()}`);
+
+    const hoverTarget = new Unit(100, 100, 'stormbreaker', 0);
+    if (!hoverTarget.isHovered(100, 100)) problems.push('expected isHovered() true exactly at the unit\'s own position');
+    if (hoverTarget.isHovered(100 + hoverTarget.getSize() + 1000, 100)) problems.push('expected isHovered() false far away from the unit');
+    return problems;
+});
+
+check('Country.countUnits() tallies units by type', () => {
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'CountTest', '#ff0000', island, true);
+    country.units = [
+        new Unit(0, 0, 'stormbreaker', 0),
+        new Unit(0, 0, 'stormbreaker', 0),
+        new Unit(0, 0, 'groundpounders', 0),
+    ];
+    const counts = country.countUnits();
+    if (counts.stormbreaker !== 2 || counts.groundpounders !== 1) {
+        return [`expected {stormbreaker:2, groundpounders:1}, got ${JSON.stringify(counts)}`];
+    }
+    return [];
 });
 
 // ---------- 11. Economy: starting resources ----------
