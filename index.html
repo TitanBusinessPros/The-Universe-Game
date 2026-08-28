@@ -1066,10 +1066,86 @@
                 timeSeconds: 90,
                 prereq: null,
                 description: '+15% HP on every vessel-class ship you build from now on (already-built ships are unaffected).'
+            },
+            // 2026-08-28: ten more nodes, each a real hook into an existing system
+            // rather than a flavor-only stat - see each hook site (getMaxHP(),
+            // getAttackPower(), defenseGunAttack(), nextTurn(), etc.) for the
+            // actual mechanic.
+            reinforced_hulls: {
+                name: 'Reinforced Hulls',
+                cost: 400,
+                timeSeconds: 90,
+                prereq: null,
+                description: '+15% HP on every ground-force unit you build from now on (already-built units are unaffected).'
+            },
+            aerial_superiority: {
+                name: 'Aerial Superiority',
+                cost: 450,
+                timeSeconds: 100,
+                prereq: null,
+                description: '+15% attack power on every aircraft-class unit you own, applied live.'
+            },
+            extended_sensors: {
+                name: 'Extended Sensors',
+                cost: 350,
+                timeSeconds: 80,
+                prereq: null,
+                description: '+50% vision range for your units and homeworld (fog of war pushed back further).'
+            },
+            fortified_defenses: {
+                name: 'Fortified Defenses',
+                cost: 400,
+                timeSeconds: 90,
+                prereq: null,
+                description: "+50% Defense Gun range and damage on your homeworld's Defense Gun."
+            },
+            rapid_repair: {
+                name: 'Rapid Repair Crews',
+                cost: 500,
+                timeSeconds: 100,
+                prereq: null,
+                description: 'Damaged (but not destroyed) buildings slowly regenerate HP each turn instead of staying at whatever damage they took.'
+            },
+            deep_mining: {
+                name: 'Deep Mining',
+                cost: 600,
+                timeSeconds: 120,
+                prereq: 'improved_extraction',
+                description: 'A second tier past Improved Extraction - Mining Ship income reaches 200/hour (up from 150).'
+            },
+            expanded_cargo: {
+                name: 'Expanded Cargo Bays',
+                cost: 350,
+                timeSeconds: 80,
+                prereq: null,
+                description: 'Cargohauler capacity increases from 10 to 15 ground troops.'
+            },
+            advanced_shipyards: {
+                name: 'Advanced Shipyards',
+                cost: 500,
+                timeSeconds: 110,
+                prereq: null,
+                description: 'Unlocks the Tidebreaker and Whisperwind - both were buildable turn one before this, now gated like the rest of the tree.'
+            },
+            warp_drive: {
+                name: 'Warp Drive Calibration',
+                cost: 450,
+                timeSeconds: 100,
+                prereq: null,
+                description: '+12% movement speed on every vessel-class ship you own, applied live.'
+            },
+            deposit_scanner: {
+                name: 'Orbital Resource Scanner',
+                cost: 400,
+                timeSeconds: 90,
+                prereq: null,
+                description: "Doubles a Mining Ship's collection range, so it doesn't need to sit exactly on top of a deposit to work it."
             }
         };
         const UNIT_TECH_REQUIREMENTS = {
-            'miningship': 'mining_ops'
+            'miningship': 'mining_ops',
+            'tidebreaker': 'advanced_shipyards',
+            'whisperwind': 'advanced_shipyards'
         };
 
         const UNIT_SPEEDS = {
@@ -1230,6 +1306,14 @@
         const RADAR_SIGHT_RANGE = 1400;
         function hasRadarDetection(unit) {
             return unit.type === 'radar' || unit.type === 'skyfortress' || unit.type === 'cyborgdreadnought';
+        }
+
+        // Extended Sensors research (+50% vision range - see TECH_TREE). Pulled out
+        // of Unit.draw()'s fog-of-war check into its own function so the actual
+        // range math is testable without needing a real canvas draw pass.
+        function getEffectiveSightRange(country, hasRadar) {
+            const base = hasRadar ? RADAR_SIGHT_RANGE : UNIT_SIGHT_RANGE;
+            return (country && country.researchedTech.has('extended_sensors')) ? Math.round(base * 1.5) : base;
         }
 
         // Reverted 2026-08-25 at the user's explicit request, back to the exact values
@@ -1488,6 +1572,62 @@
         let resourceDeposits = [];
         let nextResourceDepositId = 0;
         let laserEffects = []; // {startX, startY, endX, endY, createdAt, duration, color}
+
+        // Distinct laser-beam color per unit type ('r,g,b', no alpha - the draw
+        // code layers several alpha levels and a lightened "hot core" tint on
+        // top of this), so different ships visibly fire differently colored
+        // shots instead of everything looking the same green beam (previously
+        // the ONLY distinction that existed at all was frostwing's freeze-beam
+        // being hardcoded blue; every other type either got the same flat
+        // green, or - in two of the three places a laser gets fired - no
+        // laser effect at all). frostwing keeps the exact blue it already had.
+        const LASER_COLORS = {
+            'thunderwing': '255,68,68',
+            'blazefalcon': '255,170,0',
+            'skyripper': '0,170,255',
+            'vortexhawk': '255,0,170',
+            'phantomstrike': '255,255,0',
+            'razorwing': '0,255,170',
+            'shadowglider': '153,0,255',
+            'stormbreakerbomber': '255,100,0',
+            'frostwing': '0,150,255',
+            'deepglider': '68,68,255',
+            'stormbreaker': '136,136,255',
+            'wavecrusher': '170,170,255',
+            'skyfortress': '204,204,255',
+            'cyborgdreadnought': '0,255,255',
+            'tidebreaker': '0,120,200',
+            'whisperwind': '180,255,220',
+            'groundpounders': '68,255,68',
+            'ironbeast': '210,140,60',
+            'boomcannon': '255,136,68',
+            'roufestreal': '160,0,160',
+            'zoonparasite': '157,0,255',
+        };
+        const DEFAULT_LASER_COLOR = '50,255,50'; // matches the old default green exactly - anything not listed above doesn't regress
+
+        function getLaserColor(type) {
+            return LASER_COLORS[type] || DEFAULT_LASER_COLOR;
+        }
+
+        // Blends an 'r,g,b' string toward white by `amount` (0-1) - used to give
+        // every beam color the same "hot white core, saturated color at the
+        // edge" look the old hand-picked blue/green triples had, generalized to
+        // work for any color instead of just those two.
+        function lightenRgb(rgb, amount) {
+            const [r, g, b] = rgb.split(',').map(Number);
+            const blend = (c) => Math.round(c + (255 - c) * amount);
+            return `${blend(r)},${blend(g)},${blend(b)}`;
+        }
+
+        function fireLaserEffect(attackerType, startX, startY, endX, endY) {
+            laserEffects.push({
+                startX, startY, endX, endY,
+                createdAt: Date.now(),
+                duration: 2000,
+                color: getLaserColor(attackerType)
+            });
+        }
 
         const COUNTRY_NAMES = [
             'USA', 'China', 'Russia', 'UK', 'France', 
@@ -2072,6 +2212,14 @@
                 return this.type === 'miningship';
             }
 
+            // Expanded Cargo Bays research (see TECH_TREE) - 10 -> 15 for a
+            // Cargohauler's owning country. Meaningless for any other type (they
+            // don't carry cargo), but harmless to call regardless.
+            getCargoCapacity() {
+                const country = gameState.countries.find(c => c.id === this.countryId);
+                return (country && country.researchedTech.has('expanded_cargo')) ? 15 : 10;
+            }
+
             isAircraft() {
                 return ['radar', 'thunderwing', 'blazefalcon', 'skyripper', 'vortexhawk', 'phantomstrike', 'razorwing', 'shadowglider', 'stormbreakerbomber', 'frostwing'].includes(this.type);
             }
@@ -2107,6 +2255,14 @@
                         hp = Math.round(hp * 1.15);
                     }
                 }
+                // Reinforced Hulls research (+15% HP, ground-force units only - see
+                // TECH_TREE). Same "applies at construction time" rule as Vessel Plating.
+                if (this.isGroundUnit()) {
+                    const country = gameState.countries.find(c => c.id === this.countryId);
+                    if (country && country.researchedTech.has('reinforced_hulls')) {
+                        hp = Math.round(hp * 1.15);
+                    }
+                }
                 return hp;
             }
 
@@ -2126,12 +2282,24 @@
                 'miningship': 0 // no weapons - "no defense" per the mining economy redesign
                 };
                 const basePower = powerMap[this.type] || 20;
-                
+
                 const countryBonus = COUNTRY_BONUSES[this.countryId];
-                if (countryBonus && countryBonus.attackMultiplier[this.type]) {
-                    return Math.round(basePower * countryBonus.attackMultiplier[this.type]);
+                let power = (countryBonus && countryBonus.attackMultiplier[this.type])
+                    ? Math.round(basePower * countryBonus.attackMultiplier[this.type])
+                    : basePower;
+
+                // Aerial Superiority research (+15% attack, aircraft-class only - see
+                // TECH_TREE). Checked live (not cached at construction time like Vessel
+                // Plating/Reinforced Hulls) since attack power is already recomputed on
+                // every call rather than stored - so researching mid-game boosts units
+                // that already exist too, not just new ones.
+                if (this.isAircraft()) {
+                    const country = gameState.countries.find(c => c.id === this.countryId);
+                    if (country && country.researchedTech.has('aerial_superiority')) {
+                        power = Math.round(power * 1.15);
+                    }
                 }
-                return basePower;
+                return power;
             }
 
             canAttackBuildings() {
@@ -2276,6 +2444,16 @@
                     if (countryBonus && countryBonus.speedMultiplier[this.type]) {
                         speed *= countryBonus.speedMultiplier[this.type];
                     }
+                    // Warp Drive Calibration research (+12% speed, vessel-class only -
+                    // see TECH_TREE). Checked live every frame, same reasoning as Aerial
+                    // Superiority - a mid-game research completion speeds up ships that
+                    // already exist too, not just future ones.
+                    if (this.isVessel()) {
+                        const speedCountry = gameState.countries.find(c => c.id === this.countryId);
+                        if (speedCountry && speedCountry.researchedTech.has('warp_drive')) {
+                            speed *= 1.12;
+                        }
+                    }
                     // UNIT_SPEEDS was always implicitly tuned as "units per
                     // frame at 60fps" - scaling by frameDeltaTime*60 keeps
                     // that exact behavior unchanged on a 60Hz display while
@@ -2354,7 +2532,7 @@
                         const dx = this.x - playerUnit.x;
                         const dy = this.y - playerUnit.y;
                         const dist = Math.sqrt(dx * dx + dy * dy);
-                        const sightRange = hasRadarDetection(playerUnit) ? RADAR_SIGHT_RANGE : UNIT_SIGHT_RANGE;
+                        const sightRange = getEffectiveSightRange(gameState.playerCountry, hasRadarDetection(playerUnit));
 
                         if (dist <= sightRange) {
                             isVisible = true;
@@ -2368,7 +2546,7 @@
                     if (!isVisible) {
                         const homeDist = Math.hypot(this.x - gameState.playerCountry.island.x, this.y - gameState.playerCountry.island.y);
                         const radarTower = gameState.playerCountry.island.buildings.find(b => b.name === 'Radar Tower');
-                        const homeSightRange = (radarTower && !radarTower.destroyed) ? RADAR_SIGHT_RANGE : UNIT_SIGHT_RANGE;
+                        const homeSightRange = getEffectiveSightRange(gameState.playerCountry, radarTower && !radarTower.destroyed);
                         if (homeDist <= homeSightRange) isVisible = true;
                     }
 
@@ -2482,7 +2660,7 @@
                     ctx.fillStyle = '#ffff00';
                     ctx.font = 'bold 10px Arial';
                     ctx.textAlign = 'center';
-                    ctx.fillText(`${this.cargo.length}/10`, 0, size + 15);
+                    ctx.fillText(`${this.cargo.length}/${this.getCargoCapacity()}`, 0, size + 15);
                 }
                 
                 ctx.restore();
@@ -2504,16 +2682,26 @@
         function updateMiningAndResearch() {
             gameState.countries.forEach(country => {
                 country.updateResearch(frameDeltaTime);
-                // Improved Extraction research (+50% mining rate, per country - see TECH_TREE).
-                const hourlyRate = country.researchedTech.has('improved_extraction')
-                    ? DEPOSIT_INCOME_PER_HOUR * 1.5
-                    : DEPOSIT_INCOME_PER_HOUR;
+                // Improved Extraction (+50%) and Deep Mining (a further tier on top of
+                // it, prereq-gated in TECH_TREE) both boost mining rate - 100 -> 150 ->
+                // 200/hour. Deep Mining requires Improved Extraction already, so this
+                // could just check deep_mining alone, but checking both keeps the
+                // reasoning visible without relying on the prereq chain never changing.
+                let hourlyRate = DEPOSIT_INCOME_PER_HOUR;
+                if (country.researchedTech.has('improved_extraction')) hourlyRate = DEPOSIT_INCOME_PER_HOUR * 1.5;
+                if (country.researchedTech.has('deep_mining')) hourlyRate = DEPOSIT_INCOME_PER_HOUR * 2;
+                // Orbital Resource Scanner research (doubles collection range - see
+                // TECH_TREE) - a Mining Ship no longer needs to sit exactly on top of
+                // a deposit once researched.
+                const collectRange = country.researchedTech.has('deposit_scanner')
+                    ? DEPOSIT_COLLECT_RANGE * 2
+                    : DEPOSIT_COLLECT_RANGE;
                 country.units.forEach(unit => {
                     if (!unit.isMiningShip()) return;
                     resourceDeposits.forEach(dep => {
                         if (dep.isDepleted()) return;
                         const dist = Math.hypot(unit.x - dep.x, unit.y - dep.y);
-                        if (dist > DEPOSIT_COLLECT_RANGE) return;
+                        if (dist > collectRange) return;
                         const amount = Math.min(dep.resources, (hourlyRate / 3600) * frameDeltaTime);
                         dep.resources -= amount;
                         country.resources += amount;
@@ -2557,8 +2745,8 @@
                             if (!unit.canAttackUnit(order.unit)) { unit.attackMoveTarget = null; return; }
                             if (unit.type === 'frostwing') {
                                 order.unit.frozenTurns = 2;
-                                laserEffects.push({ startX: unit.x, startY: unit.y, endX: order.unit.x, endY: order.unit.y, createdAt: Date.now(), duration: 2000, color: 'blue' });
                             }
+                            fireLaserEffect(unit.type, unit.x, unit.y, order.unit.x, order.unit.y);
                             order.unit.hp -= unit.getAttackPower();
                             unit.hasAttacked = true;
                             if (order.unit.hp <= 0) {
@@ -2699,9 +2887,32 @@
                 this.island.buildings.forEach(b => b.hasAttacked = false);
             }
 
+            // Rapid Repair Crews research (see TECH_TREE). Only heals damaged
+            // buildings that are still standing - a destroyed building needs to be
+            // rebuilt, not regenerated, same as the rest of this game's building
+            // model (there's no "rebuild" action yet either, but this deliberately
+            // doesn't pretend to be one).
+            repairBuildings() {
+                if (!this.researchedTech.has('rapid_repair')) return;
+                this.island.buildings.forEach(b => {
+                    if (!b.destroyed && b.hp < b.maxHp) {
+                        b.hp = Math.min(b.maxHp, b.hp + 1);
+                    }
+                });
+            }
+
             defenseGunAttack() {
                 const defenseGun = this.island.getDefenseGun();
                 if (!defenseGun || defenseGun.hasAttacked) return;
+
+                // Fortified Defenses research (+50% range and damage - see TECH_TREE).
+                // Checked live rather than mutating the building's own range/attackPower,
+                // so it correctly turns off again if this ever needed to be undone (it
+                // doesn't today, but matches every other tech hook's "derive it live"
+                // convention instead of a one-way mutation).
+                const fortified = this.researchedTech.has('fortified_defenses');
+                const effectiveRange = fortified ? defenseGun.range * 1.5 : defenseGun.range;
+                const effectiveDamage = fortified ? Math.round(defenseGun.attackPower * 1.5) : defenseGun.attackPower;
 
                 let closestEnemy = null;
                 let closestDist = Infinity;
@@ -2710,12 +2921,12 @@
                     if (country.team !== this.team) {
                         country.units.forEach(unit => {
                             if (unit.isGroundUnit() && unit.isInHarbor) return;
-                            
+
                             const dx = unit.x - this.island.x;
                             const dy = unit.y - this.island.y;
                             const dist = Math.sqrt(dx * dx + dy * dy);
 
-                            if (dist < defenseGun.range && dist < closestDist) {
+                            if (dist < effectiveRange && dist < closestDist) {
                                 closestEnemy = unit;
                                 closestDist = dist;
                             }
@@ -2724,7 +2935,7 @@
                 });
 
                 if (closestEnemy) {
-                    closestEnemy.hp -= defenseGun.attackPower;
+                    closestEnemy.hp -= effectiveDamage;
                     defenseGun.hasAttacked = true;
                 }
             }
@@ -2910,9 +3121,9 @@
                                     });
                                     
                                     if (closestUnit) {
-                                        if(attacker.type==='frostwing'){closestUnit.frozenTurns=2;if(country.isPlayer){laserEffects.push({startX:attacker.x,startY:attacker.y,endX:closestUnit.x,endY:closestUnit.y,createdAt:Date.now(),duration:2000,color:'blue'});}}
+                                        if(attacker.type==='frostwing'){closestUnit.frozenTurns=2;}
+                                        if(country.isPlayer){fireLaserEffect(attacker.type,attacker.x,attacker.y,closestUnit.x,closestUnit.y);}
                                         closestUnit.hp -= attacker.getAttackPower();
-                                        if(country.isPlayer&&attacker.type!=='frostwing'){laserEffects.push({startX:attacker.x,startY:attacker.y,endX:closestUnit.x,endY:closestUnit.y,createdAt:Date.now(),duration:2000});}
                                         attacker.hasAttacked = true;
                                         targetFound = true;
                                     }
@@ -2973,7 +3184,7 @@
                     const harborPos = this.island.getHarborWorldPosition();
                     
                     const groundUnitsInHarbor = this.units.filter(u => u.isGroundUnit() && u.isInHarbor);
-                    const cargohaulers = this.units.filter(u => u.type === 'cargohauler' && u.cargo.length < 10);
+                    const cargohaulers = this.units.filter(u => u.type === 'cargohauler' && u.cargo.length < u.getCargoCapacity());
                     
                     cargohaulers.forEach(cargohauler => {
                         const dx = cargohauler.x - harborPos.x;
@@ -2982,7 +3193,7 @@
                         
                         if (dist < 300 && groundUnitsInHarbor.length > 0) {
                             groundUnitsInHarbor.forEach(groundUnit => {
-                                if (cargohauler.cargo.length < 10 && groundUnit.isInHarbor) {
+                                if (cargohauler.cargo.length < cargohauler.getCargoCapacity() && groundUnit.isInHarbor) {
                                     cargohauler.cargo.push(groundUnit);
                                     groundUnit.isInHarbor = false;
                                 }
@@ -3658,8 +3869,9 @@
                     return;
                 }
                 
-                if (cargohauler.cargo.length >= 10) {
-                    alert('Cargohauler is full (10/10)!');
+                const cargoCapacity = cargohauler.getCargoCapacity();
+                if (cargohauler.cargo.length >= cargoCapacity) {
+                    alert(`Cargohauler is full (${cargoCapacity}/${cargoCapacity})!`);
                     return;
                 }
                 
@@ -3701,7 +3913,7 @@
                 
                 let loaded = 0;
                 for (let groundUnit of nearbyGroundUnits) {
-                    if (cargohauler.cargo.length < 10) {
+                    if (cargohauler.cargo.length < cargoCapacity) {
                         cargohauler.cargo.push(groundUnit);
                         groundUnit.isInHarbor = false;
                         loaded++;
@@ -3709,8 +3921,8 @@
                         break;
                     }
                 }
-                
-                alert(`Loaded ${loaded} ground unit(s) into cargohauler! (${cargohauler.cargo.length}/10)`);
+
+                alert(`Loaded ${loaded} ground unit(s) into cargohauler! (${cargohauler.cargo.length}/${cargoCapacity})`);
                 updateUI();
                 return;
             }
@@ -3797,6 +4009,7 @@
             gameState.countries.forEach(c => {
                 c.collectResources();
                 c.resetAttacks();
+                c.repairBuildings();
                 c.defenseGunAttack();
                 if (!c.isPlayer) {
                     c.aiTurn();
@@ -4666,7 +4879,7 @@
             `;
             
             if (unit.type === 'cargohauler') {
-                html += `<div class="stat">Cargo: ${unit.cargo.length} / 10 units</div>`;
+                html += `<div class="stat">Cargo: ${unit.cargo.length} / ${unit.getCargoCapacity()} units</div>`;
             }
             
             if (unit.canAttackBuildings()) {
@@ -4787,7 +5000,7 @@
                             ${selected && gameState.selectedUnits.length === 1 ? `
                                 <button onclick="event.stopPropagation(); setActionMode('move')" ${unit.hasAttacked ? 'disabled' : ''}>MOVE</button>
                                 <button onclick="event.stopPropagation(); setActionMode('attack')" ${unit.hasAttacked ? 'disabled' : ''}>ATTACK</button>
-                                ${unit.type === 'cargohauler' ? `<button onclick="event.stopPropagation(); setActionMode('load')">LOAD (${unit.cargo.length}/10)</button>` : ''}
+                                ${unit.type === 'cargohauler' ? `<button onclick="event.stopPropagation(); setActionMode('load')">LOAD (${unit.cargo.length}/${unit.getCargoCapacity()})</button>` : ''}
                                 ${unit.type === 'cargohauler' && unit.cargo.length > 0 ? `<button onclick="event.stopPropagation(); setActionMode('unload')">UNLOAD</button>` : ''}
                             ` : ''}
                         </div>
@@ -5030,7 +5243,7 @@
             }
 
             drawRadarPulses();
-            const now=Date.now();laserEffects=laserEffects.filter(l=>{const age=now-l.createdAt;if(age>l.duration)return false;const alpha=1-(age/l.duration);const isBlue=l.color==='blue';const c1=isBlue?`rgba(0,150,255,${alpha*0.3})`:`rgba(0,255,0,${alpha*0.3})`;const c2=isBlue?`rgba(50,200,255,${alpha*0.6})`:`rgba(50,255,50,${alpha*0.6})`;const c3=isBlue?`rgba(150,230,255,${alpha})`:`rgba(150,255,150,${alpha})`;ctx.strokeStyle=c1;ctx.lineWidth=12*camera.zoom;ctx.beginPath();ctx.moveTo(l.startX,l.startY);ctx.lineTo(l.endX,l.endY);ctx.stroke();ctx.strokeStyle=c2;ctx.lineWidth=6*camera.zoom;ctx.beginPath();ctx.moveTo(l.startX,l.startY);ctx.lineTo(l.endX,l.endY);ctx.stroke();ctx.strokeStyle=c3;ctx.lineWidth=2*camera.zoom;ctx.beginPath();ctx.moveTo(l.startX,l.startY);ctx.lineTo(l.endX,l.endY);ctx.stroke();return true;});
+            const now=Date.now();laserEffects=laserEffects.filter(l=>{const age=now-l.createdAt;if(age>l.duration)return false;const alpha=1-(age/l.duration);const base=l.color||DEFAULT_LASER_COLOR;const c1=`rgba(${base},${alpha*0.3})`;const c2=`rgba(${lightenRgb(base,0.35)},${alpha*0.6})`;const c3=`rgba(${lightenRgb(base,0.65)},${alpha})`;ctx.strokeStyle=c1;ctx.lineWidth=12*camera.zoom;ctx.beginPath();ctx.moveTo(l.startX,l.startY);ctx.lineTo(l.endX,l.endY);ctx.stroke();ctx.strokeStyle=c2;ctx.lineWidth=6*camera.zoom;ctx.beginPath();ctx.moveTo(l.startX,l.startY);ctx.lineTo(l.endX,l.endY);ctx.stroke();ctx.strokeStyle=c3;ctx.lineWidth=2*camera.zoom;ctx.beginPath();ctx.moveTo(l.startX,l.startY);ctx.lineTo(l.endX,l.endY);ctx.stroke();return true;});
             if(!gameState.paused){spaceMines.forEach(mine=>{gameState.countries.forEach(country=>{country.units.forEach(unit=>{if(unit.isGroundUnit()&&unit.isInHarbor)return;const dx=unit.x-mine.x,dy=unit.y-mine.y,dist=Math.sqrt(dx*dx+dy*dy);if(dist<mine.detectionRange&&mine.countryId!==country.id){unit.hp-=Math.ceil(unit.hp*mine.damage);mine.hp=0;}});});});spaceMines=spaceMines.filter(m=>m.hp>0);}
             spaceMines.forEach(m=>m.draw());
             resourceDeposits.forEach(d=>d.draw());
@@ -5247,8 +5460,8 @@
                             if (attackDist < attacker.getRange()) {
                                 if (attacker.type === 'frostwing') {
                                     closestTarget.frozenTurns = 2;
-                                    laserEffects.push({startX: attacker.x, startY: attacker.y, endX: closestTarget.x, endY: closestTarget.y, createdAt: Date.now(), duration: 2000, color: 'blue'});
                                 }
+                                fireLaserEffect(attacker.type, attacker.x, attacker.y, closestTarget.x, closestTarget.y);
                                 closestTarget.hp -= attacker.getAttackPower();
                                 attacker.hasAttacked = true;
                                 anyAttacked = true;
