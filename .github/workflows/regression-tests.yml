@@ -79,6 +79,40 @@ jobs:
         working-directory: tests/browser
         run: node interaction-test.js ../../index.html --engines=chromium,firefox,webkit
 
+  # Wires up testing.html - a real, pre-existing browser harness (predates this
+  # tests/ suite) that was never run by anything automated. Unlike every job
+  # above, this one deliberately does NOT mock out image/sprite requests - the
+  # entire point is confirming every asset URL actually resolves over the real
+  # network, which nothing else here checks. See asset-integrity-test.js for
+  # why it has to serve both files over a throwaway local HTTP server rather
+  # than open testing.html via file:// the way the other jobs open index.html
+  # (short version: Chromium blocks the cross-frame access this harness needs
+  # between two file:// documents; a real HTTP origin doesn't have that
+  # restriction). Real network + several MB of art assets means this is
+  # slower and less deterministic than the jobs above - a network hiccup here
+  # is not the same kind of signal as a failure in regression-test.js.
+  asset-integrity-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install test dependencies
+        working-directory: tests/browser
+        run: npm install
+
+      - name: Install headless browser (Chromium)
+        working-directory: tests/browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Run testing.html's asset/mechanics harness against the real network
+        working-directory: tests/browser
+        run: node asset-integrity-test.js ../..
+
   balance-simulation-smoke:
     runs-on: ubuntu-latest
     steps:
