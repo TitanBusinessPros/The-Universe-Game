@@ -20,6 +20,7 @@
  */
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const playwright = require('playwright');
 
 const GAME_PATH = process.argv[2];
@@ -92,6 +93,14 @@ async function runForEngine(engineName) {
     await page.route('**://raw.githubusercontent.com/**', route => {
         route.fulfill({ status: 200, contentType: 'image/png', body: PLACEHOLDER_PNG });
     });
+    // saveGame()/loadGame() both alert() on success/failure - accept those so
+    // they never block the test. Leave confirm()/prompt() alone (dismiss, same
+    // as Playwright's own default with no handler at all) - newGame() uses a
+    // confirm() that setupGame() below relies on being dismissed (no reload);
+    // auto-accepting every dialog indiscriminately turned that into a real
+    // page reload mid-setup and broke every scenario - caught by running this
+    // suite locally before it ever reached CI.
+    page.on('dialog', d => { if (d.type() === 'alert') d.accept(); else d.dismiss(); });
 
     const absoluteGamePath = path.resolve(GAME_PATH);
     await page.goto('file:///' + absoluteGamePath.replace(/\\/g, '/'));
@@ -176,6 +185,62 @@ async function runForEngine(engineName) {
         selectedBeforeRightClick > 0 && selectedAfterRightClick === 0,
         `selected before=${selectedBeforeRightClick}, after=${selectedAfterRightClick}`
     );
+
+    // ---- Scenario 5: Save to File downloads a real file matching live state ----
+    // Exercises the actual button (Blob, object URL, synthetic <a download>
+    // click) - not just buildSaveData() underneath it, which regression-test.js
+    // already covers directly.
+    const liveTurnBeforeSave = await page.evaluate(() => gameState.turn);
+    const [download] = await Promise.all([
+        page.waitForEvent('download'),
+        page.evaluate(() => document.querySelector('button[onclick="saveGame()"]').click()),
+    ]);
+    const savedFilePath = await download.path();
+    let saveJson = null;
+    let saveJsonError = null;
+    try { saveJson = JSON.parse(fs.readFileSync(savedFilePath, 'utf8')); } catch (e) { saveJsonError = e.message; }
+    check(
+        tag('Save to File downloads valid JSON matching the live turn number'),
+        saveJson && saveJson.turn === liveTurnBeforeSave,
+        saveJsonError || `save turn=${saveJson && saveJson.turn}, live turn=${liveTurnBeforeSave}`
+    );
+    const expectedFilename = `universe_game_save_turn${liveTurnBeforeSave}.json`;
+    check(
+        tag('the downloaded filename encodes the turn number'),
+        download.suggestedFilename() === expectedFilename,
+        `got "${download.suggestedFilename()}", expected "${expectedFilename}"`
+    );
+
+    // ---- Scenario 6: Load From File actually restores state from the chosen file ----
+    // Exercises the real native file-picker path (input[type=file] + FileReader),
+    // not applySaveData() directly (also already covered by regression-test.js).
+    let loadScenarioOk = true;
+    let loadScenarioDetail = '';
+    if (saveJson) {
+        const tmpSavePath = path.join(os.tmpdir(), `ae-interaction-test-save-${Date.now()}.json`);
+        const distinctTurn = liveTurnBeforeSave + 500; // clearly not whatever's already live
+        fs.writeFileSync(tmpSavePath, JSON.stringify({ ...saveJson, turn: distinctTurn }));
+        try {
+            const [fileChooser] = await Promise.all([
+                page.waitForEvent('filechooser'),
+                page.evaluate(() => document.querySelector('button[onclick="loadGame()"]').click()),
+            ]);
+            await fileChooser.setFiles(tmpSavePath);
+            await page.waitForFunction((expected) => gameState.turn === expected, distinctTurn, { timeout: 10000 });
+            const turnAfterLoad = await page.evaluate(() => gameState.turn);
+            loadScenarioOk = turnAfterLoad === distinctTurn;
+            loadScenarioDetail = `turn after load = ${turnAfterLoad}, expected ${distinctTurn}`;
+        } catch (e) {
+            loadScenarioOk = false;
+            loadScenarioDetail = e.message;
+        } finally {
+            fs.unlinkSync(tmpSavePath);
+        }
+    } else {
+        loadScenarioOk = false;
+        loadScenarioDetail = 'skipped - no valid save from the previous scenario to load back in';
+    }
+    check(tag('Load From File restores game state from the chosen file'), loadScenarioOk, loadScenarioDetail);
 
     await browser.close();
 }

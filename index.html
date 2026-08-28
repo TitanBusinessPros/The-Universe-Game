@@ -2332,19 +2332,6 @@
                 return Math.sqrt(dx * dx + dy * dy) < this.getSize() + 10;
             }
 
-            loadIntoCargohauler(cargohauler) {
-                if (this.isGroundUnit() && cargohauler.type === 'cargohauler' && cargohauler.cargo.length < 10) {
-                    cargohauler.cargo.push(this);
-                    this.isInHarbor = false;
-                    return true;
-                }
-                return false;
-            }
-
-            unloadFromCargohauler() {
-                this.isInHarbor = true;
-            }
-
             draw() {
                 if (this.isGroundUnit() && this.isInHarbor) return;
                 

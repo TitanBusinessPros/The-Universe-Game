@@ -132,9 +132,7 @@
       "isHovered",
       "isMiningShip",
       "isVessel",
-      "loadIntoCargohauler",
       "moveTo",
-      "unloadFromCargohauler",
       "update"
     ],
     "Country": [

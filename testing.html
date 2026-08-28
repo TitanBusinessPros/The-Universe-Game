@@ -206,9 +206,14 @@ function __universeGameTests() {
 
             // ===== 2. Unit + structure sprite wiring =====
             const GROUP2 = 'Unit & Structure Sprites';
+            // 'miningship' is deliberately excluded - it has no art yet (the user
+            // is providing it separately) and draws as a vector fallback shape by
+            // design, not a bug; listing it here would fail this check on a known,
+            // accepted, temporary state instead of a real regression.
             const neededSprites = ['deepglider', 'stormbreaker', 'wavecrusher', 'skyfortress', 'cargohauler',
                 'radar', 'thunderwing', 'blazefalcon', 'skyripper', 'vortexhawk', 'razorwing', 'shadowglider',
-                'tidebreaker', 'whisperwind', 'stormbreakerbomber', 'frostwing', 'roufestreal'];
+                'tidebreaker', 'whisperwind', 'stormbreakerbomber', 'frostwing', 'roufestreal',
+                'groundpounders', 'ironbeast', 'boomcannon'];
             neededSprites.forEach(key => {
                 record(GROUP2, `Sprite wired for buildable unit "${key}"`, !!SPRITE_URLS[key], SPRITE_URLS[key] || 'MISSING');
             });
