@@ -127,7 +127,7 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE };',
     context,
     { filename: 'grab-refs.js' }
 );
@@ -149,7 +149,9 @@ const {
     processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions,
     loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition,
     campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound,
-    toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen
+    toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen,
+    getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR,
+    getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE
 } = context.__test;
 
 // ---------- Test data: the full combat unit roster ----------
@@ -2477,6 +2479,286 @@ check('queueImageLoad() registers the image against the loading-screen counter',
     queueImageLoad(img, 'https://example.test/nonexistent.png');
     const after = vm.runInContext('totalImagesToLoad', context);
     if (after !== before + 1) return [`expected totalImagesToLoad to increase by 1 (${before} -> ${before + 1}), got ${after}`];
+    return [];
+});
+
+// ---------- 28. Per-unit-type laser colors (2026-08-28) ----------
+//    Previously the ONLY color distinction that existed at all was
+//    frostwing's freeze-beam being hardcoded blue; every other type got a
+//    flat green, or - in two of the three places a laser actually gets
+//    fired (attack-move engagement, the player's own direct click-to-attack)
+//    - no laser effect at all. Every combat unit type now gets its own
+//    distinct beam color, and every attack that lands fires one.
+
+check('getLaserColor() returns a distinct color per known type and the same default for anything else', () => {
+    const problems = [];
+    if (getLaserColor('frostwing') !== '0,150,255') problems.push('expected frostwing to keep its established blue');
+    if (getLaserColor('thunderwing') === getLaserColor('blazefalcon')) problems.push('expected two different types to get different colors');
+    if (getLaserColor('not-a-real-unit-type') !== DEFAULT_LASER_COLOR) problems.push('expected an unknown type to fall back to DEFAULT_LASER_COLOR');
+    const distinctColors = new Set(Object.keys(LASER_COLORS).map(t => getLaserColor(t)));
+    if (distinctColors.size !== Object.keys(LASER_COLORS).length) problems.push('expected every listed type to have its own unique color, found a duplicate');
+    return problems;
+});
+
+check('lightenRgb() blends toward white without ever exceeding 255 per channel', () => {
+    const problems = [];
+    if (lightenRgb('0,150,255', 0) !== '0,150,255') problems.push('expected amount=0 to return the color unchanged');
+    if (lightenRgb('0,150,255', 1) !== '255,255,255') problems.push('expected amount=1 to blend all the way to white');
+    const mid = lightenRgb('0,150,255', 0.5).split(',').map(Number);
+    if (mid.some(c => c < 0 || c > 255)) problems.push(`expected every channel in [0,255], got ${mid}`);
+    if (!(mid[0] > 0 && mid[0] < 255)) problems.push('expected a partial blend to land strictly between the original and white');
+    return problems;
+});
+
+check('fireLaserEffect() records the right color and geometry, and drawing consumes it without throwing', () => {
+    // laserEffects is a top-level `let` that the draw code REASSIGNS (not just
+    // mutates) via `laserEffects = laserEffects.filter(...)` - the destructured
+    // reference above can go stale the moment that runs even once, so read/reset
+    // it live through the vm context instead of trusting the grabbed binding.
+    const problems = [];
+    vm.runInContext('laserEffects = [];', context);
+    fireLaserEffect('thunderwing', 10, 20, 30, 40);
+    const effects = vm.runInContext('laserEffects', context);
+    if (effects.length !== 1) return [`expected exactly 1 laser effect queued, got ${effects.length}`];
+    const effect = effects[0];
+    if (effect.color !== getLaserColor('thunderwing')) problems.push('expected the queued effect to carry thunderwing\'s real color');
+    if (effect.startX !== 10 || effect.startY !== 20 || effect.endX !== 30 || effect.endY !== 40) problems.push('expected the exact coordinates passed through');
+    if (typeof effect.duration !== 'number' || effect.duration <= 0) problems.push('expected a positive duration');
+    vm.runInContext('laserEffects = [];', context);
+    return problems;
+});
+
+check('a player-issued attack fires a colored laser for the attacker\'s own type, not just frostwing', () => {
+    const problems = [];
+    const homeIsland = new Island(0, 0, 0);
+    const home = new Country(0, 'LaserAttacker', '#ff0000', homeIsland, true);
+    const enemyIsland = new Island(9999999, 9999999, 1);
+    const enemy = new Country(1, 'LaserVictim', '#00ff00', enemyIsland, false);
+    gameState.countries = [home, enemy];
+    gameState.playerCountry = home;
+
+    const shooter = new Unit(0, 0, 'blazefalcon', 0); // not frostwing - this used to fire silently
+    const victim = new Unit(50, 0, 'stormbreaker', 1);
+    home.units = [shooter];
+    enemy.units = [victim];
+    shooter.attackMoveTarget = { kind: 'unit', unit: victim };
+    vm.runInContext('laserEffects = [];', context);
+
+    processAttackMoveOrders();
+
+    const effects = vm.runInContext('laserEffects', context);
+    if (effects.length !== 1) return [`expected a laser effect from a non-frostwing attacker, got ${effects.length}`];
+    if (effects[0].color !== getLaserColor('blazefalcon')) problems.push('expected the laser colored for blazefalcon specifically, not a generic default');
+    vm.runInContext('laserEffects = [];', context);
+    return problems;
+});
+
+// ---------- 29. Ten new tech tree nodes (2026-08-28) ----------
+//    Each gets a real hook into an existing system - checked here against
+//    the actual live code path (getMaxHP/getAttackPower/defenseGunAttack/
+//    etc.), not by re-deriving the expected number and hoping it matches.
+
+check('TECH_TREE now has 13 nodes, all 13 required by the schema guardrail above are present', () => {
+    const ids = Object.keys(TECH_TREE);
+    const expectedNew = ['reinforced_hulls', 'aerial_superiority', 'extended_sensors', 'fortified_defenses',
+        'rapid_repair', 'deep_mining', 'expanded_cargo', 'advanced_shipyards', 'warp_drive', 'deposit_scanner'];
+    const problems = [];
+    if (ids.length !== 13) problems.push(`expected 13 total nodes (3 original + 10 new), got ${ids.length}`);
+    expectedNew.forEach(id => { if (!TECH_TREE[id]) problems.push(`missing new node "${id}"`); });
+    return problems;
+});
+
+check('Reinforced Hulls: +15% HP on ground units only, applied live (not vessels/aircraft)', () => {
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'HullsTest', '#ff0000', island, true);
+    gameState.countries = [country];
+    const baseHp = new Unit(0, 0, 'groundpounders', 0).getMaxHP();
+    const baseVesselHp = new Unit(0, 0, 'stormbreaker', 0).getMaxHP();
+    country.researchedTech.add('reinforced_hulls');
+    const boostedHp = new Unit(0, 0, 'groundpounders', 0).getMaxHP();
+    const vesselHpAfter = new Unit(0, 0, 'stormbreaker', 0).getMaxHP();
+    const problems = [];
+    if (boostedHp !== Math.round(baseHp * 1.15)) problems.push(`expected ${Math.round(baseHp * 1.15)}, got ${boostedHp}`);
+    if (vesselHpAfter !== baseVesselHp) problems.push('reinforced_hulls should not affect vessel-class units');
+    return problems;
+});
+
+check('Aerial Superiority: +15% attack on aircraft only, applied live to already-existing units', () => {
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'AeroTest', '#ff0000', island, true);
+    gameState.countries = [country];
+    const plane = new Unit(0, 0, 'thunderwing', 0);
+    const groundUnit = new Unit(0, 0, 'groundpounders', 0);
+    const baseAttack = plane.getAttackPower();
+    const baseGroundAttack = groundUnit.getAttackPower();
+    country.researchedTech.add('aerial_superiority');
+    const problems = [];
+    if (plane.getAttackPower() !== Math.round(baseAttack * 1.15)) problems.push(`expected the SAME already-built unit's attack to increase live to ${Math.round(baseAttack * 1.15)}, got ${plane.getAttackPower()}`);
+    if (groundUnit.getAttackPower() !== baseGroundAttack) problems.push('aerial_superiority should not affect ground units');
+    return problems;
+});
+
+check('Extended Sensors: +50% vision range, both for a scouting unit and homeworld vision', () => {
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'SensorTest', '#ff0000', island, true);
+    const problems = [];
+    if (getEffectiveSightRange(country, false) !== UNIT_SIGHT_RANGE) problems.push('expected the plain UNIT_SIGHT_RANGE before research');
+    if (getEffectiveSightRange(country, true) !== RADAR_SIGHT_RANGE) problems.push('expected the plain RADAR_SIGHT_RANGE before research');
+    country.researchedTech.add('extended_sensors');
+    if (getEffectiveSightRange(country, false) !== Math.round(UNIT_SIGHT_RANGE * 1.5)) problems.push('expected +50% unit sight range after research');
+    if (getEffectiveSightRange(country, true) !== Math.round(RADAR_SIGHT_RANGE * 1.5)) problems.push('expected +50% radar sight range after research');
+    return problems;
+});
+
+check('Fortified Defenses: +50% Defense Gun range and damage', () => {
+    const homeIsland = new Island(0, 0, 0);
+    const home = new Country(0, 'FortifiedTest', '#ff0000', homeIsland, true);
+    const enemyIsland = new Island(9999999, 9999999, 1);
+    const enemy = new Country(1, 'FortifiedEnemy', '#00ff00', enemyIsland, false);
+    gameState.countries = [home, enemy];
+    const gun = homeIsland.getDefenseGun();
+    const problems = [];
+
+    // Just past the un-fortified range - should be untouched until researched.
+    const farEnemy = new Unit(gun.range + 100, 0, 'stormbreaker', 1);
+    enemy.units = [farEnemy];
+    home.defenseGunAttack();
+    if (farEnemy.hp !== farEnemy.maxHp) problems.push('expected the gun to miss a target just past its un-fortified range');
+
+    home.researchedTech.add('fortified_defenses');
+    gun.hasAttacked = false;
+    const hpBefore = farEnemy.hp;
+    home.defenseGunAttack();
+    if (farEnemy.hp !== hpBefore - Math.round(gun.attackPower * 1.5)) {
+        problems.push(`expected ${Math.round(gun.attackPower * 1.5)} fortified damage on the now-in-range target, hp went ${hpBefore} -> ${farEnemy.hp}`);
+    }
+    return problems;
+});
+
+check('Rapid Repair Crews: heals damaged (not destroyed) buildings by 1 HP/turn, only when researched', () => {
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'RepairTest', '#ff0000', island, true);
+    const building = island.buildings[1]; // any ordinary (non-harbor/gun/lab) building
+    building.hp = 1;
+    building.destroyed = false;
+    const destroyedBuilding = island.buildings[2];
+    destroyedBuilding.destroyed = true;
+    destroyedBuilding.hp = 0;
+
+    country.repairBuildings(); // not researched yet - no-op
+    const problems = [];
+    if (building.hp !== 1) problems.push('expected no repair before researching Rapid Repair Crews');
+
+    country.researchedTech.add('rapid_repair');
+    country.repairBuildings();
+    if (building.hp !== 2) problems.push(`expected the damaged building to heal by 1 (1 -> 2), got ${building.hp}`);
+    if (destroyedBuilding.hp !== 0) problems.push('expected a destroyed building to stay at 0, not be healed');
+
+    building.hp = building.maxHp;
+    country.repairBuildings();
+    if (building.hp !== building.maxHp) problems.push('expected a fully-healed building to stay at maxHp, not overheal');
+    return problems;
+});
+
+check('Deep Mining: a second tier on Improved Extraction reaches 200/hour', () => {
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'DeepMiningTest', '#ff0000', island, true);
+    gameState.countries = [country];
+    const dep = new ResourceDeposit(500, 500);
+    resourceDeposits.length = 0;
+    resourceDeposits.push(dep);
+    const ship = new Unit(500, 500, 'miningship', 0);
+    country.units = [ship];
+    country.researchedTech.add('improved_extraction');
+    country.researchedTech.add('deep_mining');
+    const startResources = country.resources;
+
+    vm.runInContext('frameDeltaTime = 3600;', context);
+    updateMiningAndResearch();
+    vm.runInContext('frameDeltaTime = 1 / 60;', context);
+
+    const gained = country.resources - startResources;
+    if (Math.abs(gained - 200) > 0.01) return [`expected 200 resources for a full hour with Deep Mining, got ${gained}`];
+    return [];
+});
+
+check('Expanded Cargo Bays: Cargohauler capacity 10 -> 15, and enforced everywhere the game checks it', () => {
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'CargoTest', '#ff0000', island, true);
+    gameState.countries = [country];
+    const hauler = new Unit(0, 0, 'cargohauler', 0);
+    const problems = [];
+    if (hauler.getCargoCapacity() !== 10) problems.push('expected the default capacity of 10 before research');
+    country.researchedTech.add('expanded_cargo');
+    if (hauler.getCargoCapacity() !== 15) problems.push('expected 15 after researching Expanded Cargo Bays');
+
+    // And setActionMode('load') actually respects the new, higher capacity.
+    gameState.playerCountry = country;
+    hauler.cargo = Array.from({ length: 10 }, () => new Unit(0, 0, 'groundpounders', 0)); // full under the OLD cap
+    const harborPos = island.getHarborWorldPosition();
+    hauler.x = harborPos.x; hauler.y = harborPos.y;
+    const extraTrooper = new Unit(0, 0, 'groundpounders', 0);
+    extraTrooper.isInHarbor = true;
+    country.units = [hauler, extraTrooper];
+    gameState.selectedUnit = hauler;
+    gameState.selectedUnits = [hauler];
+    setActionMode('load');
+    if (hauler.cargo.length !== 11) problems.push(`expected the 11th trooper to board now that capacity is 15, cargo is ${hauler.cargo.length}`);
+    return problems;
+});
+
+check('Advanced Shipyards: gates Tidebreaker and Whisperwind behind research (previously buildable turn one)', () => {
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'ShipyardTest', '#ff0000', island, true);
+    const problems = [];
+    if (country.canBuildUnit('tidebreaker')) problems.push('expected tidebreaker locked before Advanced Shipyards');
+    if (country.canBuildUnit('whisperwind')) problems.push('expected whisperwind locked before Advanced Shipyards');
+    country.researchedTech.add('advanced_shipyards');
+    if (!country.canBuildUnit('tidebreaker')) problems.push('expected tidebreaker unlocked after Advanced Shipyards');
+    if (!country.canBuildUnit('whisperwind')) problems.push('expected whisperwind unlocked after Advanced Shipyards');
+    return problems;
+});
+
+check('Warp Drive Calibration: +12% speed on vessels only, applied live via update()', () => {
+    const island = new Island(-100000, -100000, 0);
+    const country = new Country(0, 'WarpTest', '#ff0000', island, true);
+    gameState.countries = [country];
+    const ship = new Unit(0, 0, 'stormbreaker', 0);
+    const groundUnit = new Unit(0, 0, 'groundpounders', 0);
+    ship.moveTo(100000, 0);
+    groundUnit.moveTo(100000, 0); // will actually be blocked (not on an island), but distance covered per tick is what matters
+    ship.update();
+    const baseDist = ship.x;
+
+    const ship2 = new Unit(0, 0, 'stormbreaker', 0);
+    ship2.moveTo(100000, 0);
+    country.researchedTech.add('warp_drive');
+    ship2.update();
+    const boostedDist = ship2.x;
+
+    if (Math.abs(boostedDist - baseDist * 1.12) > 0.01) {
+        return [`expected ~12% more distance covered in one tick (${(baseDist * 1.12).toFixed(3)}), got ${boostedDist.toFixed(3)}`];
+    }
+    return [];
+});
+
+check('Orbital Resource Scanner: doubles Mining Ship collection range', () => {
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'ScannerTest', '#ff0000', island, true);
+    gameState.countries = [country];
+    const dep = new ResourceDeposit(0, 0);
+    resourceDeposits.length = 0;
+    resourceDeposits.push(dep);
+    const ship = new Unit(DEPOSIT_COLLECT_RANGE * 1.5, 0, 'miningship', 0); // out of range normally, in range once doubled
+    country.units = [ship];
+    const startResources = country.resources;
+
+    country.researchedTech.add('deposit_scanner');
+    vm.runInContext('frameDeltaTime = 3600;', context);
+    updateMiningAndResearch();
+    vm.runInContext('frameDeltaTime = 1 / 60;', context);
+
+    if (country.resources <= startResources) return ['expected the mining ship to collect once its extended range covers the deposit'];
     return [];
 });
 
