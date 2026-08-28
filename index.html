@@ -1225,13 +1225,14 @@
         const AI_RESEARCH_CHANCE = 0.3;
         const AI_MINING_SHIP_CHANCE = 0.25;
 
-        // A move target picked as "the target planet's center plus a small random offset" lands
-        // *inside* that planet's own collision radius far more often than not (the offset has to
-        // land in the four corners of its range to clear a typical 250-350 size planet) - and
-        // moveTo() silently refuses vessels any target inside a collision radius. That left
-        // ships that had no specific enemy unit to chase (the common case whenever the player has
-        // no units out, e.g. early campaign) permanently stuck. This always aims just outside the
-        // target planet's edge instead, which moveTo() will actually accept.
+        // Originally written because moveTo() used to silently refuse vessels any move
+        // target inside a planet's collision radius, and a naive "planet center + random
+        // offset" target landed inside that radius far more often than not - leaving idle
+        // ships permanently stuck. That restriction is gone (2026-08-28 - vessels are
+        // allowed to fly over planets now, moveTo()/update() no longer block them), but
+        // this is kept as-is: parking just outside the edge is still a sensible default
+        // attack-approach position, not something that needs to change just because
+        // flying straight through is now also allowed.
         function huntApproachPosition(targetIsland) {
             const angle = Math.random() * Math.PI * 2;
             // Just outside the collision edge, not way out - most weapon ranges (100-220) are
@@ -2201,9 +2202,12 @@
             }
 
             // Was isNaval() - "naval" doesn't fit a space game. isVessel() covers the same
-            // category (ships that fly through open space and collide with planets, as
-            // opposed to ground units or atmospheric aircraft) under a name that doesn't
-            // imply a navy.
+            // category (ships that fly through open space, as opposed to ground units or
+            // atmospheric aircraft) under a name that doesn't imply a navy. Used to also be
+            // the one category blocked from flying over a planet at all (moveTo()/update()
+            // refused any target/position inside a planet's collisionSize) - that
+            // restriction was removed 2026-08-28 at the user's request, so vessels move
+            // exactly like aircraft now: no collision with planets, ever.
             isVessel() {
                 return ['deepglider', 'stormbreaker', 'wavecrusher', 'skyfortress', 'cargohauler', 'tidebreaker', 'whisperwind', 'cyborgdreadnought', 'zoonparasite', 'roufestreal', 'miningship'].includes(this.type);
             }
@@ -2385,18 +2389,7 @@
                     return;
                 }
                 
-                if (this.isVessel()) {
-                    let blocked = false;
-                    gameState.countries.forEach(country => {
-                        if (country.island.collidesWith(x, y)) {
-                            blocked = true;
-                        }
-                    });
-                    if (!blocked) {
-                        this.targetX = x;
-                        this.targetY = y;
-                    }
-                } else if (this.isGroundUnit()) {
+                if (this.isGroundUnit()) {
                     let onIsland = false;
                     gameState.countries.forEach(country => {
                         if (country.island.collidesWith(x, y)) {
@@ -2464,18 +2457,7 @@
                     const newX = this.x + (dx / dist) * speed;
                     const newY = this.y + (dy / dist) * speed;
                     
-                    if (this.isVessel()) {
-                        let canMove = true;
-                        gameState.countries.forEach(country => {
-                            if (country.island.collidesWith(newX, newY)) {
-                                canMove = false;
-                            }
-                        });
-                        if (canMove) {
-                            this.x = newX;
-                            this.y = newY;
-                        }
-                    } else if (this.isGroundUnit()) {
+                    if (this.isGroundUnit()) {
                         let onIsland = false;
                         let targetIsland = null;
                         
