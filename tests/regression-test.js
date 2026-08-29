@@ -2873,6 +2873,24 @@ check('drawSpaceBackground() tiles the real Background-1.png photo instead of th
     return problems;
 });
 
+check('the background tile loop is hard-capped so a tiny/placeholder image can never explode it into a runaway per-frame draw storm', () => {
+    // Regression (2026-08-29): interaction-test.js's CI run mocks every image,
+    // including the background, with a 1x1 placeholder PNG. Before this
+    // clamp+cap, a 1x1 tile size made cols/rows scale with the canvas's PIXEL
+    // width, turning "draw a few background tiles" into 1000+ ctx.drawImage()
+    // calls every single frame, forever - froze the whole browser tab and
+    // took down interaction-test 3 runs in a row before this was caught.
+    const src = vm.runInContext('drawSpaceBackground.toString()', context);
+    const problems = [];
+    if (!/Math\.max\(spaceBackgroundImage\.naturalWidth,\s*\d+\)/.test(src)) {
+        problems.push('no minimum-tile-size clamp on naturalWidth');
+    }
+    const capMatch = src.match(/Math\.min\(Math\.ceil\(canvas\.width \/ tw\) \+ 2,\s*(\d+)\)/);
+    const cap = capMatch ? parseInt(capMatch[1], 10) : Infinity;
+    if (!(cap > 0 && cap < 200)) problems.push(`column cap is ${cap === Infinity ? 'missing' : cap}, expected a small bounded number`);
+    return problems;
+});
+
 check('whenImagesReady() calls back immediately once every queued image is done, and waits otherwise', () => {
     const problems = [];
     vm.runInContext('totalImagesToLoad = 5; imagesLoadedSoFar = 5;', context);

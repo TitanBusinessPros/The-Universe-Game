@@ -941,12 +941,20 @@
             const t = Date.now() / 1000;
 
             if (spaceBackgroundLoaded) {
-                const tw = spaceBackgroundImage.naturalWidth;
-                const th = spaceBackgroundImage.naturalHeight;
+                // Clamped to a sane minimum - this crashed the whole tab in CI, where a
+                // test mocks every image (including this one) with a 1x1 placeholder
+                // PNG: with no clamp, tw/th=1 makes cols/rows ~canvas-width-in-PIXELS,
+                // turning a "draw a few background tiles" loop into well over a million
+                // ctx.drawImage() calls a frame, forever. The real Background-1.png
+                // (1536x1024) is far above this floor and is completely unaffected.
+                const tw = Math.max(spaceBackgroundImage.naturalWidth, 200);
+                const th = Math.max(spaceBackgroundImage.naturalHeight, 200);
                 const offX = camera.x * BG_PARALLAX;
                 const offY = camera.y * BG_PARALLAX;
-                const cols = Math.ceil(canvas.width / tw) + 2;
-                const rows = Math.ceil(canvas.height / th) + 2;
+                // Belt-and-suspenders hard cap, independent of tile size, so this loop
+                // can never again blow up regardless of what image ends up here.
+                const cols = Math.min(Math.ceil(canvas.width / tw) + 2, 30);
+                const rows = Math.min(Math.ceil(canvas.height / th) + 2, 30);
                 const startX = -(((offX % tw) + tw) % tw) - tw;
                 const startY = -(((offY % th) + th) % th) - th;
                 for (let cx = 0; cx <= cols; cx++) {
