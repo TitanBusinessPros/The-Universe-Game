@@ -1212,6 +1212,33 @@ check('spawnResourceDeposits() gives every country a deposit near home', () => {
     return problems;
 });
 
+check('every deposit is a Bloodgold mine: 5000 starting gold, real art wired in, and exactly 12 extra scattered across the galaxy (2026-08-29)', () => {
+    const problems = [];
+    if (DEPOSIT_STARTING_RESOURCES !== 5000) {
+        problems.push(`expected DEPOSIT_STARTING_RESOURCES to be 5000, got ${DEPOSIT_STARTING_RESOURCES}`);
+    }
+    const island1 = new Island(0, 0, 0);
+    const island2 = new Island(4000, 4000, 1);
+    const c1 = new Country(0, 'MineTestA', '#ff0000', island1, true);
+    const c2 = new Country(1, 'MineTestB', '#00ff00', island2, false);
+    gameState.countries = [c1, c2];
+
+    spawnResourceDeposits();
+
+    const expectedTotal = gameState.countries.length + 12; // one per country + a fixed 12 extra
+    if (resourceDeposits.length !== expectedTotal) {
+        problems.push(`expected exactly ${expectedTotal} deposits (${gameState.countries.length} per-country + 12 extra), got ${resourceDeposits.length}`);
+    }
+    resourceDeposits.forEach((d, i) => {
+        if (d.resources !== 5000 || d.maxResources !== 5000) {
+            problems.push(`deposit ${i} does not start with 5000 gold (resources=${d.resources}, maxResources=${d.maxResources})`);
+        }
+        if (!d.sprite) problems.push(`deposit ${i} has no sprite wired in - expected the Bloodgold mine art`);
+    });
+    if (!html.includes('Mines/Bloodgold-mine.png')) problems.push('Bloodgold-mine.png not referenced anywhere in the game file');
+    return problems;
+});
+
 // ---------- 13. Tech tree / research ----------
 //    Research runs in real time (like mining) via a country's Research Lab
 //    building. UNIT_TECH_REQUIREMENTS gates buildUnit() on whichever node (if
@@ -2913,6 +2940,24 @@ check('every game-start entry point is gated behind whenImagesReady() before cal
         const src = vm.runInContext(`${name}.toString()`, context);
         if (!src.includes('whenImagesReady(')) problems.push(`${name}() calls gameLoop() without gating on whenImagesReady() first`);
     });
+    return problems;
+});
+
+// ---------- 32. No native text selection anywhere (2026-08-29) ----------
+//    Dragging a selection box over units (the game's own drag-select control
+//    scheme) also drags across the on-screen UI panels underneath, and with
+//    no user-select rule that fell through to the browser's native text
+//    highlight. There are no text inputs anywhere in this game, so it's safe
+//    to disable selection globally rather than panel-by-panel.
+
+check('text selection is disabled globally - there are no text inputs anywhere to protect', () => {
+    const problems = [];
+    if (!/\*\s*\{[^}]*user-select:\s*none/.test(html)) {
+        problems.push('expected a global (`*`) rule setting user-select: none');
+    }
+    if (html.includes('<input') || html.includes('<textarea')) {
+        problems.push('a text input now exists - the blanket user-select:none rule needs to exempt it');
+    }
     return problems;
 });
 

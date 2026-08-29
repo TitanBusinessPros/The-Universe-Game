@@ -9,6 +9,13 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            /* This is a game with no text inputs anywhere - dragging over any UI
+               panel (e.g. the drag-select box for units) should never fall through
+               to the browser's native text selection. */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
         body {
             font-family: 'Courier New', monospace;
@@ -1007,8 +1014,15 @@
         // frameDeltaTime, not per-turn) until the deposit's pool hits zero. Multiple ships
         // at the same deposit each draw independently, so they deplete it faster together.
         const DEPOSIT_INCOME_PER_HOUR = 100;
-        const DEPOSIT_STARTING_RESOURCES = 10000;
+        const DEPOSIT_STARTING_RESOURCES = 5000;
         const DEPOSIT_COLLECT_RANGE = 60;
+        // Real art for every deposit ("Bloodgold mine", 2026-08-29) - replaces the
+        // gold-circle-with-a-$-sign placeholder every deposit used to draw.
+        const MINE_IMAGE_URL = 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Mines/Bloodgold-mine.png';
+        // Extra deposits scattered across the galaxy, on top of the one every country
+        // already gets near its own homeworld - a fixed count, not tied to however many
+        // countries happen to exist in a given match.
+        const EXTRA_DEPOSIT_COUNT = 12;
 
         // Tech tree (2026-08-25 Supremacy-style redesign). Research happens in real time
         // (like mining) via a country's Research Lab building (Island.getResearchLab()),
@@ -1863,7 +1877,11 @@
                 this.maxResources = DEPOSIT_STARTING_RESOURCES;
                 this.size = 14;
                 this.sprite = null;
-                if (imageUrl) { this.sprite = new Image(); this.sprite.src = imageUrl; }
+                if (imageUrl) {
+                    this.sprite = new Image();
+                    this.sprite.onerror = () => { this.sprite = null; };
+                    queueImageLoad(this.sprite, imageUrl);
+                }
             }
             isDepleted() { return this.resources <= 0; }
             draw() {
@@ -3344,9 +3362,10 @@
         }
 
         // Called once from initGame() after every country/island exists. Gives every
-        // country a deposit close to home, then scatters extra ones further out across
-        // the (now much bigger, see GALAXY_SPACING_SCALE) galaxy for players to expand
-        // toward once a home deposit runs dry or gets contested.
+        // country a "Bloodgold" mine close to home to start mining right away, then
+        // scatters EXTRA_DEPOSIT_COUNT more further out across the (now much bigger,
+        // see GALAXY_SPACING_SCALE) galaxy for players to expand toward once a home
+        // deposit runs dry or gets contested.
         function spawnResourceDeposits() {
             resourceDeposits.length = 0;
             nextResourceDepositId = 0;
@@ -3356,13 +3375,13 @@
                 const dist = country.island.size + 120;
                 resourceDeposits.push(new ResourceDeposit(
                     country.island.x + Math.cos(angle) * dist,
-                    country.island.y + Math.sin(angle) * dist
+                    country.island.y + Math.sin(angle) * dist,
+                    MINE_IMAGE_URL
                 ));
             });
 
-            const extraCount = gameState.countries.length;
             let placed = 0, attempts = 0;
-            while (placed < extraCount && attempts < extraCount * 30) {
+            while (placed < EXTRA_DEPOSIT_COUNT && attempts < EXTRA_DEPOSIT_COUNT * 30) {
                 attempts++;
                 const x = Math.random() * MAP_WIDTH;
                 const y = Math.random() * MAP_HEIGHT;
@@ -3371,7 +3390,7 @@
                 );
                 const tooCloseToOtherDeposit = resourceDeposits.some(d => Math.hypot(x - d.x, y - d.y) < 400);
                 if (!tooCloseToIsland && !tooCloseToOtherDeposit) {
-                    resourceDeposits.push(new ResourceDeposit(x, y));
+                    resourceDeposits.push(new ResourceDeposit(x, y, MINE_IMAGE_URL));
                     placed++;
                 }
             }
