@@ -596,22 +596,6 @@
             }
         }
         
-        .asteroid {
-            position: absolute;
-            background: #8B4513;
-            border-radius: 50%;
-            animation: asteroid-float 15s linear infinite;
-        }
-        
-        @keyframes asteroid-float {
-            0% {
-                transform: translateX(-100px) rotate(0deg);
-            }
-            100% {
-                transform: translateX(calc(100vw + 100px)) rotate(360deg);
-            }
-        }
-        
         #videoScreen {
             position: absolute;
             top: 50%;
@@ -3322,10 +3306,9 @@
 
         let spaceElements = {
             stars: [],
-            comets: [],
-            asteroids: []
+            comets: []
         };
-        
+
         function createSpaceElements() {
             for (let i = 0; i < 200; i++) {
                 const star = document.createElement('div');
@@ -3338,7 +3321,7 @@
                 document.getElementById('gameContainer').appendChild(star);
                 spaceElements.stars.push(star);
             }
-            
+
             for (let i = 0; i < 5; i++) {
                 const comet = document.createElement('div');
                 comet.className = 'comet';
@@ -3349,33 +3332,150 @@
                 document.getElementById('gameContainer').appendChild(comet);
                 spaceElements.comets.push(comet);
             }
-            
-            for (let i = 0; i < 8; i++) {
-                const asteroid = document.createElement('div');
-                asteroid.className = 'asteroid';
-                asteroid.style.left = Math.random() * window.innerWidth + 'px';
-                asteroid.style.top = Math.random() * window.innerHeight + 'px';
-                asteroid.style.width = Math.random() * 8 + 4 + 'px';
-                asteroid.style.height = asteroid.style.width;
-                asteroid.style.animationDelay = Math.random() * 15 + 's';
-                asteroid.style.animationDuration = (15 + Math.random() * 10) + 's';
-                document.getElementById('gameContainer').appendChild(asteroid);
-                spaceElements.asteroids.push(asteroid);
-            }
+
+            spawnCosmeticAsteroids();
         }
-        
+
         function updateSpaceElements() {
             spaceElements.stars.forEach(star => {
                 star.style.transform = `translate(${-camera.x * 0.1}px, ${-camera.y * 0.1}px)`;
             });
-            
+
             spaceElements.comets.forEach(comet => {
                 comet.style.transform = `translate(${-camera.x * 0.2}px, ${-camera.y * 0.2}px)`;
             });
-            
-            spaceElements.asteroids.forEach(asteroid => {
-                asteroid.style.transform = `translate(${-camera.x * 0.15}px, ${-camera.y * 0.15}px)`;
+
+            updateCosmeticAsteroids();
+        }
+
+        // ---------------------------------------------------------------------------
+        // Cosmetic asteroids (2026-08-28) - replaces the old flat brown CSS-div
+        // asteroids (position:absolute divs, background:#8B4513, a linear
+        // translateX keyframe) with real art (Asteroid-1.png/Asteroid-2.png),
+        // drawn on the canvas in actual world space like everything else instead
+        // of screen-space DOM elements. Purely decorative: no collision, no
+        // damage, no interaction with any unit/building/click-handling - they
+        // drift through the background and nothing else ever reads their
+        // position. Recycled around the current camera view rather than spread
+        // across the whole (huge) galaxy, so they're actually visible drifting
+        // through wherever the player happens to be looking, not scattered once
+        // across a map far too big for a handful of them to ever be seen.
+        // ---------------------------------------------------------------------------
+        const ASTEROID_IMAGE_URLS = [
+            'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Asteroids/Asteroid-1.png',
+            'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Asteroids/Asteroid-2.png',
+        ];
+        let asteroidSprites = []; // populated as each image finishes loading - see loadAsteroidSprites()
+        let cosmeticAsteroids = [];
+        const COSMETIC_ASTEROID_COUNT = 12;
+        const COSMETIC_ASTEROID_RECYCLE_MARGIN = 250; // how far off-screen before an asteroid is recycled
+
+        // The source art is a full rectangular render (rocky asteroid on its own soft
+        // vignette background, not a transparent cutout) - drawing it as-is would show
+        // a visible square patch against the starfield. This crops it to a centered
+        // square and fades a radial alpha mask over it via 'destination-in' so the
+        // edges dissolve into transparency instead, then caches the result (an
+        // offscreen canvas draws exactly like an Image via ctx.drawImage()).
+        function makeMaskedAsteroidSprite(img) {
+            const size = Math.min(img.width, img.height) || 1;
+            const off = document.createElement('canvas');
+            off.width = size;
+            off.height = size;
+            const octx = off.getContext('2d');
+            const sx = (img.width - size) / 2;
+            const sy = (img.height - size) / 2;
+            octx.drawImage(img, sx, sy, size, size, 0, 0, size, size);
+            octx.globalCompositeOperation = 'destination-in';
+            const grad = octx.createRadialGradient(size / 2, size / 2, size * 0.28, size / 2, size / 2, size * 0.5);
+            grad.addColorStop(0, 'rgba(255,255,255,1)');
+            grad.addColorStop(1, 'rgba(255,255,255,0)');
+            octx.fillStyle = grad;
+            octx.fillRect(0, 0, size, size);
+            octx.globalCompositeOperation = 'source-over';
+            return off;
+        }
+
+        function loadAsteroidSprites() {
+            ASTEROID_IMAGE_URLS.forEach(url => {
+                const img = new Image();
+                img.onload = () => { asteroidSprites.push(makeMaskedAsteroidSprite(img)); };
+                queueImageLoad(img, url);
             });
+        }
+        loadAsteroidSprites();
+
+        // A fresh asteroid appears just outside a random edge of the CURRENT camera
+        // view (not the whole galaxy) with a slow drift roughly toward/across it, so
+        // it's guaranteed to actually cross the visible screen instead of drifting
+        // through empty space the player will never see.
+        function respawnCosmeticAsteroid(a) {
+            const halfW = canvas.width / 2 / camera.zoom;
+            const halfH = canvas.height / 2 / camera.zoom;
+            const edge = Math.floor(Math.random() * 4); // 0=left,1=right,2=top,3=bottom
+            const pad = COSMETIC_ASTEROID_RECYCLE_MARGIN / camera.zoom;
+            let x, y;
+            if (edge === 0) { x = camera.x - halfW - pad; y = camera.y + (Math.random() * 2 - 1) * halfH; }
+            else if (edge === 1) { x = camera.x + halfW + pad; y = camera.y + (Math.random() * 2 - 1) * halfH; }
+            else if (edge === 2) { x = camera.x + (Math.random() * 2 - 1) * halfW; y = camera.y - halfH - pad; }
+            else { x = camera.x + (Math.random() * 2 - 1) * halfW; y = camera.y + halfH + pad; }
+
+            const towardCenterAngle = Math.atan2(camera.y - y, camera.x - x);
+            const angle = towardCenterAngle + (Math.random() - 0.5) * 1.2; // roughly across, not laser-aimed at center
+            const speed = 8 + Math.random() * 20;
+
+            a.x = x;
+            a.y = y;
+            a.vx = Math.cos(angle) * speed;
+            a.vy = Math.sin(angle) * speed;
+            a.rotationSpeed = (Math.random() - 0.5) * 0.4;
+            a.size = 30 + Math.random() * 70;
+            a.spriteIndex = Math.floor(Math.random() * 2);
+        }
+
+        function spawnCosmeticAsteroids() {
+            cosmeticAsteroids = [];
+            for (let i = 0; i < COSMETIC_ASTEROID_COUNT; i++) {
+                const a = { x: 0, y: 0, vx: 0, vy: 0, rotation: Math.random() * Math.PI * 2, rotationSpeed: 0, size: 40, spriteIndex: 0 };
+                respawnCosmeticAsteroid(a);
+                // Scatter the very first batch across the whole current view (not all
+                // freshly spawned at the edges) so the sky isn't empty of them on
+                // first load, waiting for the recycle cycle to slowly populate it.
+                a.x = camera.x + (Math.random() * 2 - 1) * (canvas.width / camera.zoom);
+                a.y = camera.y + (Math.random() * 2 - 1) * (canvas.height / camera.zoom);
+                cosmeticAsteroids.push(a);
+            }
+        }
+
+        function updateCosmeticAsteroids() {
+            cosmeticAsteroids.forEach(a => {
+                a.x += a.vx * frameDeltaTime;
+                a.y += a.vy * frameDeltaTime;
+                a.rotation += a.rotationSpeed * frameDeltaTime;
+
+                const screenX = (a.x - camera.x) * camera.zoom + canvas.width / 2;
+                const screenY = (a.y - camera.y) * camera.zoom + canvas.height / 2;
+                if (screenX < -COSMETIC_ASTEROID_RECYCLE_MARGIN || screenX > canvas.width + COSMETIC_ASTEROID_RECYCLE_MARGIN ||
+                    screenY < -COSMETIC_ASTEROID_RECYCLE_MARGIN || screenY > canvas.height + COSMETIC_ASTEROID_RECYCLE_MARGIN) {
+                    respawnCosmeticAsteroid(a);
+                }
+            });
+        }
+
+        function drawCosmeticAsteroids() {
+            if (asteroidSprites.length === 0) return; // art still loading - skip silently, not an error
+            cosmeticAsteroids.forEach(a => {
+                const sprite = asteroidSprites[a.spriteIndex % asteroidSprites.length];
+                const screenX = (a.x - camera.x) * camera.zoom + canvas.width / 2;
+                const screenY = (a.y - camera.y) * camera.zoom + canvas.height / 2;
+                const drawSize = a.size * camera.zoom;
+                ctx.save();
+                ctx.translate(screenX, screenY);
+                ctx.rotate(a.rotation);
+                ctx.globalAlpha = 0.85;
+                ctx.drawImage(sprite, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
+                ctx.restore();
+            });
+            ctx.globalAlpha = 1.0;
         }
         
         // Called once from initGame() after every country/island exists. Gives every
@@ -5176,6 +5276,7 @@
             ctx.fillStyle = '#000000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             drawSpaceBackground();
+            drawCosmeticAsteroids();
 
             ctx.save();
             ctx.translate(canvas.width / 2, canvas.height / 2);
