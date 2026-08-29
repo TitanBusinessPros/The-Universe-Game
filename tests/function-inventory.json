@@ -47,6 +47,7 @@
     "lightenRgb",
     "loadGame",
     "loadLifetimeStats",
+    "loadMineImage",
     "loadSprites",
     "makeStarLayer",
     "minimapBounds",

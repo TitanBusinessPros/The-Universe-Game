@@ -1016,9 +1016,18 @@
         const DEPOSIT_INCOME_PER_HOUR = 100;
         const DEPOSIT_STARTING_RESOURCES = 5000;
         const DEPOSIT_COLLECT_RANGE = 60;
+        // A mine renders at this fraction of whichever planet it's next to (per direct
+        // request) - big enough to actually read as a landmark, not a speck.
+        const DEPOSIT_SIZE_RATIO = 0.2;
         // Real art for every deposit ("Bloodgold mine", 2026-08-29) - replaces the
-        // gold-circle-with-a-$-sign placeholder every deposit used to draw.
+        // gold-circle-with-a-$-sign placeholder every deposit used to draw. Loaded ONCE
+        // into a single shared Image (see loadMineImage() below, called after
+        // queueImageLoad's own declarations) and referenced by every ResourceDeposit -
+        // each instance loading its own copy meant up to 39 duplicate ~1MB fetches of
+        // the exact same file competing for the same 6-slot loading queue, which is
+        // exactly why the mine was reported as invisible: it was still mid-download.
         const MINE_IMAGE_URL = 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Mines/Bloodgold-mine.png';
+        let mineImage = null;
         // Extra deposits scattered across the galaxy, on top of the one every country
         // already gets near its own homeworld - a fixed count, not tied to however many
         // countries happen to exist in a given match.
@@ -1518,6 +1527,15 @@
         loadSprites();
         queueImageLoad(spaceBackgroundImage, SPACE_BACKGROUND_URL); // after queueImageLoad's own declarations - calling this any earlier is a TDZ crash
 
+        // Single shared load for the mine art (see MINE_IMAGE_URL's own comment above) -
+        // also has to come after queueImageLoad's own declarations, same TDZ reason.
+        function loadMineImage() {
+            mineImage = new Image();
+            mineImage.onerror = () => { mineImage = null; };
+            queueImageLoad(mineImage, MINE_IMAGE_URL);
+        }
+        loadMineImage();
+
         let camera = {
             x: 0,
             y: 0,
@@ -1868,16 +1886,21 @@
         class ResourceDeposit {
             // Neutral map object ("mine" in player-facing text). Not owned by any country -
             // whichever mining ships station nearby draw it down. imageUrl is optional so this
-            // renders with a placeholder until real art is supplied.
-            constructor(x, y, imageUrl = null) {
+            // renders with a placeholder until real art is supplied. nearbyPlanetSize sizes the
+            // mine relative to whichever planet it's next to (DEPOSIT_SIZE_RATIO of that
+            // planet's own radius) - defaults to a standard planet's size for the deposits
+            // that aren't tied to any one specific planet (the extra scattered ones).
+            constructor(x, y, imageUrl = null, nearbyPlanetSize = 250 * PLANET_SCALE) {
                 this.id = nextResourceDepositId++;
                 this.x = x;
                 this.y = y;
                 this.resources = DEPOSIT_STARTING_RESOURCES;
                 this.maxResources = DEPOSIT_STARTING_RESOURCES;
-                this.size = 14;
+                this.size = nearbyPlanetSize * DEPOSIT_SIZE_RATIO;
                 this.sprite = null;
-                if (imageUrl) {
+                if (imageUrl === MINE_IMAGE_URL) {
+                    this.sprite = mineImage; // shared, single load - see loadMineImage()
+                } else if (imageUrl) {
                     this.sprite = new Image();
                     this.sprite.onerror = () => { this.sprite = null; };
                     queueImageLoad(this.sprite, imageUrl);
@@ -1885,12 +1908,13 @@
             }
             isDepleted() { return this.resources <= 0; }
             draw() {
+                if (this.isDepleted()) return; // gone once mined out, not just recolored
                 const screenX = (this.x - camera.x) * camera.zoom + canvas.width / 2;
                 const screenY = (this.y - camera.y) * camera.zoom + canvas.height / 2;
                 if (this.sprite && this.sprite.complete && this.sprite.naturalWidth > 0) {
                     ctx.drawImage(this.sprite, screenX - this.size * camera.zoom, screenY - this.size * camera.zoom, this.size * camera.zoom * 2, this.size * camera.zoom * 2);
                 } else {
-                    ctx.fillStyle = this.isDepleted() ? '#555533' : '#ffd700';
+                    ctx.fillStyle = '#ffd700';
                     ctx.beginPath();
                     ctx.arc(screenX, screenY, this.size * camera.zoom, 0, Math.PI * 2);
                     ctx.fill();
@@ -3376,7 +3400,8 @@
                 resourceDeposits.push(new ResourceDeposit(
                     country.island.x + Math.cos(angle) * dist,
                     country.island.y + Math.sin(angle) * dist,
-                    MINE_IMAGE_URL
+                    MINE_IMAGE_URL,
+                    country.island.size
                 ));
             });
 
@@ -4609,6 +4634,11 @@
                 }
                 gameState.countries.push(country);
             });
+
+            // Regression (2026-08-29): campaign mode built its own countries/islands
+            // independently of initGame() and never called this - every campaign
+            // stage had zero mines, full stop, regardless of anything else.
+            spawnResourceDeposits();
 
             gameState.turn = 1;
             gameState.paused = false;

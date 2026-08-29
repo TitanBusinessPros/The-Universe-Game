@@ -127,14 +127,14 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage };',
     context,
     { filename: 'grab-refs.js' }
 );
 const {
     Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat,
     ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS,
-    DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas,
+    DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas,
     canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS,
     AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame,
     buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete,
@@ -152,7 +152,7 @@ const {
     toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen,
     getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR,
     getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground,
-    whenImagesReady, spaceElements
+    whenImagesReady, spaceElements, loadMineImage, mineImage
 } = context.__test;
 
 // ---------- Test data: the full combat unit roster ----------
@@ -1234,8 +1234,41 @@ check('every deposit is a Bloodgold mine: 5000 starting gold, real art wired in,
             problems.push(`deposit ${i} does not start with 5000 gold (resources=${d.resources}, maxResources=${d.maxResources})`);
         }
         if (!d.sprite) problems.push(`deposit ${i} has no sprite wired in - expected the Bloodgold mine art`);
+        // All must share the exact same Image object - one load, not one per deposit
+        // (39 duplicate ~1MB fetches of the same file is what made it look "invisible").
+        if (d.sprite !== resourceDeposits[0].sprite) problems.push(`deposit ${i}'s sprite is not the shared mineImage instance`);
     });
     if (!html.includes('Mines/Bloodgold-mine.png')) problems.push('Bloodgold-mine.png not referenced anywhere in the game file');
+
+    // Sized relative to the planet it's next to (20%, per direct request), not a fixed
+    // pixel size - island1 here is a standard Island (size = 250 * PLANET_SCALE).
+    const nearIsland1 = resourceDeposits.find(d => Math.hypot(d.x - island1.x, d.y - island1.y) < island1.size + 200);
+    if (!nearIsland1 || Math.abs(nearIsland1.size - island1.size * DEPOSIT_SIZE_RATIO) > 0.01) {
+        problems.push(`expected the deposit near island1 sized at ${DEPOSIT_SIZE_RATIO * 100}% of its planet (${island1.size * DEPOSIT_SIZE_RATIO}), got ${nearIsland1 && nearIsland1.size}`);
+    }
+
+    // Disappears once mined out - draw() must not throw, and must not be a no-op
+    // stand-in for "still visible", so check it actually skips rendering.
+    const depleted = resourceDeposits[0];
+    depleted.resources = 0;
+    const testCtx = vm.runInContext('ctx', context);
+    let drewSomething = false;
+    const realArc = testCtx.arc.bind(testCtx);
+    testCtx.arc = (...args) => { drewSomething = true; return realArc(...args); };
+    try { depleted.draw(); } finally { testCtx.arc = realArc; }
+    if (drewSomething) problems.push('expected a depleted deposit to draw nothing at all, not just recolor');
+
+    return problems;
+});
+
+check('loadMineImage() queues exactly one image load - the shared mineImage, not one per deposit', () => {
+    const before = vm.runInContext('totalImagesToLoad', context);
+    loadMineImage();
+    const after = vm.runInContext('totalImagesToLoad', context);
+    const problems = [];
+    if (after !== before + 1) problems.push(`expected totalImagesToLoad to increase by exactly 1, got +${after - before}`);
+    const liveMineImage = vm.runInContext('mineImage', context); // top-level `let`, reassigned - read live
+    if (!liveMineImage) problems.push('expected mineImage to be set after loadMineImage()');
     return problems;
 });
 
@@ -1863,6 +1896,21 @@ check('startCampaignStage() spawns the player plus exactly the stage\'s objectiv
             problems.push(`outpost ${obj.id} should share team with its rival homeworld (${stage.rivalId}), got team ${country.team}`);
         }
     });
+    return problems;
+});
+
+check('startCampaignStage() spawns resource deposits too - campaign built its own countries independently of initGame() and never called this at all', () => {
+    const problems = [];
+    selectCampaignNation(0);
+    startCampaignStage(0);
+
+    if (resourceDeposits.length === 0) {
+        problems.push('expected campaign mode to have resource deposits (mines) - got zero');
+    }
+    const nearPlayerHome = resourceDeposits.some(d =>
+        Math.hypot(d.x - gameState.playerCountry.island.x, d.y - gameState.playerCountry.island.y) < gameState.playerCountry.island.size + 200
+    );
+    if (!nearPlayerHome) problems.push('expected a mine near the player\'s campaign homeworld, found none within range');
     return problems;
 });
 
