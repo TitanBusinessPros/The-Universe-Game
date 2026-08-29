@@ -2762,6 +2762,46 @@ check('Orbital Resource Scanner: doubles Mining Ship collection range', () => {
     return [];
 });
 
+// ---------- 30. Vessels are allowed to fly over planets (2026-08-28) ----------
+//    Removed at the user's explicit request: moveTo()/update() used to
+//    silently refuse a vessel any target/position inside a planet's
+//    collisionSize, same as this game blocks ground units from leaving one.
+//    Vessels now move exactly like aircraft - no collision with planets at all.
+
+check('a vessel can be ordered to, and actually reach, a point INSIDE a planet\'s collision radius', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'FlyoverTest', '#ff0000', island, true);
+    gameState.countries = [country];
+
+    const ship = new Unit(island.x - 300, island.y, 'stormbreaker', 0);
+    // The island's own center - well inside collisionSize, exactly what used to be refused.
+    ship.moveTo(island.x, island.y);
+    if (ship.targetX !== island.x || ship.targetY !== island.y) {
+        problems.push(`expected moveTo() to accept a target inside the planet, got targetX=${ship.targetX}, targetY=${ship.targetY} (still island center is ${island.x},${island.y})`);
+    }
+
+    for (let i = 0; i < 300; i++) ship.update();
+    const distFromCenter = Math.hypot(ship.x - island.x, ship.y - island.y);
+    if (distFromCenter > 5) {
+        problems.push(`expected the ship to actually arrive at/through the planet center, still ${distFromCenter.toFixed(1)} away after 200 update() ticks`);
+    }
+    return problems;
+});
+
+check('ground units still require an on-planet target - only the vessel restriction was removed', () => {
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'GroundStillGatedTest', '#ff0000', island, true);
+    gameState.countries = [country];
+    const trooper = new Unit(island.x, island.y, 'groundpounders', 0);
+
+    trooper.moveTo(island.x + island.collisionSize + 5000, island.y); // open space, off any planet
+    if (trooper.targetX !== island.x) {
+        return ['expected a ground unit\'s move order into open space (off any planet) to still be refused'];
+    }
+    return [];
+});
+
 // ---------- 17. Zero-arg smoke test: every no-parameter top-level function ----------
 //    should be callable, from a real freshly-started game state, without
 //    throwing. Runs against every CURRENT and future zero-arg function
