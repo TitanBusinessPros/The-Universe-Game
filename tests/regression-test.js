@@ -748,6 +748,7 @@ const TEST_FILE_PATHS_FOR_COVERAGE = [
     path.join(__dirname, 'browser', 'visual-test.js'),
     path.join(__dirname, 'browser', 'interaction-test.js'),
     path.join(__dirname, 'browser', 'asset-integrity-test.js'),
+    path.join(__dirname, 'browser', 'deposit-visibility-test.js'),
     path.join(__dirname, 'balance', 'balance-simulation.js'),
 ];
 const testFileSourcesForCoverage = TEST_FILE_PATHS_FOR_COVERAGE.map(p => fs.readFileSync(p, 'utf8'));
