@@ -2827,6 +2827,17 @@ check('ground units still require an on-planet target - only the vessel restrict
 //    entry point now blocks on whenImagesReady() so a still-loading planet can never
 //    show its brown placeholder shape during normal play.
 
+check('asteroids fly in from the true left edge of the screen - left is fixed, not randomized', () => {
+    // Regression: a randomized `left` offsets the keyframe's own translateX sweep,
+    // so most asteroids visually "appear" already mid-screen instead of genuinely
+    // entering from the left edge - exactly the bug the user caught by eye.
+    const problems = [];
+    if (!/asteroid\.style\.left\s*=\s*'0px'/.test(script)) {
+        problems.push('expected asteroid.style.left to be fixed at \'0px\', not a random value');
+    }
+    return problems;
+});
+
 check('createSpaceElements() creates real screen-space asteroid divs (not the old canvas system)', () => {
     document.getElementById = document.getElementById || (() => ({ appendChild(){}, style:{} }));
     createSpaceElements();

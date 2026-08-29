@@ -3309,7 +3309,12 @@
             for (let i = 0; i < 8; i++) {
                 const asteroid = document.createElement('div');
                 asteroid.className = 'asteroid ' + (i % 2 === 0 ? 'asteroid-1' : 'asteroid-2');
-                asteroid.style.left = Math.random() * window.innerWidth + 'px';
+                // left is fixed at 0, NOT randomized - the keyframe's own translateX
+                // (-100px -> 100vw+100px) is what sweeps it fully across the screen.
+                // A random left here (the bug the user caught) offsets that sweep so
+                // most asteroids "appear" already mid-screen instead of genuinely
+                // entering from the left edge.
+                asteroid.style.left = '0px';
                 asteroid.style.top = Math.random() * window.innerHeight + 'px';
                 asteroid.style.width = Math.random() * 30 + 20 + 'px';
                 asteroid.style.height = asteroid.style.width;
