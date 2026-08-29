@@ -4252,7 +4252,7 @@
             if (saveData.resourceDeposits) {
                 resourceDeposits.length = 0;
                 saveData.resourceDeposits.forEach(d => {
-                    const dep = new ResourceDeposit(d.x, d.y);
+                    const dep = new ResourceDeposit(d.x, d.y, MINE_IMAGE_URL);
                     dep.resources = d.resources;
                     resourceDeposits.push(dep);
                 });

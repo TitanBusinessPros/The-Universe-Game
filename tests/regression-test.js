@@ -2038,6 +2038,12 @@ check('buildSaveData() -> applySaveData() round-trips turn, resources, research,
     if (resourceDeposits.length !== 1 || resourceDeposits[0].resources !== 3333) {
         problems.push(`expected 1 resource deposit with 3333 resources restored, got ${JSON.stringify(resourceDeposits.map(d => d.resources))}`);
     }
+    // Regression (2026-08-29): applySaveData() reconstructed loaded deposits via
+    // `new ResourceDeposit(d.x, d.y)` with no imageUrl - a resumed/continued game
+    // never got the new Bloodgold mine art at all, only ever the old placeholder.
+    if (resourceDeposits[0] && !resourceDeposits[0].sprite) {
+        problems.push('expected a loaded deposit to have the Bloodgold mine sprite wired in, got none');
+    }
 
     if (!gameState.playerCountry || gameState.playerCountry.id !== 0 || !gameState.playerCountry.isPlayer) {
         problems.push('expected playerCountry re-identified from playerCountryId and marked isPlayer');
