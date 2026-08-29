@@ -57,12 +57,16 @@ const CAPTURE_TIMEOUT_MS = 30000; // generous - covers the game's own 20s loadin
     // the very first real gameLoop() frame - no dependency on image load timing.
     await page.addInitScript(() => {
         window.__capturedDrawCall = null;
-        const patch = (methodName) => {
+        // arc(x, y, r, ...) has x/y at args[0]/args[1]; drawImage(image, dx, dy, ...)
+        // has the Image object itself at args[0] - the position is at dx/dy, one
+        // index later. Different signatures need different indices, or "x" ends up
+        // being an Image object and the matrix math silently produces NaN.
+        const patch = (methodName, xIndex, yIndex) => {
             const orig = CanvasRenderingContext2D.prototype[methodName];
             CanvasRenderingContext2D.prototype[methodName] = function (...args) {
                 if (window.__capturedDrawCall === null && window.__depositBeingDrawn) {
                     const m = this.getTransform();
-                    const x = args[0], y = args[1];
+                    const x = args[xIndex], y = args[yIndex];
                     window.__capturedDrawCall = {
                         method: methodName,
                         // Apply the LIVE matrix by hand, exactly like the browser
@@ -74,8 +78,8 @@ const CAPTURE_TIMEOUT_MS = 30000; // generous - covers the game's own 20s loadin
                 return orig.apply(this, args);
             };
         };
-        patch('arc');       // the fallback gold-circle path
-        patch('drawImage'); // the real sprite path
+        patch('arc', 0, 1);        // the fallback gold-circle path: arc(x, y, r, ...)
+        patch('drawImage', 1, 2);  // the real sprite path: drawImage(image, dx, dy, dw, dh) - ResourceDeposit's own call site always uses this 5-arg form
     });
 
     const absoluteGamePath = path.resolve(GAME_PATH);
