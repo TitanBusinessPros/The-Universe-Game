@@ -127,7 +127,7 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, spawnCosmeticAsteroids, updateCosmeticAsteroids, respawnCosmeticAsteroid, makeMaskedAsteroidSprite, loadAsteroidSprites, ASTEROID_IMAGE_URLS, COSMETIC_ASTEROID_COUNT, COSMETIC_ASTEROID_RECYCLE_MARGIN };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements };',
     context,
     { filename: 'grab-refs.js' }
 );
@@ -151,9 +151,8 @@ const {
     campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound,
     toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen,
     getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR,
-    getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, spawnCosmeticAsteroids, updateCosmeticAsteroids,
-    respawnCosmeticAsteroid, makeMaskedAsteroidSprite, loadAsteroidSprites, ASTEROID_IMAGE_URLS,
-    COSMETIC_ASTEROID_COUNT, COSMETIC_ASTEROID_RECYCLE_MARGIN
+    getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground,
+    whenImagesReady, spaceElements
 } = context.__test;
 
 // ---------- Test data: the full combat unit roster ----------
@@ -568,6 +567,18 @@ function extractAllFunctionLikeNames(src) {
     // class Name - covers `new Name(...)` call sites
     const classRe = /class\s+([A-Za-z_$][A-Za-z0-9_$]*)/g;
     while ((m = classRe.exec(src))) names.add(m[1]);
+    // Parameter names of any function/arrow function - a callback parameter invoked
+    // inside its own body (e.g. `function f(onDone) { onDone(); }`, used by
+    // whenImagesReady()/pollLoadingScreen() below) is a legitimate call, not a
+    // dangling reference to something that was renamed or deleted.
+    const paramBlockRe = /(?:function\s*[A-Za-z_$]*\s*\(([^)]*)\)|\(([^)]*)\)\s*=>)/g;
+    while ((m = paramBlockRe.exec(src))) {
+        const paramsStr = m[1] || m[2] || '';
+        paramsStr.split(',').forEach(p => {
+            const cleaned = p.replace(/=.*$/, '').replace(/\.\.\./, '').trim();
+            if (/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(cleaned)) names.add(cleaned);
+        });
+    }
     return names;
 }
 
@@ -761,7 +772,6 @@ const COVERAGE_ALLOWLIST = {
     'drawRadarPulses': 'canvas rendering only - the logic underneath (hasRadarDetection()) is tested directly',
     '__pumpImageQueue': 'internal helper of queueImageLoad(), which IS tested directly - this one has no independent behavior to assert on',
     'initAudio': 'sets up a Web Audio graph with no observable return value in jsdom; startMusic()/toggleSound() (which call it) are smoke-tested',
-    'drawCosmeticAsteroids': 'canvas rendering only - the position/recycle logic underneath (spawnCosmeticAsteroids/updateCosmeticAsteroids/respawnCosmeticAsteroid) is tested directly, this just draws whatever those already-verified positions say',
 };
 
 check('every top-level function is either test-referenced or explicitly allowlisted (no silent coverage gaps)', () => {
@@ -2805,91 +2815,76 @@ check('ground units still require an on-planet target - only the vessel restrict
     return [];
 });
 
-// ---------- 31. Cosmetic asteroids (2026-08-28) ----------
-//    Replaces the old flat brown CSS-div asteroids with real art
-//    (Asteroid-1.png/Asteroid-2.png), drawn on the canvas in real world
-//    space. Purely decorative - these checks exist specifically to prove
-//    that: nothing here ever touches gameState.countries, unit HP, or
-//    buildings, no matter what.
+// ---------- 31. Screen-space asteroids, no comets, real background, load-gated start (2026-08-28) ----------
+//    The world-space canvas asteroid system (spawnCosmeticAsteroids/etc.) clustered
+//    all 12 asteroids right next to the player's home planet, because it scattered
+//    them around wherever `camera` happened to be - which at game start is always
+//    gameState.playerCountry.island. Replaced with the same screen-space DOM
+//    approach the original brown asteroids used (position:absolute divs, a single
+//    CSS translateX keyframe, independent of camera/world position), just with real
+//    art. Also: comets removed per direct request, the old procedural nebula-blob
+//    background replaced with a real photo (Background-1.png), and every game-start
+//    entry point now blocks on whenImagesReady() so a still-loading planet can never
+//    show its brown placeholder shape during normal play.
 
-check('spawnCosmeticAsteroids() creates the expected count, scattered around the current view', () => {
-    camera.x = 5000; camera.y = -3000; camera.zoom = 1;
-    spawnCosmeticAsteroids();
-    const asteroids = vm.runInContext('cosmeticAsteroids', context); // top-level `let`, reassigned by spawn - read live
+check('createSpaceElements() creates real screen-space asteroid divs (not the old canvas system)', () => {
+    document.getElementById = document.getElementById || (() => ({ appendChild(){}, style:{} }));
+    createSpaceElements();
+    const asteroids = vm.runInContext('spaceElements.asteroids', context);
     const problems = [];
-    if (asteroids.length !== COSMETIC_ASTEROID_COUNT) problems.push(`expected ${COSMETIC_ASTEROID_COUNT} asteroids, got ${asteroids.length}`);
-    asteroids.forEach((a, i) => {
-        if (typeof a.x !== 'number' || typeof a.y !== 'number') problems.push(`asteroid ${i} has no real position`);
-        if (!(a.size > 0)) problems.push(`asteroid ${i} has a non-positive size`);
-        if (a.spriteIndex !== 0 && a.spriteIndex !== 1) problems.push(`asteroid ${i} has an invalid spriteIndex ${a.spriteIndex}`);
+    if (!Array.isArray(asteroids) || asteroids.length !== 8) problems.push(`expected 8 asteroid elements, got ${Array.isArray(asteroids) ? asteroids.length : typeof asteroids}`);
+    if (typeof spawnCosmeticAsteroids !== 'undefined') problems.push('spawnCosmeticAsteroids should no longer exist - it clustered asteroids next to the player\'s planet');
+    return problems;
+});
+
+check('comets are fully removed - no .comet CSS, no spaceElements.comets, no comet creation code', () => {
+    const problems = [];
+    if (html.includes('comet-fly')) problems.push('comet-fly keyframe still present in CSS');
+    if (html.includes("className = 'comet'")) problems.push('comet div creation code still present');
+    if (html.includes('spaceElements.comets')) problems.push('spaceElements.comets still referenced');
+    return problems;
+});
+
+check('the two real asteroid images are wired into the CSS classes the JS actually assigns', () => {
+    const problems = [];
+    if (!html.includes('Asteroids/Asteroid-1.png')) problems.push('Asteroid-1.png not referenced');
+    if (!html.includes('Asteroids/Asteroid-2.png')) problems.push('Asteroid-2.png not referenced');
+    if (!html.includes("asteroid-1")) problems.push('.asteroid-1 class not referenced');
+    if (!html.includes("asteroid-2")) problems.push('.asteroid-2 class not referenced');
+    return problems;
+});
+
+check('drawSpaceBackground() tiles the real Background-1.png photo instead of the old procedural nebula blobs', () => {
+    const problems = [];
+    if (!html.includes('Backgrounds/Background-1.png')) problems.push('Background-1.png not referenced');
+    if (html.includes('NEBULA_BLOBS')) problems.push('old procedural NEBULA_BLOBS code is still present');
+    if (typeof drawSpaceBackground !== 'function') problems.push('drawSpaceBackground is not a function');
+    return problems;
+});
+
+check('whenImagesReady() calls back immediately once every queued image is done, and waits otherwise', () => {
+    const problems = [];
+    vm.runInContext('totalImagesToLoad = 5; imagesLoadedSoFar = 5;', context);
+    let calledSync = false;
+    whenImagesReady(() => { calledSync = true; });
+    if (!calledSync) problems.push('expected an immediate callback when loaded >= total');
+
+    vm.runInContext('totalImagesToLoad = 5; imagesLoadedSoFar = 2;', context);
+    let calledEarly = false;
+    whenImagesReady(() => { calledEarly = true; });
+    if (calledEarly) problems.push('expected whenImagesReady to NOT call back yet while images are still loading');
+    vm.runInContext('imagesLoadedSoFar = 5; totalImagesToLoad = 5;', context); // restore, don't leak into later checks
+    return problems;
+});
+
+check('every game-start entry point is gated behind whenImagesReady() before calling gameLoop()', () => {
+    const problems = [];
+    const startFns = ['startHotSeatGame', 'closeVideo', 'continueFromAutosave', 'startCampaignStage'];
+    startFns.forEach(name => {
+        const src = vm.runInContext(`${name}.toString()`, context);
+        if (!src.includes('whenImagesReady(')) problems.push(`${name}() calls gameLoop() without gating on whenImagesReady() first`);
     });
     return problems;
-});
-
-check('updateCosmeticAsteroids() drifts asteroids by real elapsed time and recycles them once off-screen', () => {
-    camera.x = 0; camera.y = 0; camera.zoom = 1;
-    spawnCosmeticAsteroids();
-    const asteroids = vm.runInContext('cosmeticAsteroids', context);
-    const problems = [];
-
-    // Force one asteroid to a known position/velocity moving further off-screen,
-    // and one already just off-screen - both should be recycled back near the view.
-    const a = asteroids[0];
-    a.x = camera.x - (canvas.width / 2 + COSMETIC_ASTEROID_RECYCLE_MARGIN + 500);
-    a.y = camera.y;
-    a.vx = -50; a.vy = 0; // moving further away, not back in
-    const beforeX = a.x;
-
-    vm.runInContext('frameDeltaTime = 1;', context);
-    updateCosmeticAsteroids();
-    vm.runInContext('frameDeltaTime = 1 / 60;', context);
-
-    const screenX = (a.x - camera.x) * camera.zoom + canvas.width / 2;
-    if (screenX < -COSMETIC_ASTEROID_RECYCLE_MARGIN || screenX > canvas.width + COSMETIC_ASTEROID_RECYCLE_MARGIN) {
-        problems.push(`expected the far-off-screen asteroid to be recycled back near the view, screenX is still ${screenX.toFixed(0)}`);
-    }
-    if (a.x === beforeX - 50) problems.push('expected recycling to give it a genuinely new position, not just let it keep drifting');
-    return problems;
-});
-
-check('cosmetic asteroids never touch gameState.countries, units, or buildings - purely decorative', () => {
-    const island = new Island(0, 0, 0);
-    const country = new Country(0, 'AsteroidSafetyTest', '#ff0000', island, true);
-    const unit = new Unit(0, 0, 'stormbreaker', 0);
-    country.units = [unit];
-    gameState.countries = [country];
-    const hpBefore = unit.hp;
-    const buildingHpBefore = island.buildings.map(b => b.hp);
-
-    camera.x = 0; camera.y = 0; camera.zoom = 1;
-    spawnCosmeticAsteroids();
-    for (let i = 0; i < 50; i++) updateCosmeticAsteroids();
-
-    const problems = [];
-    if (unit.hp !== hpBefore) problems.push('a cosmetic asteroid changed a unit\'s HP - this must never happen');
-    island.buildings.forEach((b, i) => {
-        if (b.hp !== buildingHpBefore[i]) problems.push(`a cosmetic asteroid changed building ${i}'s HP - this must never happen`);
-    });
-    return problems;
-});
-
-check('makeMaskedAsteroidSprite() crops to a centered square sized to the smaller source dimension', () => {
-    const problems = [];
-    const wide = makeMaskedAsteroidSprite({ width: 400, height: 250 });
-    if (wide.width !== 250 || wide.height !== 250) problems.push(`expected a 250x250 square (the smaller dimension), got ${wide.width}x${wide.height}`);
-    const tiny = makeMaskedAsteroidSprite({ width: 0, height: 0 }); // never-loaded image edge case
-    if (tiny.width < 1 || tiny.height < 1) problems.push('expected a safe minimum size instead of a 0x0 canvas for an unloaded image');
-    return problems;
-});
-
-check('loadAsteroidSprites() queues exactly one image per ASTEROID_IMAGE_URLS entry', () => {
-    const before = vm.runInContext('totalImagesToLoad', context);
-    loadAsteroidSprites();
-    const after = vm.runInContext('totalImagesToLoad', context);
-    if (after !== before + ASTEROID_IMAGE_URLS.length) {
-        return [`expected totalImagesToLoad to increase by ${ASTEROID_IMAGE_URLS.length}, got +${after - before}`];
-    }
-    return [];
 });
 
 // ---------- 17. Zero-arg smoke test: every no-parameter top-level function ----------
