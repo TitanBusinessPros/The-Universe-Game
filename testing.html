@@ -220,6 +220,9 @@ function __universeGameTests() {
             ['struct0', 'struct1', 'struct2', 'struct3', 'struct4', 'struct5'].forEach((key, idx) => {
                 record(GROUP2, `Structure image wired for building slot ${idx}`, !!SPRITE_URLS[key], SPRITE_URLS[key] || 'MISSING');
             });
+            ASTEROID_IMAGE_URLS.forEach((url, idx) => {
+                record(GROUP2, `Cosmetic asteroid image ${idx} is wired`, !!url, url || 'MISSING');
+            });
 
             // ===== 3. Every wired image actually loads over the network =====
             const GROUP3 = 'Asset Loading (network)';
@@ -227,7 +230,8 @@ function __universeGameTests() {
                 ...Object.values(ISLAND_IMAGES).filter(Boolean),
                 ...CUSTOM_ISLANDS.map(c => c.imageUrl).filter(Boolean),
                 ...neededSprites.map(k => SPRITE_URLS[k]).filter(Boolean),
-                ...['struct0', 'struct1', 'struct2', 'struct3', 'struct4', 'struct5'].map(k => SPRITE_URLS[k]).filter(Boolean)
+                ...['struct0', 'struct1', 'struct2', 'struct3', 'struct4', 'struct5'].map(k => SPRITE_URLS[k]).filter(Boolean),
+                ...ASTEROID_IMAGE_URLS
             ]));
             // Load in small batches rather than all at once - GitHub's raw redirect plus the
             // browser's per-host connection cap means firing 40 requests simultaneously just
