@@ -79,6 +79,44 @@ jobs:
         working-directory: tests/browser
         run: node interaction-test.js ../../index.html --engines=chromium,firefox,webkit
 
+  # Regression test for a real bug (2026-08-29): resource deposit ("Bloodgold
+  # mine") objects existed with valid state and valid coordinates but never
+  # rendered on screen - gameLoop() was calling their draw() methods (which
+  # do their own manual world-to-screen conversion) while the canvas's
+  # world-to-screen transform was still active, double-applying the
+  # conversion and sending them thousands of pixels off-canvas. See
+  # deposit-visibility-test.js for the exact technique (capturing the live
+  # canvas transform matrix at the real draw() call site) that proved it and
+  # now guards against it recurring.
+  deposit-visibility-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install test dependencies
+        working-directory: tests/browser
+        run: npm install
+
+      - name: Install headless browser (Chromium)
+        working-directory: tests/browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Confirm a resource deposit actually renders on screen
+        working-directory: tests/browser
+        run: node deposit-visibility-test.js ../../index.html
+
+      - name: Upload failure screenshot
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deposit-visibility-failure
+          path: tests/browser/deposit-visibility-failure.png
+          if-no-files-found: ignore
+
   # Wires up testing.html - a real, pre-existing browser harness (predates this
   # tests/ suite) that was never run by anything automated. Unlike every job
   # above, this one deliberately does NOT mock out image/sprite requests - the
