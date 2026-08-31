@@ -127,14 +127,14 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage };',
     context,
     { filename: 'grab-refs.js' }
 );
 const {
     Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat,
     ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS,
-    DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas,
+    DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas,
     canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS,
     AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame,
     buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete,
@@ -1118,11 +1118,14 @@ check('a freshly-created Country starts with 1000 resources', () => {
 });
 
 // ---------- 12. Resource deposits ("mines") + mining ships ----------
-//    Supremacy-style redesign (2026-08-25): a mining ship stationed within
-//    DEPOSIT_COLLECT_RANGE of a deposit drains it in real time (scaled by
-//    frameDeltaTime, same model as unit/missile movement), independent of turns.
+//    Cargo/logistics redesign (2026-08-31, per direct request): a mining ship
+//    stationed within DEPOSIT_COLLECT_RANGE of a deposit fills its OWN cargo
+//    hold (capped at MINING_SHIP_MAX_CARGO), scaled by frameDeltaTime same as
+//    unit/missile movement - gold only reaches the country treasury once the
+//    ship physically flies back to its own harbor and unloads. See
+//    updateMiningAndResearch() for the full automatic state machine.
 
-check('a mining ship stationed at a deposit collects income scaled by frameDeltaTime, depleting the deposit', () => {
+check('a mining ship stationed at a deposit fills its own cargo hold (not the treasury directly), depleting the deposit', () => {
     const problems = [];
     const island = new Island(0, 0, 0);
     const country = new Country(0, 'Miner', '#ff0000', island, true);
@@ -1134,21 +1137,25 @@ check('a mining ship stationed at a deposit collects income scaled by frameDelta
     country.units = [ship];
     const startResources = country.resources;
 
-    vm.runInContext('frameDeltaTime = 3600;', context); // pretend a whole hour passed in one tick
+    // 60 real seconds - well under the 500 cargo cap at the base rate (600/hour = 10/min).
+    vm.runInContext('frameDeltaTime = 60;', context);
     updateMiningAndResearch();
     vm.runInContext('frameDeltaTime = 1 / 60;', context); // restore default for later checks
 
-    const gained = country.resources - startResources;
-    if (Math.abs(gained - DEPOSIT_INCOME_PER_HOUR) > 0.01) {
-        problems.push(`expected ~${DEPOSIT_INCOME_PER_HOUR} resources gained for a full hour at the deposit, got ${gained}`);
+    const expectedGain = (DEPOSIT_INCOME_PER_HOUR / 3600) * 60;
+    if (Math.abs(ship.miningCargo - expectedGain) > 0.01) {
+        problems.push(`expected the ship's own cargo hold to gain ~${expectedGain}, got ${ship.miningCargo}`);
     }
-    if (Math.abs(dep.resources - (DEPOSIT_STARTING_RESOURCES - DEPOSIT_INCOME_PER_HOUR)) > 0.01) {
-        problems.push(`expected the deposit to drop by that same ${DEPOSIT_INCOME_PER_HOUR}, got resources=${dep.resources}`);
+    if (country.resources !== startResources) {
+        problems.push(`expected the treasury untouched until the ship actually delivers - it changed from ${startResources} to ${country.resources}`);
+    }
+    if (Math.abs(dep.resources - (DEPOSIT_STARTING_RESOURCES - expectedGain)) > 0.01) {
+        problems.push(`expected the deposit to drop by that same ${expectedGain}, got resources=${dep.resources}`);
     }
     return problems;
 });
 
-check('a mining ship outside DEPOSIT_COLLECT_RANGE collects nothing', () => {
+check('a mining ship outside DEPOSIT_COLLECT_RANGE collects nothing (but does get sent toward the nearest live deposit)', () => {
     const problems = [];
     const island = new Island(0, 0, 0);
     const country = new Country(0, 'FarMiner', '#ff0000', island, true);
@@ -1158,14 +1165,14 @@ check('a mining ship outside DEPOSIT_COLLECT_RANGE collects nothing', () => {
     resourceDeposits.push(dep);
     const ship = new Unit(DEPOSIT_COLLECT_RANGE * 5, 0, 'miningship', 0); // well outside range
     country.units = [ship];
-    const startResources = country.resources;
 
     vm.runInContext('frameDeltaTime = 3600;', context);
     updateMiningAndResearch();
     vm.runInContext('frameDeltaTime = 1 / 60;', context);
 
-    if (country.resources !== startResources) problems.push(`expected no income while out of range, resources changed from ${startResources} to ${country.resources}`);
+    if (ship.miningCargo !== 0) problems.push(`expected no cargo gained while out of range, got ${ship.miningCargo}`);
     if (dep.resources !== DEPOSIT_STARTING_RESOURCES) problems.push(`expected the deposit untouched while no ship is in range, got ${dep.resources}`);
+    if (ship.targetX !== dep.x || ship.targetY !== dep.y) problems.push('expected the idle ship to automatically be sent toward the deposit');
     return problems;
 });
 
@@ -1180,16 +1187,83 @@ check('a deposit never goes negative and stops producing once depleted', () => {
     resourceDeposits.push(dep);
     const ship = new Unit(0, 0, 'miningship', 0);
     country.units = [ship];
-    const startResources = country.resources;
 
-    vm.runInContext('frameDeltaTime = 3600;', context); // would drain 100 at full rate, only 10 left
+    vm.runInContext('frameDeltaTime = 3600;', context); // would collect a lot more at full rate, only 10 left
     updateMiningAndResearch();
     vm.runInContext('frameDeltaTime = 1 / 60;', context);
 
-    const gained = country.resources - startResources;
     if (dep.resources !== 0) problems.push(`expected the deposit to floor at 0, got ${dep.resources}`);
     if (!dep.isDepleted()) problems.push('expected isDepleted() to be true once resources hit 0');
-    if (gained !== 10) problems.push(`expected the country to gain only the remaining 10 (not a full hour's rate), got ${gained}`);
+    if (ship.miningCargo !== 10) problems.push(`expected the ship's cargo to gain only the remaining 10 (not the full-hour rate), got ${ship.miningCargo}`);
+    return problems;
+});
+
+check("a mining ship's cargo hold caps at MINING_SHIP_MAX_CARGO even with plenty of time and deposit left", () => {
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'CapTest', '#ff0000', island, true);
+    gameState.countries = [country];
+    const dep = new ResourceDeposit(0, 0); // starts with DEPOSIT_STARTING_RESOURCES (5000) - plenty
+    resourceDeposits.length = 0;
+    resourceDeposits.push(dep);
+    const ship = new Unit(0, 0, 'miningship', 0);
+    country.units = [ship];
+
+    vm.runInContext('frameDeltaTime = 36000;', context); // 10 hours in one tick - would be 6000 gold uncapped
+    updateMiningAndResearch();
+    vm.runInContext('frameDeltaTime = 1 / 60;', context);
+
+    if (ship.miningCargo !== MINING_SHIP_MAX_CARGO) {
+        return [`expected cargo to cap at ${MINING_SHIP_MAX_CARGO}, got ${ship.miningCargo}`];
+    }
+    return [];
+});
+
+check('a full mining ship automatically flies to its own harbor, unloads into the treasury, then automatically heads back out', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'LogisticsTest', '#ff0000', island, true);
+    gameState.countries = [country];
+    const dep = new ResourceDeposit(5000, 0);
+    resourceDeposits.length = 0;
+    resourceDeposits.push(dep);
+
+    const harborPos = island.getHarborWorldPosition();
+    const ship = new Unit(harborPos.x, harborPos.y, 'miningship', 0); // starts full, right at the harbor
+    ship.miningCargo = MINING_SHIP_MAX_CARGO;
+    country.units = [ship];
+    const startResources = country.resources;
+
+    vm.runInContext('frameDeltaTime = 1 / 60;', context);
+    updateMiningAndResearch();
+
+    if (country.resources !== startResources + MINING_SHIP_MAX_CARGO) {
+        problems.push(`expected the treasury to gain the full ${MINING_SHIP_MAX_CARGO} on delivery, got ${country.resources - startResources}`);
+    }
+    if (ship.miningCargo !== 0) problems.push(`expected the ship's hold emptied after delivering, got ${ship.miningCargo}`);
+    if (ship.targetX !== dep.x || ship.targetY !== dep.y) {
+        problems.push('expected the now-empty ship to automatically be sent back out to the (only) live deposit the same frame it delivers');
+    }
+    return problems;
+});
+
+check('a full mining ship far from its harbor heads toward it instead of delivering early', () => {
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'FarFromHarborTest', '#ff0000', island, true);
+    gameState.countries = [country];
+    resourceDeposits.length = 0;
+    const harborPos = island.getHarborWorldPosition();
+    const ship = new Unit(harborPos.x + 5000, harborPos.y, 'miningship', 0); // full, but far away
+    ship.miningCargo = MINING_SHIP_MAX_CARGO;
+    country.units = [ship];
+    const startResources = country.resources;
+
+    vm.runInContext('frameDeltaTime = 1 / 60;', context);
+    updateMiningAndResearch();
+
+    const problems = [];
+    if (country.resources !== startResources) problems.push('expected no delivery yet - the ship is nowhere near the harbor');
+    if (ship.miningCargo !== MINING_SHIP_MAX_CARGO) problems.push('expected the ship to still be holding its full cargo');
+    if (ship.targetX !== harborPos.x || ship.targetY !== harborPos.y) problems.push('expected the full ship to be ordered toward its own harbor');
     return problems;
 });
 
@@ -1394,16 +1468,16 @@ check("Improved Extraction research boosts a country's mining rate by 50%", () =
     resourceDeposits.push(dep);
     const ship = new Unit(0, 0, 'miningship', 0);
     country.units = [ship];
-    const startResources = country.resources;
 
-    vm.runInContext('frameDeltaTime = 3600;', context); // a full hour in one tick
+    // 60 seconds, not a full hour - the boosted rate (900/hour) would blow past the
+    // 500 cargo cap well before an hour is up, which isn't what this is testing.
+    vm.runInContext('frameDeltaTime = 60;', context);
     updateMiningAndResearch();
     vm.runInContext('frameDeltaTime = 1 / 60;', context);
 
-    const gained = country.resources - startResources;
-    const expected = DEPOSIT_INCOME_PER_HOUR * 1.5;
-    if (Math.abs(gained - expected) > 0.01) {
-        problems.push(`expected ${expected} resources (150% of the base rate) for a country with Improved Extraction, got ${gained}`);
+    const expected = ((DEPOSIT_INCOME_PER_HOUR * 1.5) / 3600) * 60;
+    if (Math.abs(ship.miningCargo - expected) > 0.01) {
+        problems.push(`expected ${expected} cargo (150% of the base rate over 60s) for a country with Improved Extraction, got ${ship.miningCargo}`);
     }
     return problems;
 });
@@ -1465,7 +1539,7 @@ check('a regular-nation AI eventually researches Mining Operations and builds a 
     return problems;
 });
 
-check('aiTurn() sends an idle Mining Ship toward the nearest live deposit, not chasing a visible enemy', () => {
+check('an idle Mining Ship ends up heading toward the nearest live deposit, not chasing a visible enemy (aiTurn() + updateMiningAndResearch() together, exactly like a real frame)', () => {
     const problems = [];
     // Island placed well away from the deposits below so vessel collision-avoidance
     // doesn't block the move being tested for an unrelated reason.
@@ -1474,7 +1548,7 @@ check('aiTurn() sends an idle Mining Ship toward the nearest live deposit, not c
     country.researchedTech.add('mining_ops'); // isolate logistics from the research gate
 
     // A visible enemy, well within AI_HUNT_RADIUS - gives the generic hunt-movement
-    // logic later in aiTurn() a real target it WOULD send the mining ship toward if
+    // logic inside aiTurn() a real target it WOULD send the mining ship toward if
     // the miningship exclusion in that loop weren't there.
     const enemyIsland = new Island(-49000, -50000, 6);
     const enemyCountry = new Country(6, 'Enemy', '#00ff00', enemyIsland, false);
@@ -1491,7 +1565,11 @@ check('aiTurn() sends an idle Mining Ship toward the nearest live deposit, not c
     country.units = [ship];
 
     vm.runInContext('AI_MOVEMENT_CHANCE = 1;', context); // make the generic hunt logic deterministic for this check
+    // Both run every real frame in the live game (updateMiningAndResearch() is what
+    // actually drives mining-ship deposit-seeking/harbor-return now - see gameLoop()) -
+    // exercising just one or the other wouldn't reflect real behavior.
     country.aiTurn();
+    updateMiningAndResearch();
     vm.runInContext('AI_MOVEMENT_CHANCE = DIFFICULTY_PRESETS.normal.movement;', context); // restore for later checks
 
     const distToNear = Math.hypot(ship.targetX - nearDeposit.x, ship.targetY - nearDeposit.y);
@@ -2755,7 +2833,7 @@ check('Rapid Repair Crews: heals damaged (not destroyed) buildings by 1 HP/turn,
     return problems;
 });
 
-check('Deep Mining: a second tier on Improved Extraction reaches 200/hour', () => {
+check('Deep Mining: a second tier on Improved Extraction reaches 1200/hour', () => {
     const island = new Island(0, 0, 0);
     const country = new Country(0, 'DeepMiningTest', '#ff0000', island, true);
     gameState.countries = [country];
@@ -2766,14 +2844,15 @@ check('Deep Mining: a second tier on Improved Extraction reaches 200/hour', () =
     country.units = [ship];
     country.researchedTech.add('improved_extraction');
     country.researchedTech.add('deep_mining');
-    const startResources = country.resources;
 
-    vm.runInContext('frameDeltaTime = 3600;', context);
+    // 60 seconds, not a full hour - 1200/hour would blow past the 500 cargo cap
+    // well before an hour is up, which isn't what this is testing.
+    vm.runInContext('frameDeltaTime = 60;', context);
     updateMiningAndResearch();
     vm.runInContext('frameDeltaTime = 1 / 60;', context);
 
-    const gained = country.resources - startResources;
-    if (Math.abs(gained - 200) > 0.01) return [`expected 200 resources for a full hour with Deep Mining, got ${gained}`];
+    const expected = (1200 / 3600) * 60;
+    if (Math.abs(ship.miningCargo - expected) > 0.01) return [`expected ${expected} cargo (1200/hour over 60s) with Deep Mining, got ${ship.miningCargo}`];
     return [];
 });
 
@@ -2846,14 +2925,13 @@ check('Orbital Resource Scanner: doubles Mining Ship collection range', () => {
     resourceDeposits.push(dep);
     const ship = new Unit(DEPOSIT_COLLECT_RANGE * 1.5, 0, 'miningship', 0); // out of range normally, in range once doubled
     country.units = [ship];
-    const startResources = country.resources;
 
     country.researchedTech.add('deposit_scanner');
     vm.runInContext('frameDeltaTime = 3600;', context);
     updateMiningAndResearch();
     vm.runInContext('frameDeltaTime = 1 / 60;', context);
 
-    if (country.resources <= startResources) return ['expected the mining ship to collect once its extended range covers the deposit'];
+    if (ship.miningCargo <= 0) return ['expected the mining ship to collect into its own cargo once its extended range covers the deposit'];
     return [];
 });
 
