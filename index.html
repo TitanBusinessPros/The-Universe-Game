@@ -913,7 +913,29 @@
                 sfx.play().catch(err => { console.log('Audio play failed:', err); });
             } catch (e) { /* audio not available in this environment */ }
         }
-        
+
+        // Laser (unit-vs-unit attack) sound effect (2026-09-03, per direct request) -
+        // "only [audible] if your ship attacks or someone attacks your ship... we
+        // don't want to hear the sound for everyone". Same relevant-only-to-the-
+        // active-player philosophy as playBuildingDestroyedSound(), but there's no
+        // single choke point the way Building.takeDamage() is - unit-vs-unit combat
+        // damage is applied inline in five different loops (processAttackMoveOrders,
+        // two branches inside aiTurn(), and two branches of the click-to-attack UI
+        // handler) - so this is called at each of those, keyed off the attacker's and
+        // target's own countryId (every Unit already tracks its own, no need to
+        // search countries the way Building.takeDamage() has to).
+        const LASER_SOUND_URL = 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Sound%20Effects/Laser.mp3';
+        function playLaserAttackSound(attackerCountryId, targetCountryId) {
+            if (!soundEnabled || !gameState.playerCountry) return;
+            const playerId = gameState.playerCountry.id;
+            if (attackerCountryId !== playerId && targetCountryId !== playerId) return;
+            try {
+                const sfx = new Audio(LASER_SOUND_URL);
+                sfx.volume = 0.4;
+                sfx.play().catch(err => { console.log('Audio play failed:', err); });
+            } catch (e) { /* audio not available in this environment */ }
+        }
+
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         
@@ -3006,6 +3028,7 @@
                                 order.unit.frozenTurns = 2;
                             }
                             fireLaserEffect(unit.type, unit.x, unit.y, order.unit.x, order.unit.y);
+                            playLaserAttackSound(unit.countryId, order.unit.countryId);
                             order.unit.hp -= unit.getAttackPower();
                             unit.hasAttacked = true;
                             if (order.unit.hp <= 0) {
@@ -3389,6 +3412,7 @@
                                     if (closestUnit) {
                                         if(attacker.type==='frostwing'){closestUnit.frozenTurns=2;}
                                         if(country.isPlayer){fireLaserEffect(attacker.type,attacker.x,attacker.y,closestUnit.x,closestUnit.y);}
+                                        playLaserAttackSound(attacker.countryId, closestUnit.countryId);
                                         closestUnit.hp -= attacker.getAttackPower();
                                         attacker.hasAttacked = true;
                                         targetFound = true;
@@ -3545,6 +3569,7 @@
                                     });
                                     
                                     if (closestUnit) {
+                                        playLaserAttackSound(attacker.countryId, closestUnit.countryId);
                                         closestUnit.hp -= attacker.getAttackPower();
                                         attacker.hasAttacked = true;
                                         targetFound = true;
@@ -5858,6 +5883,7 @@
                             );
 
                             if (attackDist < attacker.getRange()) {
+                                playLaserAttackSound(attacker.countryId, closestGroundTarget.countryId);
                                 closestGroundTarget.hp -= attacker.getAttackPower();
                                 attacker.hasAttacked = true;
                                 anyAttacked = true;
@@ -5923,6 +5949,7 @@
                                     closestTarget.frozenTurns = 2;
                                 }
                                 fireLaserEffect(attacker.type, attacker.x, attacker.y, closestTarget.x, closestTarget.y);
+                                playLaserAttackSound(attacker.countryId, closestTarget.countryId);
                                 closestTarget.hp -= attacker.getAttackPower();
                                 attacker.hasAttacked = true;
                                 anyAttacked = true;
