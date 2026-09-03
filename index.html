@@ -1158,6 +1158,32 @@
             'whisperwind': 'advanced_shipyards'
         };
 
+        // UNIT_BUILDING_REQUIREMENTS gates buildUnit() on whichever fixed building slot
+        // actually produces that unit type - Harbor (vessels), Marine Base (ground
+        // troops), or War Factory (aircraft). Same mechanical pattern as
+        // UNIT_TECH_REQUIREMENTS/getResearchLab(): once that building is destroyed on a
+        // country's homeworld, that country (player or AI alike, both funnel through
+        // Country.canBuildUnit()) can no longer produce anything mapped to it, until it's
+        // rebuilt (there's currently no rebuild path - destruction is permanent, matching
+        // how every other building already behaves). Every buildable unit type (i.e.
+        // every key in buildUnit()'s costs map) must appear here exactly once - the alien-
+        // only special units (cyborgdreadnought/zoonparasite/roufestreal) are spawned
+        // directly by aiTurn(), never through buildUnit(), so they're intentionally absent.
+        const UNIT_BUILDING_REQUIREMENTS = {
+            // Vessels - dock at the Harbor
+            'deepglider': 'harbor', 'stormbreaker': 'harbor', 'wavecrusher': 'harbor',
+            'skyfortress': 'harbor', 'tidebreaker': 'harbor', 'whisperwind': 'harbor',
+            'cargohauler': 'harbor', 'miningship': 'harbor',
+            // Ground troops - trained at the Marine Base
+            'groundpounders': 'marinebase', 'ironbeast': 'marinebase', 'boomcannon': 'marinebase',
+            // Aircraft - built at the War Factory
+            'radar': 'warfactory', 'thunderwing': 'warfactory', 'blazefalcon': 'warfactory',
+            'skyripper': 'warfactory', 'vortexhawk': 'warfactory', 'phantomstrike': 'warfactory',
+            'razorwing': 'warfactory', 'shadowglider': 'warfactory',
+            'stormbreakerbomber': 'warfactory', 'frostwing': 'warfactory'
+        };
+        const PRODUCTION_BUILDING_LABELS = { harbor: 'Harbor', marinebase: 'Marine Base', warfactory: 'War Factory' };
+
         const UNIT_SPEEDS = {
             'blazefalcon': 3.5,
             'thunderwing': 2.5,
@@ -1856,7 +1882,7 @@
         };
 
         class Building {
-            constructor(name, x, y, isHarbor = false, isDefenseGun = false, isResearchLab = false) {
+            constructor(name, x, y, isHarbor = false, isDefenseGun = false, isResearchLab = false, isMarineBase = false, isWarFactory = false) {
                 this.name = name;
                 this.x = x;
                 this.y = y;
@@ -1879,6 +1905,14 @@
                 // flavor name for a given nation - the tech tree doesn't care what the
                 // building is called locally, only that every nation has exactly one.
                 this.isResearchLab = isResearchLab;
+                // Marine Base / War Factory (2026-09-03 building-gated production) - same
+                // mechanical pattern as isHarbor/isDefenseGun/isResearchLab. These two slot
+                // names are fixed and identical across every nation (see ISLAND_STRUCTURES/
+                // createBuildings() below), which is why they're the ones used to gate
+                // ground-unit and aircraft production respectively - Harbor already gates
+                // vessels (see UNIT_BUILDING_REQUIREMENTS/getProductionBuilding()).
+                this.isMarineBase = isMarineBase;
+                this.isWarFactory = isWarFactory;
                 this.range = 500;
                 this.attackPower = 15;
                 this.hasAttacked = false;
@@ -2022,8 +2056,11 @@
                     new Building(this.structureNames[0], -60 * PLANET_SCALE, -45 * PLANET_SCALE, false, false, true),
                     new Building(this.structureNames[1], 30 * PLANET_SCALE, -60 * PLANET_SCALE, false, false),
                     new Building(this.structureNames[2], -30 * PLANET_SCALE, 30 * PLANET_SCALE, true, false),
-                    new Building(this.structureNames[3], 50 * PLANET_SCALE, 20 * PLANET_SCALE, false, false),
-                    new Building(this.structureNames[4], -50 * PLANET_SCALE, -10 * PLANET_SCALE, false, false),
+                    // Slot 3 is always "Marine Base" (see ISLAND_STRUCTURES) - gates ground
+                    // troop production (isMarineBase=true).
+                    new Building(this.structureNames[3], 50 * PLANET_SCALE, 20 * PLANET_SCALE, false, false, false, true, false),
+                    // Slot 4 is always "War Factory" - gates aircraft production (isWarFactory=true).
+                    new Building(this.structureNames[4], -50 * PLANET_SCALE, -10 * PLANET_SCALE, false, false, false, false, true),
                     new Building(this.structureNames[5], 0, 0, false, true)
                 ];
             }
@@ -2038,6 +2075,23 @@
 
             getResearchLab() {
                 return this.buildings.find(b => b.isResearchLab && !b.destroyed);
+            }
+
+            getMarineBase() {
+                return this.buildings.find(b => b.isMarineBase && !b.destroyed);
+            }
+
+            getWarFactory() {
+                return this.buildings.find(b => b.isWarFactory && !b.destroyed);
+            }
+
+            // Single lookup point for UNIT_BUILDING_REQUIREMENTS' values - keeps
+            // canBuildUnit()/buildUnit() from needing their own switch statement.
+            getProductionBuilding(key) {
+                if (key === 'harbor') return this.getHarbor();
+                if (key === 'marinebase') return this.getMarineBase();
+                if (key === 'warfactory') return this.getWarFactory();
+                return null;
             }
 
             getHarborWorldPosition() {
@@ -2866,11 +2920,18 @@
                 this.resources += this.resourceRate;
             }
 
-            // Tech-gate check only - doesn't touch resources. Unlisted unit types (every
-            // pre-existing ship) have no entry in UNIT_TECH_REQUIREMENTS and are always true.
+            // Tech + building gate check only - doesn't touch resources. Unlisted unit
+            // types have no entry in UNIT_TECH_REQUIREMENTS and are never tech-gated; every
+            // buildable type DOES have an entry in UNIT_BUILDING_REQUIREMENTS (see its
+            // comment), so destroying the mapped building always blocks that unit here,
+            // for the player and every AI/alien country alike (buildUnit() below is the
+            // only path that spawns a unit, and it always checks this first).
             canBuildUnit(type) {
-                const req = UNIT_TECH_REQUIREMENTS[type];
-                return !req || this.researchedTech.has(req);
+                const techReq = UNIT_TECH_REQUIREMENTS[type];
+                if (techReq && !this.researchedTech.has(techReq)) return false;
+                const buildingKey = UNIT_BUILDING_REQUIREMENTS[type];
+                if (buildingKey && !this.island.getProductionBuilding(buildingKey)) return false;
+                return true;
             }
 
             startResearch(techId) {
@@ -3844,8 +3905,14 @@
             }
             if (!gameState.playerCountry.canBuildUnit(type)) {
                 const techId = UNIT_TECH_REQUIREMENTS[type];
-                const tech = TECH_TREE[techId];
-                alert(`Research required: ${tech ? tech.name : techId}`);
+                if (techId && !gameState.playerCountry.researchedTech.has(techId)) {
+                    const tech = TECH_TREE[techId];
+                    alert(`Research required: ${tech ? tech.name : techId}`);
+                    return;
+                }
+                const buildingKey = UNIT_BUILDING_REQUIREMENTS[type];
+                const label = PRODUCTION_BUILDING_LABELS[buildingKey] || 'Required building';
+                alert(`${label} destroyed - it must be standing to build this unit.`);
                 return;
             }
             if (gameState.playerCountry.buildUnit(type)) {
