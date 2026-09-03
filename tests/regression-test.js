@@ -127,7 +127,7 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage };',
     context,
     { filename: 'grab-refs.js' }
 );
@@ -136,6 +136,7 @@ const {
     ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS,
     UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS,
     GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT,
+    spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE,
     DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas,
     canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS,
     AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame,
@@ -3355,6 +3356,7 @@ check('healNearGalaxyCores() heals every damaged unit within range - any country
     const problems = [];
     galaxyCores.length = 0;
     const core = new GalaxyCore(0, 0);
+    core.kind = 'heal'; // healNearGalaxyCores() only acts on this kind - see spawnGalaxyBounty()
     galaxyCores.push(core);
 
     const humanCountry = new Country(0, 'Human', '#ff0000', new Island(1000000, 0, 0), true);
@@ -3421,10 +3423,142 @@ check('healNearGalaxyCores() is a safe no-op when there is no Galaxy Core (e.g. 
 
 check('startCampaignStage() clears galaxyCores - Campaign mode must never inherit a Standard Game leftover', () => {
     const problems = [];
-    galaxyCores.push(new GalaxyCore(0, 0)); // simulate the leftover from initGame()'s automatic run
+    // Simulate the leftover from initGame()'s automatic run - both kinds, since
+    // Campaign mode must never see either.
+    const leftoverHeal = new GalaxyCore(0, 0); leftoverHeal.kind = 'heal';
+    const leftoverBounty = new GalaxyCore(0, 0); leftoverBounty.kind = 'bounty';
+    galaxyCores.push(leftoverHeal, leftoverBounty);
     selectCampaignNation(0);
     startCampaignStage(0);
     if (galaxyCores.length !== 0) problems.push(`expected galaxyCores cleared in Campaign mode, got ${galaxyCores.length}`);
+    return problems;
+});
+
+// ---------- 27. Galaxy Bounty (2026-09-03) ----------
+//    A second landmark (Galaxy-2.png), twice the size of the (healing) Galaxy
+//    Core, in the opposite corner of the map. Doesn't heal - instead, each
+//    turn it pays GALAXY_BOUNTY_GOLD_PER_ROUND to whichever country has the
+//    most of its own ships (>= GALAXY_BOUNTY_MIN_SHIPS) within
+//    GALAXY_BOUNTY_QUALIFY_RANGE, guarded by 7 Cyborg Planet West warships.
+//    Shares the galaxyCores array with the healing core (for free minimap/
+//    getGalaxyBounds()/rendering reuse) via a `kind` tag - these tests also
+//    cover that the two spawn functions stay independent of each other.
+
+check('spawnGalaxyBounty() places exactly one Galaxy Bounty (twice the healing core\'s size) and stations 7 cyborgdreadnought guards on Cyborg Planet West', () => {
+    const problems = [];
+    gameState.countries = [12, 13, 14, 15, 16].map(id => new Country(id, `Nation${id}`, '#00ffff', new Island(id * 200000, 0, id), false));
+    const westCountry = gameState.countries.find(c => c.id === 15);
+    const startUnitCount = westCountry.units.length;
+    galaxyCores.length = 0;
+
+    spawnGalaxyBounty();
+
+    const bounties = galaxyCores.filter(c => c.kind === 'bounty');
+    if (bounties.length !== 1) problems.push(`expected exactly 1 Galaxy Bounty, got ${bounties.length}`);
+    else if (bounties[0].size !== GALAXY_BOUNTY_SIZE) problems.push(`expected size GALAXY_BOUNTY_SIZE (${GALAXY_BOUNTY_SIZE}), got ${bounties[0].size}`);
+    if (GALAXY_BOUNTY_SIZE !== GALAXY_CORE_SIZE * 2) problems.push(`expected GALAXY_BOUNTY_SIZE to be double GALAXY_CORE_SIZE, got ${GALAXY_BOUNTY_SIZE} vs ${GALAXY_CORE_SIZE}`);
+
+    const newGuards = westCountry.units.slice(startUnitCount);
+    if (newGuards.length !== 7) problems.push(`expected 7 guard units added to Cyborg Planet West, got ${newGuards.length}`);
+    if (!newGuards.every(u => u.type === 'cyborgdreadnought')) problems.push('expected every guard to be a cyborgdreadnought');
+    return problems;
+});
+
+check('spawnGalaxyCore() and spawnGalaxyBounty() are independent - calling one never wipes out the other\'s landmark, in either order', () => {
+    const problems = [];
+    gameState.countries = [12, 13, 14, 15, 16].map(id => new Country(id, `Nation${id}`, '#00ffff', new Island(id * 200000, 0, id), false));
+    galaxyCores.length = 0;
+
+    spawnGalaxyCore();
+    spawnGalaxyBounty();
+    let kinds = galaxyCores.map(c => c.kind).sort();
+    if (JSON.stringify(kinds) !== JSON.stringify(['bounty', 'heal'])) {
+        problems.push(`expected exactly one of each kind after core-then-bounty, got ${JSON.stringify(kinds)}`);
+    }
+
+    // Calling either again replaces only its own kind, not both, and not by
+    // reassigning the array (a real past bug here - see the comment on both spawn
+    // functions - which would silently break anything holding an earlier reference
+    // to galaxyCores, this test file included).
+    spawnGalaxyCore();
+    kinds = galaxyCores.map(c => c.kind).sort();
+    if (JSON.stringify(kinds) !== JSON.stringify(['bounty', 'heal'])) {
+        problems.push(`expected still exactly one of each kind after re-calling spawnGalaxyCore(), got ${JSON.stringify(kinds)}`);
+    }
+
+    galaxyCores.length = 0;
+    spawnGalaxyBounty();
+    spawnGalaxyCore();
+    kinds = galaxyCores.map(c => c.kind).sort();
+    if (JSON.stringify(kinds) !== JSON.stringify(['bounty', 'heal'])) {
+        problems.push(`expected exactly one of each kind after bounty-then-core (reverse order), got ${JSON.stringify(kinds)}`);
+    }
+    return problems;
+});
+
+check('awardGalaxyBounty() pays the country with the most qualifying ships, ignores anyone under GALAXY_BOUNTY_MIN_SHIPS, and never counts ground units', () => {
+    const problems = [];
+    galaxyCores.length = 0;
+    const bounty = new GalaxyCore(0, 0, undefined, GALAXY_BOUNTY_SIZE); // only position/size matter for this test
+    bounty.kind = 'bounty';
+    galaxyCores.push(bounty);
+
+    const leader = new Country(0, 'Leader', '#ff0000', new Island(1000000, 0, 0), true); // 5 ships in range - qualifies
+    leader.units = Array.from({ length: 5 }, () => makeUnit('deepglider', 0));
+    leader.units.forEach(u => { u.x = GALAXY_BOUNTY_QUALIFY_RANGE - 10; u.y = 0; });
+
+    const runnerUp = new Country(1, 'RunnerUp', '#00ff00', new Island(2000000, 0, 1), false); // only 4 - doesn't qualify
+    runnerUp.units = Array.from({ length: 4 }, () => makeUnit('deepglider', 1));
+    runnerUp.units.forEach(u => { u.x = GALAXY_BOUNTY_QUALIFY_RANGE - 10; u.y = 0; });
+
+    const groundHeavy = new Country(2, 'GroundHeavy', '#0000ff', new Island(3000000, 0, 2), false); // 5 in range, but ground units - shouldn't count
+    groundHeavy.units = Array.from({ length: 5 }, () => makeUnit('groundpounders', 2));
+    groundHeavy.units.forEach(u => { u.x = GALAXY_BOUNTY_QUALIFY_RANGE - 10; u.y = 0; });
+
+    const tooFar = new Country(3, 'TooFar', '#ffff00', new Island(4000000, 0, 3), false); // 5 ships, but out of range
+    tooFar.units = Array.from({ length: 5 }, () => makeUnit('deepglider', 3));
+    tooFar.units.forEach(u => { u.x = GALAXY_BOUNTY_QUALIFY_RANGE + 5000; u.y = 0; });
+
+    gameState.countries = [leader, runnerUp, groundHeavy, tooFar];
+    const startResources = { leader: leader.resources, runnerUp: runnerUp.resources, groundHeavy: groundHeavy.resources, tooFar: tooFar.resources };
+
+    awardGalaxyBounty();
+
+    if (leader.resources !== startResources.leader + GALAXY_BOUNTY_GOLD_PER_ROUND) {
+        problems.push(`expected the only qualifying country to gain ${GALAXY_BOUNTY_GOLD_PER_ROUND}, got ${leader.resources - startResources.leader}`);
+    }
+    if (runnerUp.resources !== startResources.runnerUp) problems.push('expected the under-threshold country to gain nothing');
+    if (groundHeavy.resources !== startResources.groundHeavy) problems.push('expected ground units to never count toward qualifying, so this country gains nothing');
+    if (tooFar.resources !== startResources.tooFar) problems.push('expected the out-of-range country to gain nothing despite having enough ships');
+    return problems;
+});
+
+check('awardGalaxyBounty() breaks a tie by lowest country id, and is a safe no-op with zero Galaxy Bounties', () => {
+    const problems = [];
+    galaxyCores.length = 0;
+    const bounty = new GalaxyCore(0, 0);
+    bounty.kind = 'bounty';
+    galaxyCores.push(bounty);
+
+    const a = new Country(5, 'A', '#ff0000', new Island(1000000, 0, 5), true);
+    a.units = Array.from({ length: 5 }, () => makeUnit('deepglider', 5));
+    a.units.forEach(u => { u.x = 0; u.y = 0; });
+
+    const b = new Country(2, 'B', '#00ff00', new Island(2000000, 0, 2), false); // same qualifying count, LOWER id
+    b.units = Array.from({ length: 5 }, () => makeUnit('deepglider', 2));
+    b.units.forEach(u => { u.x = 0; u.y = 0; });
+
+    gameState.countries = [a, b];
+    const startA = a.resources, startB = b.resources;
+    awardGalaxyBounty();
+    if (b.resources !== startB + GALAXY_BOUNTY_GOLD_PER_ROUND) problems.push(`expected the tie broken toward the lower id (country 2), got country 2 gained ${b.resources - startB}`);
+    if (a.resources !== startA) problems.push(`expected the higher-id country to gain nothing on a tie, got ${a.resources - startA}`);
+
+    // No Galaxy Bounty at all - must not throw, must not touch anyone's resources.
+    galaxyCores.length = 0;
+    const startA2 = a.resources;
+    awardGalaxyBounty();
+    if (a.resources !== startA2) problems.push('expected a safe no-op with zero Galaxy Bounties');
     return problems;
 });
 
