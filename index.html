@@ -1081,6 +1081,23 @@
         const GALAXY_CORE_HEAL_RANGE = GALAXY_CORE_SIZE + 20 * SHIP_LENGTH_REFERENCE;
         const GALAXY_CORE_HEAL_PERCENT = 0.15;
 
+        // Galaxy Bounty (2026-09-03, per direct request) - a second landmark, built
+        // from Galaxy-2.png, placed in the opposite corner of the map from the
+        // (healing) Galaxy Core above and twice its size. Contested, not shared: each
+        // turn, whichever country has the most of its own ships (GALAXY_BOUNTY_MIN_SHIPS
+        // or more, ground units don't count - they can't reach it) within
+        // GALAXY_BOUNTY_QUALIFY_RANGE is awarded GALAXY_BOUNTY_GOLD_PER_ROUND - see
+        // awardGalaxyBounty(), called from nextTurn() same as healNearGalaxyCores().
+        // Guarded by 7 alien warships (see spawnGalaxyBounty()) - double the (healing)
+        // Galaxy Core's 3, matching how much bigger/more valuable this one is.
+        const GALAXY_BOUNTY_IMAGE_URL = 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Galaxy-2.png';
+        const GALAXY_BOUNTY_SIZE = GALAXY_CORE_SIZE * 2;
+        const GALAXY_BOUNTY_GOLD_PER_ROUND = 50;
+        const GALAXY_BOUNTY_MIN_SHIPS = 5;
+        // "Within 50 ship range" - same SHIP_LENGTH_REFERENCE/edge-measured convention as
+        // GALAXY_CORE_HEAL_RANGE above, just 50 ship-lengths instead of 20.
+        const GALAXY_BOUNTY_QUALIFY_RANGE = GALAXY_BOUNTY_SIZE + 50 * SHIP_LENGTH_REFERENCE;
+
         // Tech tree (2026-08-25 Supremacy-style redesign). Research happens in real time
         // (like mining) via a country's Research Lab building (Island.getResearchLab()),
         // one node in flight at a time - see Country.startResearch()/updateResearch().
@@ -2052,15 +2069,19 @@
         class GalaxyCore {
             // Neutral, unowned, permanent map landmark (2026-09-03) - unlike
             // ResourceDeposit/SpaceMine, it never depletes and has no HP; it exists
-            // purely as a visual landmark and to heal nearby ships (see
-            // healNearGalaxyCores()). See spawnGalaxyCore() for placement/guards.
-            constructor(x, y) {
+            // purely as a visual landmark plus whatever per-turn effect its `kind`
+            // gets (set by whichever spawn function creates it, not this constructor -
+            // see spawnGalaxyCore()/spawnGalaxyBounty()). imageUrl/size default to the
+            // original healing core's own values so existing callers (including
+            // tests) that only pass x/y are unaffected; a second kind (the Galaxy
+            // Bounty, added 2026-09-03) passes its own art and a bigger size.
+            constructor(x, y, imageUrl = GALAXY_CORE_IMAGE_URL, size = GALAXY_CORE_SIZE) {
                 this.x = x;
                 this.y = y;
-                this.size = GALAXY_CORE_SIZE;
+                this.size = size;
                 this.sprite = new Image();
                 this.sprite.onerror = () => { this.sprite = null; };
-                queueImageLoad(this.sprite, GALAXY_CORE_IMAGE_URL);
+                queueImageLoad(this.sprite, imageUrl);
             }
             draw() {
                 const screenX = (this.x - camera.x) * camera.zoom + canvas.width / 2;
@@ -3633,7 +3654,17 @@
         // forever - nothing in this game has a "hold position forever" behavior to
         // borrow instead.
         function spawnGalaxyCore() {
+            // Only clears entries of this function's OWN kind - spawnGalaxyBounty()
+            // below shares the same galaxyCores array (so rendering/minimap/
+            // getGalaxyBounds() handle both landmarks for free) and each function must
+            // be independently safe to call alone or in either order without wiping
+            // out whatever the other already placed.
+            // Mutates the array IN PLACE (never reassigns the `galaxyCores` binding) -
+            // this file's own test harness (and anything else holding an earlier
+            // reference to it) needs to keep seeing the same array object.
+            const healSurvivors = galaxyCores.filter(c => c.kind !== 'heal');
             galaxyCores.length = 0;
+            galaxyCores.push(...healSurvivors);
             const centerX = MAP_WIDTH / 2;
             const centerY = MAP_HEIGHT / 2;
             // Clear of the Cyborg Planet cluster (±30000*GALAXY_SPACING_SCALE from
@@ -3648,13 +3679,51 @@
             // in a quadrant none of them occupy.
             const coreX = centerX + 90000 * GALAXY_SPACING_SCALE;
             const coreY = centerY - 70000 * GALAXY_SPACING_SCALE;
-            galaxyCores.push(new GalaxyCore(coreX, coreY));
+            const core = new GalaxyCore(coreX, coreY);
+            core.kind = 'heal';
+            galaxyCores.push(core);
 
             const guardCountry = gameState.countries.find(c => c.id === 14); // Cyborg Planet East
             if (guardCountry) {
                 for (let i = 0; i < 3; i++) {
                     const angle = (i / 3) * Math.PI * 2;
                     const dist = GALAXY_CORE_SIZE * 0.4;
+                    guardCountry.units.push(new Unit(
+                        coreX + Math.cos(angle) * dist,
+                        coreY + Math.sin(angle) * dist,
+                        'cyborgdreadnought',
+                        guardCountry.id
+                    ));
+                }
+            }
+        }
+
+        // Called once from initGame() - Standard Game only, same reasoning as
+        // spawnGalaxyCore() above (Campaign builds its own country roster per stage,
+        // with no guarantee id 15/Cyborg Planet West exists in it). Places the Galaxy
+        // Bounty in the opposite corner of the map from the (healing) Galaxy Core -
+        // same offset magnitude, both signs flipped - and stations 7 Cyborg Planet
+        // West warships next to it, same real-Country-owned-units pattern as
+        // spawnGalaxyCore(), just double the guard count to match this landmark being
+        // twice the size/more valuable.
+        function spawnGalaxyBounty() {
+            // Mutates in place - see spawnGalaxyCore()'s comment above.
+            const bountySurvivors = galaxyCores.filter(c => c.kind !== 'bounty');
+            galaxyCores.length = 0;
+            galaxyCores.push(...bountySurvivors);
+            const centerX = MAP_WIDTH / 2;
+            const centerY = MAP_HEIGHT / 2;
+            const coreX = centerX - 90000 * GALAXY_SPACING_SCALE;
+            const coreY = centerY + 70000 * GALAXY_SPACING_SCALE;
+            const bounty = new GalaxyCore(coreX, coreY, GALAXY_BOUNTY_IMAGE_URL, GALAXY_BOUNTY_SIZE);
+            bounty.kind = 'bounty';
+            galaxyCores.push(bounty);
+
+            const guardCountry = gameState.countries.find(c => c.id === 15); // Cyborg Planet West
+            if (guardCountry) {
+                for (let i = 0; i < 7; i++) {
+                    const angle = (i / 7) * Math.PI * 2;
+                    const dist = GALAXY_BOUNTY_SIZE * 0.4;
                     guardCountry.units.push(new Unit(
                         coreX + Math.cos(angle) * dist,
                         coreY + Math.sin(angle) * dist,
@@ -3799,6 +3868,7 @@
 
             spawnResourceDeposits();
             spawnGalaxyCore(); // Standard Game only, per direct request - see its own comment
+            spawnGalaxyBounty(); // ditto
 
             const selectDiv = document.getElementById('countrySelect');
 
@@ -4260,14 +4330,48 @@
         // No-ops in Campaign mode, where galaxyCores is always empty (see
         // startCampaignStage()).
         function healNearGalaxyCores() {
-            if (galaxyCores.length === 0) return;
+            // Only the healing kind - see spawnGalaxyBounty() below, which shares this
+            // same array for a landmark with a completely different (gold, not HP)
+            // effect. Filtering here, not by emptying the whole array, is what keeps
+            // this and awardGalaxyBounty() independent of each other.
+            const healCores = galaxyCores.filter(c => c.kind === 'heal');
+            if (healCores.length === 0) return;
             gameState.countries.forEach(country => {
                 country.units.forEach(unit => {
                     const maxHp = unit.getMaxHP();
                     if (unit.hp >= maxHp) return;
-                    const inRange = galaxyCores.some(core => Math.hypot(unit.x - core.x, unit.y - core.y) <= GALAXY_CORE_HEAL_RANGE);
+                    const inRange = healCores.some(core => Math.hypot(unit.x - core.x, unit.y - core.y) <= GALAXY_CORE_HEAL_RANGE);
                     if (inRange) unit.hp = Math.min(maxHp, unit.hp + maxHp * GALAXY_CORE_HEAL_PERCENT);
                 });
+            });
+        }
+
+        // Galaxy Bounty (2026-09-03, per direct request) - runs once per turn from
+        // nextTurn(), same cadence as healNearGalaxyCores(). Each round, every country
+        // with at least GALAXY_BOUNTY_MIN_SHIPS of its own ships (ground units excluded -
+        // they can never reach a landmark out in open space) within
+        // GALAXY_BOUNTY_QUALIFY_RANGE of a Galaxy Bounty "qualifies"; among qualifying
+        // countries, whichever has the MOST such ships in range that round wins
+        // GALAXY_BOUNTY_GOLD_PER_ROUND - a contested prize, not a shared one, per "to
+        // one team only". Ties (equal qualifying counts) are broken by lowest country
+        // id, for a stable, deterministic result instead of silently depending on
+        // iteration order.
+        function awardGalaxyBounty() {
+            const bountyCores = galaxyCores.filter(c => c.kind === 'bounty');
+            if (bountyCores.length === 0) return;
+            bountyCores.forEach(core => {
+                let winner = null, winnerCount = 0;
+                gameState.countries.forEach(country => {
+                    const nearbyShipCount = country.units.filter(u =>
+                        !u.isGroundUnit() && Math.hypot(u.x - core.x, u.y - core.y) <= GALAXY_BOUNTY_QUALIFY_RANGE
+                    ).length;
+                    if (nearbyShipCount < GALAXY_BOUNTY_MIN_SHIPS) return;
+                    if (!winner || nearbyShipCount > winnerCount || (nearbyShipCount === winnerCount && country.id < winner.id)) {
+                        winner = country;
+                        winnerCount = nearbyShipCount;
+                    }
+                });
+                if (winner) winner.resources += GALAXY_BOUNTY_GOLD_PER_ROUND;
             });
         }
 
@@ -4284,6 +4388,7 @@
                 }
             });
             healNearGalaxyCores();
+            awardGalaxyBounty();
 
             // Lifetime stats: tally the player's own losses before they're pruned below,
             // and note any enemy nation that's now fully destroyed (eliminatedCounted keeps
@@ -5443,7 +5548,10 @@
                 const p = worldToMinimap(core.x, core.y);
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
-                ctx.fillStyle = '#b060f0';
+                // Distinct color per kind so the two landmarks read apart on the
+                // minimap, not just "some purple dot" - purple for the healing Galaxy
+                // Core, gold for the Galaxy Bounty (matches what it actually pays out).
+                ctx.fillStyle = core.kind === 'bounty' ? '#ffd700' : '#b060f0';
                 ctx.fill();
                 ctx.strokeStyle = '#ffffff';
                 ctx.lineWidth = 1;
