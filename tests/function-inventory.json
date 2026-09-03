@@ -87,6 +87,7 @@
     "startGame",
     "startHotSeatGame",
     "startMusic",
+    "stopIntroMusic",
     "switchTab",
     "switchToNextHumanSeat",
     "toggleCampaignObjectives",

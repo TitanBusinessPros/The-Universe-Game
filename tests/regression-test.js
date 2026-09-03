@@ -127,7 +127,7 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, playLaserAttackSound, LASER_SOUND_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, stopIntroMusic, INTRO_MUSIC_URL, playLaserAttackSound, LASER_SOUND_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage };',
     context,
     { filename: 'grab-refs.js' }
 );
@@ -137,6 +137,7 @@ const {
     UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS,
     GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT,
     spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE,
+    introMusic, stopIntroMusic, INTRO_MUSIC_URL,
     playLaserAttackSound, LASER_SOUND_URL,
     DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas,
     canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS,
@@ -3749,6 +3750,74 @@ check("aiTurn()'s generic combat loop plays the laser sound when an AI attacks t
         vm.runInContext('playLaserAttackSound = this.__origPlayLaserAttackSound;', context);
     }
     return problems;
+});
+
+// ---------- 30. Start-screen intro music (2026-09-03) ----------
+//    Per direct request: "Humanity Does Not Disappear.mp3" starts as the game
+//    loads and is only for the start screen - stopIntroMusic() cuts it off
+//    the moment the player picks their country, loads a save, starts
+//    hot-seat, or starts a campaign, even if it hasn't finished on its own.
+//    jsdom's HTMLMediaElement doesn't really implement playback (play()/
+//    pause() are both "Not implemented" no-ops, .paused never reflects
+//    reality), so these check what's actually observable: currentTime is a
+//    real settable property, and whether each real game-flow function
+//    actually calls stopIntroMusic() (spied by reassigning it, same proven
+//    pattern as playBuildingDestroyedSound/playLaserAttackSound above).
+
+check('stopIntroMusic() resets introMusic back to the start', () => {
+    const problems = [];
+    // introMusic starts null until initAudio() (called from initGame()) runs - the
+    // test harness deliberately suppresses index.html's own automatic initGame()
+    // call at script load (see script.replace('initGame();', ...) near the top of
+    // this file), so it has to be called explicitly here. And since introMusic goes
+    // from null to a real object only once that runs, read/write it live through
+    // vm.runInContext rather than relying on the __test destructure snapshotted
+    // before initGame() ever ran.
+    vm.runInContext('initGame();', context, { filename: 'intro-music-reset-test.js' });
+    vm.runInContext('introMusic.currentTime = 42;', context);
+    stopIntroMusic();
+    const after = vm.runInContext('introMusic.currentTime', context);
+    if (after !== 0) problems.push(`expected currentTime reset to 0, got ${after}`);
+    return problems;
+});
+
+function checkStopsIntroMusic(label, run) {
+    check(`${label} stops the intro music - it's only for the start screen`, () => {
+        const problems = [];
+        vm.runInContext('this.__introMusicStopCount = 0; this.__origStopIntroMusic = stopIntroMusic; stopIntroMusic = () => { this.__introMusicStopCount++; };', context);
+        try {
+            run();
+        } finally {
+            const count = vm.runInContext('this.__introMusicStopCount', context);
+            vm.runInContext('stopIntroMusic = this.__origStopIntroMusic;', context);
+            if (count < 1) problems.push(`expected stopIntroMusic() to be called at least once, got ${count}`);
+        }
+        return problems;
+    });
+}
+
+checkStopsIntroMusic('startGame()', () => {
+    vm.runInContext('initGame();', context, { filename: 'intro-music-startgame.js' });
+    startGame(0);
+});
+
+checkStopsIntroMusic('startHotSeatGame()', () => {
+    gameState.countries = [0, 1, 2].map(id => new Country(id, `Nation${id}`, '#ffffff', new Island(id * 100000, 0, id), false));
+    startHotSeatGame([1, 2]);
+});
+
+checkStopsIntroMusic('continueFromAutosave()', () => {
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'IntroMusicContinueTest', '#ff0000', island, true);
+    gameState.countries = [country];
+    gameState.playerCountry = country;
+    const saveData = buildSaveData();
+    continueFromAutosave(saveData);
+});
+
+checkStopsIntroMusic('startCampaignStage()', () => {
+    selectCampaignNation(0);
+    startCampaignStage(0);
 });
 
 report();
