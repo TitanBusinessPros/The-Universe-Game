@@ -3616,9 +3616,16 @@
             const centerY = MAP_HEIGHT / 2;
             // Clear of the Cyborg Planet cluster (±30000*GALAXY_SPACING_SCALE from
             // center) and every CUSTOM_ISLANDS outpost (offsets up to ±70000) - see
-            // their placement in initGame()/CUSTOM_ISLANDS above.
-            const coreX = centerX + 130000 * GALAXY_SPACING_SCALE;
-            const coreY = centerY + 100000 * GALAXY_SPACING_SCALE;
+            // their placement in initGame()/CUSTOM_ISLANDS above - but NOT further out
+            // than those (a previous version used 130000/100000 here, which placed it
+            // outside getGalaxyBounds()' range - that function only ever looks at
+            // countries' island positions, so anything further out than the farthest
+            // outpost silently fell off the edge of the minimap AND was a much longer
+            // flight than anything else in the game). 90000/-70000 is the same order of
+            // magnitude as the farthest outposts (Drovannis/Merrowdusk at 70000/±30000),
+            // in a quadrant none of them occupy.
+            const coreX = centerX + 90000 * GALAXY_SPACING_SCALE;
+            const coreY = centerY - 70000 * GALAXY_SPACING_SCALE;
             galaxyCores.push(new GalaxyCore(coreX, coreY));
 
             const guardCountry = gameState.countries.find(c => c.id === 14); // Cyborg Planet East
@@ -5352,6 +5359,16 @@
                 minY = Math.min(minY, isl.y - isl.size);
                 maxY = Math.max(maxY, isl.y + isl.size);
             });
+            // Galaxy Core (2026-09-03) - same reasoning as the comment above: without
+            // this, a Galaxy Core placed further out than every country's island would
+            // silently fall outside the minimap's own rectangle, exactly the bug class
+            // this function exists to prevent.
+            galaxyCores.forEach(core => {
+                minX = Math.min(minX, core.x - core.size);
+                maxX = Math.max(maxX, core.x + core.size);
+                minY = Math.min(minY, core.y - core.size);
+                maxY = Math.max(maxY, core.y + core.size);
+            });
             const padX = (maxX - minX) * 0.05 || 50;
             const padY = (maxY - minY) * 0.05 || 50;
             return { minX: minX - padX, maxX: maxX + padX, minY: minY - padY, maxY: maxY + padY };
@@ -5395,6 +5412,20 @@
                     ctx.lineWidth = 1.5;
                     ctx.stroke();
                 }
+            });
+
+            // Galaxy Core (2026-09-03, per direct request - "make it visible on the
+            // minimap too because i can't find it"). Drawn bigger than a country dot and
+            // in a distinct color so it reads as a landmark, not another nation.
+            galaxyCores.forEach(core => {
+                const p = worldToMinimap(core.x, core.y);
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+                ctx.fillStyle = '#b060f0';
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1;
+                ctx.stroke();
             });
 
             // Your own units, so the fleet is visible without flying out there first.

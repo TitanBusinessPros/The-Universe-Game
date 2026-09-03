@@ -2667,6 +2667,33 @@ check('getGalaxyBounds() falls back to the full map when there are no countries 
     return problems;
 });
 
+check('getGalaxyBounds()/worldToMinimap() expand to include a Galaxy Core placed outside every country\'s own bounds - it must actually land on the minimap, not fall off it', () => {
+    const problems = [];
+    // A tight cluster of countries, deliberately nowhere near where the core will be -
+    // this is exactly the real bug (a previous version placed the core outside the
+    // countries-only bounding box, so it silently never appeared on the minimap).
+    gameState.countries = [0, 1].map(id => new Country(id, `N${id}`, '#fff', new Island(id * 1000, 0, id), false));
+    galaxyCores.length = 0;
+    const core = new GalaxyCore(500000, -500000); // far outside the cluster above
+    galaxyCores.push(core);
+
+    const bounds = getGalaxyBounds();
+    if (core.x - core.size < bounds.minX || core.x + core.size > bounds.maxX) {
+        problems.push(`expected getGalaxyBounds() to expand to cover the core's full extent on X, got bounds ${JSON.stringify(bounds)} for a core at x=${core.x} size=${core.size}`);
+    }
+    if (core.y - core.size < bounds.minY || core.y + core.size > bounds.maxY) {
+        problems.push(`expected getGalaxyBounds() to expand to cover the core's full extent on Y, got bounds ${JSON.stringify(bounds)} for a core at y=${core.y} size=${core.size}`);
+    }
+
+    const p = worldToMinimap(core.x, core.y);
+    const { mmX, mmY } = minimapBounds();
+    if (p.x < mmX || p.x > mmX + MINIMAP_WIDTH || p.y < mmY || p.y > mmY + MINIMAP_HEIGHT) {
+        problems.push(`expected the core's minimap position (${p.x.toFixed(0)}, ${p.y.toFixed(0)}) to fall inside the minimap rectangle (${mmX}-${mmX + MINIMAP_WIDTH}, ${mmY}-${mmY + MINIMAP_HEIGHT})`);
+    }
+    galaxyCores.length = 0;
+    return problems;
+});
+
 // ---------- 26. Small pure/display helpers (2026-08-27) ----------
 
 check('formatTime() renders mm:ss with zero-padded seconds', () => {
