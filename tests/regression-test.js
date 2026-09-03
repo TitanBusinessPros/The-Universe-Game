@@ -127,7 +127,7 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage };',
     context,
     { filename: 'grab-refs.js' }
 );
@@ -136,7 +136,7 @@ const {
     ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS,
     UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS,
     GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT,
-    DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas,
+    DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas,
     canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS,
     AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame,
     buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete,
@@ -1178,7 +1178,12 @@ check('a mining ship outside DEPOSIT_COLLECT_RANGE collects nothing (but does ge
 
     if (ship.miningCargo !== 0) problems.push(`expected no cargo gained while out of range, got ${ship.miningCargo}`);
     if (dep.resources !== DEPOSIT_STARTING_RESOURCES) problems.push(`expected the deposit untouched while no ship is in range, got ${dep.resources}`);
-    if (ship.targetX !== dep.x || ship.targetY !== dep.y) problems.push('expected the idle ship to automatically be sent toward the deposit');
+    // Sent to a spread-out spot on a ring around the deposit (see
+    // MINING_SHIP_SPREAD_RADIUS), not its exact center - see the dedicated spread test.
+    const distFromDepositCenter = Math.hypot(ship.targetX - dep.x, ship.targetY - dep.y);
+    if (Math.abs(distFromDepositCenter - MINING_SHIP_SPREAD_RADIUS) > 0.01) {
+        problems.push(`expected the idle ship sent to MINING_SHIP_SPREAD_RADIUS (${MINING_SHIP_SPREAD_RADIUS}) from the deposit, got distance ${distFromDepositCenter}`);
+    }
     return problems;
 });
 
@@ -1246,8 +1251,9 @@ check('a full mining ship automatically flies to its own harbor, unloads into th
         problems.push(`expected the treasury to gain the full ${MINING_SHIP_MAX_CARGO} on delivery, got ${country.resources - startResources}`);
     }
     if (ship.miningCargo !== 0) problems.push(`expected the ship's hold emptied after delivering, got ${ship.miningCargo}`);
-    if (ship.targetX !== dep.x || ship.targetY !== dep.y) {
-        problems.push('expected the now-empty ship to automatically be sent back out to the (only) live deposit the same frame it delivers');
+    const distFromDepositCenter = Math.hypot(ship.targetX - dep.x, ship.targetY - dep.y);
+    if (Math.abs(distFromDepositCenter - MINING_SHIP_SPREAD_RADIUS) > 0.01) {
+        problems.push(`expected the now-empty ship sent back out to MINING_SHIP_SPREAD_RADIUS (${MINING_SHIP_SPREAD_RADIUS}) from the (only) live deposit the same frame it delivers, got distance ${distFromDepositCenter}`);
     }
     return problems;
 });
@@ -1270,6 +1276,55 @@ check('a full mining ship far from its harbor heads toward it instead of deliver
     if (country.resources !== startResources) problems.push('expected no delivery yet - the ship is nowhere near the harbor');
     if (ship.miningCargo !== MINING_SHIP_MAX_CARGO) problems.push('expected the ship to still be holding its full cargo');
     if (ship.targetX !== harborPos.x || ship.targetY !== harborPos.y) problems.push('expected the full ship to be ordered toward its own harbor');
+    return problems;
+});
+
+check('multiple mining ships sent to the same deposit spread onto distinct points instead of stacking on its exact center (2026-09-03, per direct report - overlapping cargo readouts were unreadable)', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'SpreadTest', '#ff0000', island, true);
+    gameState.countries = [country];
+    const dep = new ResourceDeposit(0, 0);
+    resourceDeposits.length = 0;
+    resourceDeposits.push(dep);
+
+    // Well outside collect range, all starting from the same spot - the old behavior
+    // (moveTo the deposit's exact x/y) would send every one of these to the identical
+    // target.
+    const far = DEPOSIT_COLLECT_RANGE * 5;
+    const ships = [
+        new Unit(far, 0, 'miningship', 0),
+        new Unit(far, 0, 'miningship', 0),
+        new Unit(far, 0, 'miningship', 0),
+    ];
+    country.units = ships;
+
+    updateMiningAndResearch();
+
+    // Every ship's target must be a real point on the ring - MINING_SHIP_SPREAD_RADIUS
+    // from the deposit's center - not the center itself.
+    ships.forEach((ship, i) => {
+        const dist = Math.hypot(ship.targetX - dep.x, ship.targetY - dep.y);
+        if (Math.abs(dist - MINING_SHIP_SPREAD_RADIUS) > 0.01) {
+            problems.push(`ship ${i}: expected target MINING_SHIP_SPREAD_RADIUS (${MINING_SHIP_SPREAD_RADIUS}) from the deposit, got distance ${dist}`);
+        }
+    });
+
+    // And distinct from each other (different unit ids -> different golden-angle spot),
+    // not just all landing on some OTHER single shared point instead of the center.
+    const targets = ships.map(s => `${s.targetX.toFixed(2)},${s.targetY.toFixed(2)}`);
+    if (new Set(targets).size !== ships.length) {
+        problems.push(`expected every ship to get a distinct target, got ${JSON.stringify(targets)}`);
+    }
+
+    // Same ship, asked again (still out of range) - lands on the SAME spot as before,
+    // not a new random one each frame (that would look like jitter, not a stable spread).
+    const before = { x: ships[0].targetX, y: ships[0].targetY };
+    updateMiningAndResearch();
+    if (ships[0].targetX !== before.x || ships[0].targetY !== before.y) {
+        problems.push('expected the same ship to be re-sent to the same spot, not a new one, on a later call');
+    }
+
     return problems;
 });
 
@@ -1578,9 +1633,11 @@ check('an idle Mining Ship ends up heading toward the nearest live deposit, not 
     updateMiningAndResearch();
     vm.runInContext('AI_MOVEMENT_CHANCE = DIFFICULTY_PRESETS.normal.movement;', context); // restore for later checks
 
+    // Sent to a spread-out spot on a ring around the deposit (see
+    // MINING_SHIP_SPREAD_RADIUS), not its exact center - see the dedicated spread test.
     const distToNear = Math.hypot(ship.targetX - nearDeposit.x, ship.targetY - nearDeposit.y);
-    if (distToNear > 1) {
-        problems.push(`expected the idle mining ship to be sent toward the nearer deposit (100,0) instead of the visible enemy, got targetX=${ship.targetX}, targetY=${ship.targetY}`);
+    if (Math.abs(distToNear - MINING_SHIP_SPREAD_RADIUS) > 1) {
+        problems.push(`expected the idle mining ship sent toward the nearer deposit (100,0) instead of the visible enemy, got targetX=${ship.targetX}, targetY=${ship.targetY} (distance from deposit ${distToNear}, expected ~${MINING_SHIP_SPREAD_RADIUS})`);
     }
     return problems;
 });
