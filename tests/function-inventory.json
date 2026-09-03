@@ -61,6 +61,7 @@
     "openSingleMapSetup",
     "openStatsScreen",
     "playBuildingDestroyedSound",
+    "playLaserAttackSound",
     "playUIClickSound",
     "pollLoadingScreen",
     "processAttackMoveOrders",

@@ -127,7 +127,7 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, stopIntroMusic, INTRO_MUSIC_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, stopIntroMusic, INTRO_MUSIC_URL, playLaserAttackSound, LASER_SOUND_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage };',
     context,
     { filename: 'grab-refs.js' }
 );
@@ -138,6 +138,7 @@ const {
     GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT,
     spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE,
     introMusic, stopIntroMusic, INTRO_MUSIC_URL,
+    playLaserAttackSound, LASER_SOUND_URL,
     DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas,
     canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS,
     AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame,
@@ -3622,6 +3623,131 @@ check("Building.takeDamage() plays the destroyed sound only when it's relevant t
         if (soundPlayCount() !== 3) problems.push(`expected the sound to still play for the player's own building with no attackerCountryId, count=${soundPlayCount()}`);
     } finally {
         vm.runInContext('playBuildingDestroyedSound = this.__origPlayBuildingDestroyedSound;', context);
+    }
+    return problems;
+});
+
+// ---------- 29. Laser (unit-vs-unit attack) sound effect (2026-09-03) ----------
+//    Per direct request: audible only if your ship attacks or someone attacks
+//    your ship - never for everyone. playLaserAttackSound(attackerCountryId,
+//    targetCountryId) is the single shared gating helper called from every
+//    real combat-resolution site (processAttackMoveOrders, both of aiTurn()'s
+//    combat loops, and both branches of the click-to-attack UI handler) -
+//    these tests cover the helper's own gating logic directly, plus two of
+//    those real call sites (one where the active player is the attacker, one
+//    where they're the defender against an AI attacker - the two halves of
+//    "your ship attacks or someone attacks your ship").
+
+check("playLaserAttackSound() plays only when the active player is the attacker or the target, respects soundEnabled, and is a safe no-op with no active player", () => {
+    const problems = [];
+    vm.runInContext(`
+        (function(global) {
+            global.__audioCount = 0;
+            global.__lastAudioUrl = null;
+            const OrigAudio = global.Audio;
+            global.Audio = function(url) {
+                global.__audioCount++;
+                global.__lastAudioUrl = url;
+                return new OrigAudio(url);
+            };
+            global.__restoreAudio = function() { global.Audio = OrigAudio; };
+        })(this);
+    `, context);
+    const audioCount = () => vm.runInContext('this.__audioCount', context);
+
+    gameState.countries = [
+        new Country(0, 'Player', '#ff0000', new Island(0, 0, 0), true),
+        new Country(1, 'Enemy', '#00ff00', new Island(1000000, 0, 1), false),
+        new Country(2, 'Bystander', '#0000ff', new Island(2000000, 0, 2), false),
+    ];
+    gameState.playerCountry = gameState.countries[0];
+    vm.runInContext('soundEnabled = true;', context);
+
+    try {
+        playLaserAttackSound(0, 1); // player is the attacker
+        if (audioCount() !== 1) problems.push(`expected a sound when the player is the attacker, count=${audioCount()}`);
+
+        playLaserAttackSound(1, 0); // player is the target
+        if (audioCount() !== 2) problems.push(`expected a sound when the player is the target, count=${audioCount()}`);
+
+        playLaserAttackSound(1, 2); // neither side is the player
+        if (audioCount() !== 2) problems.push(`expected no sound when neither side is the player, count=${audioCount()}`);
+
+        vm.runInContext('soundEnabled = false;', context);
+        playLaserAttackSound(0, 1);
+        if (audioCount() !== 2) problems.push(`expected no sound while soundEnabled is false, count=${audioCount()}`);
+        vm.runInContext('soundEnabled = true;', context);
+
+        gameState.playerCountry = null;
+        playLaserAttackSound(0, 1);
+        if (audioCount() !== 2) problems.push(`expected a safe no-op with no active player, count=${audioCount()}`);
+        gameState.playerCountry = gameState.countries[0];
+
+        if (vm.runInContext('this.__lastAudioUrl', context) !== LASER_SOUND_URL) {
+            problems.push('expected the constructed Audio to use LASER_SOUND_URL');
+        }
+    } finally {
+        vm.runInContext('this.__restoreAudio();', context);
+    }
+    return problems;
+});
+
+check('processAttackMoveOrders() plays the laser sound when the active player\'s own unit lands an attack-move hit', () => {
+    const problems = [];
+    vm.runInContext('this.__laserCalls = []; this.__origPlayLaserAttackSound = playLaserAttackSound; playLaserAttackSound = (a, t) => { this.__laserCalls.push([a, t]); };', context);
+    const laserCalls = () => vm.runInContext('this.__laserCalls', context);
+
+    try {
+        const player = new Country(0, 'Player', '#ff0000', new Island(0, 0, 0), true);
+        const enemy = new Country(1, 'Enemy', '#00ff00', new Island(1000000, 0, 1), false);
+        gameState.countries = [player, enemy];
+        gameState.playerCountry = player;
+
+        const attacker = makeUnit('deepglider', 0);
+        const target = makeUnit('deepglider', 1);
+        target.x = attacker.x + 10; target.y = attacker.y; // well within range
+        player.units = [attacker];
+        enemy.units = [target];
+        attacker.attackMoveTarget = { kind: 'unit', unit: target };
+
+        processAttackMoveOrders();
+
+        const calls = laserCalls();
+        if (calls.length !== 1) problems.push(`expected exactly 1 laser-sound call, got ${calls.length}`);
+        else if (calls[0][0] !== 0 || calls[0][1] !== 1) problems.push(`expected call(attackerCountryId=0, targetCountryId=1), got ${JSON.stringify(calls[0])}`);
+    } finally {
+        vm.runInContext('playLaserAttackSound = this.__origPlayLaserAttackSound;', context);
+    }
+    return problems;
+});
+
+check("aiTurn()'s generic combat loop plays the laser sound when an AI attacks the active player's own unit", () => {
+    const problems = [];
+    vm.runInContext('this.__laserCalls = []; this.__origPlayLaserAttackSound = playLaserAttackSound; playLaserAttackSound = (a, t) => { this.__laserCalls.push([a, t]); };', context);
+    const laserCalls = () => vm.runInContext('this.__laserCalls', context);
+
+    try {
+        const player = new Country(0, 'Player', '#ff0000', new Island(0, 0, 0), true);
+        const aiAttacker = new Country(1, 'AIAttacker', '#00ff00', new Island(1000000, 0, 1), false);
+        gameState.countries = [player, aiAttacker];
+        gameState.playerCountry = player;
+
+        const defender = makeUnit('deepglider', 0);
+        const attacker = makeUnit('deepglider', 1);
+        attacker.x = 0; attacker.y = 0;
+        defender.x = 10; defender.y = 0; // well within range
+        player.units = [defender];
+        aiAttacker.units = [attacker];
+
+        vm.runInContext('AI_ATTACK_CHANCE = 1;', context); // deterministic - always attempts to attack
+        aiAttacker.aiTurn();
+        vm.runInContext('AI_ATTACK_CHANCE = DIFFICULTY_PRESETS.normal.attack;', context); // restore
+
+        const calls = laserCalls();
+        if (calls.length < 1) problems.push('expected at least 1 laser-sound call when an AI attacks the player');
+        else if (calls[0][0] !== 1 || calls[0][1] !== 0) problems.push(`expected call(attackerCountryId=1, targetCountryId=0), got ${JSON.stringify(calls[0])}`);
+    } finally {
+        vm.runInContext('playLaserAttackSound = this.__origPlayLaserAttackSound;', context);
     }
     return problems;
 });
