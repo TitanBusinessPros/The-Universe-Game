@@ -1028,6 +1028,20 @@
         const DEPOSIT_INCOME_PER_HOUR = (MINING_SHIP_COLLECT_AMOUNT / MINING_SHIP_COLLECT_INTERVAL_SECONDS) * 3600;
         const DEPOSIT_STARTING_RESOURCES = 5000;
         const DEPOSIT_COLLECT_RANGE = 60;
+        // Multiple Mining Ships working the same deposit used to all fly to its exact
+        // center and stack directly on top of each other - not just visually cluttered,
+        // it made every ship's cargo readout (drawn just under it, see Unit.draw())
+        // overlap into unreadable blur (2026-09-03, per direct report). Spreading them
+        // onto a ring around the deposit fixes both at once. GOLDEN_ANGLE (~137.5°) is
+        // the standard "avoid clustering for any count" spacing (same idea as sunflower
+        // seed arrangements) - keyed off each ship's own stable, never-reused unit id,
+        // so a given ship always lands at the same spot on the ring rather than jittering
+        // frame to frame. The radius is a fraction of the UN-boosted collect range (not
+        // whatever this country's own deposit_scanner-doubled range happens to be) so a
+        // spread-out ship is always within collection distance for every country, not
+        // just ones with that tech.
+        const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
+        const MINING_SHIP_SPREAD_RADIUS = DEPOSIT_COLLECT_RANGE * 0.6;
         // A mine renders at this fraction of whichever planet it's next to (per direct
         // request) - big enough to actually read as a landmark, not a speck.
         const DEPOSIT_SIZE_RATIO = 0.2;
@@ -2886,7 +2900,15 @@
                         const dist = Math.hypot(unit.x - d.x, unit.y - d.y);
                         if (dist < nearestDist) { nearestDist = dist; nearest = d; }
                     });
-                    if (nearest) unit.moveTo(nearest.x, nearest.y);
+                    if (nearest) {
+                        // Spread onto a ring instead of the deposit's exact center - see
+                        // GOLDEN_ANGLE/MINING_SHIP_SPREAD_RADIUS's comment above.
+                        const angle = (unit.id * GOLDEN_ANGLE) % (Math.PI * 2);
+                        unit.moveTo(
+                            nearest.x + Math.cos(angle) * MINING_SHIP_SPREAD_RADIUS,
+                            nearest.y + Math.sin(angle) * MINING_SHIP_SPREAD_RADIUS
+                        );
+                    }
                 });
             });
         }
