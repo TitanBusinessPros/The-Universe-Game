@@ -1045,6 +1045,28 @@
         // countries happen to exist in a given match.
         const EXTRA_DEPOSIT_COUNT = 12;
 
+        // Galaxy Core (2026-09-03, per direct request) - a single, permanent, unowned
+        // map landmark built from Galaxy-1.png, 10x a standard planet's radius. Heals
+        // any nearby ship - any country, alien factions included, since they're Country
+        // instances like everyone else, no special-casing needed - 15% of its max HP
+        // every turn (see healNearGalaxyCores(), called from nextTurn() - a turn-based
+        // effect, unlike ResourceDeposit collection/research which accrue every frame).
+        // Guarded by 3 alien warships stationed next to it at game start (see
+        // spawnGalaxyCore()). Standard Game only for now - matches how
+        // spawnResourceDeposits() originally shipped before Campaign mode got its own
+        // retrofit (see the comment on its call in startCampaignStage()).
+        const GALAXY_CORE_IMAGE_URL = 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Galaxy-1.png';
+        const GALAXY_CORE_SIZE = 250 * PLANET_SCALE * 10;
+        // "20 ship distance away" from the request, translated into a concrete world-unit
+        // radius: SHIP_LENGTH_REFERENCE approximates one ship's on-screen diameter (there's
+        // no single "ship size" in this game - Unit.getSize() ranges roughly 20-80 depending
+        // on type; this is a representative middle value). Measured from the Galaxy Core's
+        // own EDGE, not its center - "20 ship distances away [from it]" reads as measuring
+        // from its visible boundary, not an arbitrary point deep inside a landmark this huge.
+        const SHIP_LENGTH_REFERENCE = 50;
+        const GALAXY_CORE_HEAL_RANGE = GALAXY_CORE_SIZE + 20 * SHIP_LENGTH_REFERENCE;
+        const GALAXY_CORE_HEAL_PERCENT = 0.15;
+
         // Tech tree (2026-08-25 Supremacy-style redesign). Research happens in real time
         // (like mining) via a country's Research Lab building (Island.getResearchLab()),
         // one node in flight at a time - see Country.startResearch()/updateResearch().
@@ -1619,6 +1641,10 @@
         // objects: any country's mining ship can station at one and draw it down.
         let resourceDeposits = [];
         let nextResourceDepositId = 0;
+        // Galaxy Core(s) (2026-09-03) - Standard Game only, see spawnGalaxyCore(). A
+        // plain array (like the two above) even though there's only ever one today, so
+        // healNearGalaxyCores()/rendering don't need to special-case "exactly one".
+        let galaxyCores = [];
         let laserEffects = []; // {startX, startY, endX, endY, createdAt, duration, color}
 
         // Distinct laser-beam color per unit type ('r,g,b', no alpha - the draw
@@ -2007,6 +2033,37 @@
                 const barWidth=20,hpPercent=this.hp/this.maxHp; ctx.fillStyle="#ff0000";ctx.fillRect(screenX-barWidth/2,screenY-15,barWidth,3);ctx.fillStyle="#00ff00";ctx.fillRect(screenX-barWidth/2,screenY-15,barWidth*hpPercent,3);
             }
             takeDamage(amount) { this.hp -= amount; return this.hp <= 0; }
+        }
+
+        class GalaxyCore {
+            // Neutral, unowned, permanent map landmark (2026-09-03) - unlike
+            // ResourceDeposit/SpaceMine, it never depletes and has no HP; it exists
+            // purely as a visual landmark and to heal nearby ships (see
+            // healNearGalaxyCores()). See spawnGalaxyCore() for placement/guards.
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.size = GALAXY_CORE_SIZE;
+                this.sprite = new Image();
+                this.sprite.onerror = () => { this.sprite = null; };
+                queueImageLoad(this.sprite, GALAXY_CORE_IMAGE_URL);
+            }
+            draw() {
+                const screenX = (this.x - camera.x) * camera.zoom + canvas.width / 2;
+                const screenY = (this.y - camera.y) * camera.zoom + canvas.height / 2;
+                const half = this.size * camera.zoom;
+                if (this.sprite && this.sprite.complete && this.sprite.naturalWidth > 0) {
+                    ctx.drawImage(this.sprite, screenX - half, screenY - half, half * 2, half * 2);
+                } else {
+                    ctx.fillStyle = 'rgba(140, 80, 220, 0.4)';
+                    ctx.beginPath();
+                    ctx.arc(screenX, screenY, half, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = 'rgba(200, 150, 255, 0.6)';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                }
+            }
         }
 
         class Missile {
@@ -3542,6 +3599,43 @@
             }
         }
 
+        // Called once from initGame() - Standard Game only, per direct request (not
+        // Campaign - see startCampaignStage(), which builds its own country roster per
+        // stage and has no guarantee id 14/Cyborg Planet East even exists in it).
+        // Places the single Galaxy Core well clear of every fixed/custom island, then
+        // stations 3 Cyborg Planet East warships right next to it as guards - real
+        // units on a real Country, so all existing AI/combat/targeting/rendering code
+        // already handles them with zero special-casing. Trade-off, disclosed rather
+        // than hidden: Cyborg Planet East's own aiTurn() can, like any of its other
+        // units, eventually send these off to fight elsewhere rather than guard
+        // forever - nothing in this game has a "hold position forever" behavior to
+        // borrow instead.
+        function spawnGalaxyCore() {
+            galaxyCores.length = 0;
+            const centerX = MAP_WIDTH / 2;
+            const centerY = MAP_HEIGHT / 2;
+            // Clear of the Cyborg Planet cluster (±30000*GALAXY_SPACING_SCALE from
+            // center) and every CUSTOM_ISLANDS outpost (offsets up to ±70000) - see
+            // their placement in initGame()/CUSTOM_ISLANDS above.
+            const coreX = centerX + 130000 * GALAXY_SPACING_SCALE;
+            const coreY = centerY + 100000 * GALAXY_SPACING_SCALE;
+            galaxyCores.push(new GalaxyCore(coreX, coreY));
+
+            const guardCountry = gameState.countries.find(c => c.id === 14); // Cyborg Planet East
+            if (guardCountry) {
+                for (let i = 0; i < 3; i++) {
+                    const angle = (i / 3) * Math.PI * 2;
+                    const dist = GALAXY_CORE_SIZE * 0.4;
+                    guardCountry.units.push(new Unit(
+                        coreX + Math.cos(angle) * dist,
+                        coreY + Math.sin(angle) * dist,
+                        'cyborgdreadnought',
+                        guardCountry.id
+                    ));
+                }
+            }
+        }
+
         function initGame() {
             // Initialize audio
             initAudio();
@@ -3675,6 +3769,7 @@
             // =====================================================================
 
             spawnResourceDeposits();
+            spawnGalaxyCore(); // Standard Game only, per direct request - see its own comment
 
             const selectDiv = document.getElementById('countrySelect');
 
@@ -4127,6 +4222,26 @@
             camera.zoom = Math.min(canvas.width / MAP_WIDTH, canvas.height / MAP_HEIGHT) * 0.9;
         }
 
+        // Galaxy Core healing (2026-09-03, per direct request) - runs once per turn
+        // from nextTurn(), NOT per-frame like ResourceDeposit collection/research (the
+        // request was explicitly "heal 15% every turn"). Heals every unit of every
+        // country - alien factions included, since Cyborg/Zoonester/Roufestreal are
+        // Country instances like anyone else, so no special-casing is needed - within
+        // GALAXY_CORE_HEAL_RANGE of any Galaxy Core, capped at that unit's own max HP.
+        // No-ops in Campaign mode, where galaxyCores is always empty (see
+        // startCampaignStage()).
+        function healNearGalaxyCores() {
+            if (galaxyCores.length === 0) return;
+            gameState.countries.forEach(country => {
+                country.units.forEach(unit => {
+                    const maxHp = unit.getMaxHP();
+                    if (unit.hp >= maxHp) return;
+                    const inRange = galaxyCores.some(core => Math.hypot(unit.x - core.x, unit.y - core.y) <= GALAXY_CORE_HEAL_RANGE);
+                    if (inRange) unit.hp = Math.min(maxHp, unit.hp + maxHp * GALAXY_CORE_HEAL_PERCENT);
+                });
+            });
+        }
+
         function nextTurn() {
             gameState.turn++;
             gameState.turnTimeRemaining = TURN_TIME_SECONDS;
@@ -4139,6 +4254,7 @@
                     c.aiTurn();
                 }
             });
+            healNearGalaxyCores();
 
             // Lifetime stats: tally the player's own losses before they're pruned below,
             // and note any enemy nation that's now fully destroyed (eliminatedCounted keeps
@@ -4718,6 +4834,12 @@
             spaceMines.length = 0;
             missiles.length = 0;
             laserEffects.length = 0;
+            // Galaxy Core is Standard Game only, per direct request - but initGame()
+            // already ran once (unconditionally, at page load, to build the country-
+            // select screen) and populated it before the player ever chose Campaign
+            // here. Clear it explicitly, same as the three arrays above, or a Campaign
+            // stage would inherit and render/heal from a Standard Game leftover.
+            galaxyCores.length = 0;
 
             const outpostTotal = stage.objectives.filter(o => o.kind === 'outpost').length;
 
@@ -5390,6 +5512,7 @@
             // deposit/mine/missile thousands of pixels off-canvas every frame - no
             // exception, just permanently invisible. Proven via ctx.getTransform()
             // captured at the actual draw() call site; see deposit-visibility-test.js.
+            galaxyCores.forEach(g=>g.draw());
             spaceMines.forEach(m=>m.draw());
             resourceDeposits.forEach(d=>d.draw());
             missiles.forEach(m=>m.draw());

@@ -127,7 +127,7 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage };',
     context,
     { filename: 'grab-refs.js' }
 );
@@ -135,6 +135,7 @@ const {
     Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat,
     ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS,
     UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS,
+    GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT,
     DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas,
     canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS,
     AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame,
@@ -3222,6 +3223,124 @@ check('every zero-argument top-level function runs without throwing (from a live
         console.log(`  ${info.length} function(s) threw when smoke-tested with no prior UI state (informational, not a failure - most just expect a modal/selection to already be open):`);
         info.forEach(line => console.log(`    - ${line}`));
     }
+    return problems;
+});
+
+// ---------- 26. Galaxy Core (2026-09-03) ----------
+//    A single, permanent, unowned map landmark - 10x a standard planet's
+//    radius, heals every nearby ship (any country, aliens included) 15% of
+//    its max HP once per turn, and is guarded by 3 Cyborg Planet East
+//    warships stationed next to it at spawn. Standard Game only, per direct
+//    request - Campaign mode must never see or be healed by it.
+
+check('spawnGalaxyCore() places exactly one Galaxy Core and stations 3 cyborgdreadnought guards on Cyborg Planet East', () => {
+    const problems = [];
+    // Standard Game's full country roster - Cyborg Planet East is id 14 (see initGame()).
+    gameState.countries = [12, 13, 14, 15, 16].map(id => new Country(id, `Nation${id}`, '#00ffff', new Island(id * 200000, 0, id), false));
+    const eastCountry = gameState.countries.find(c => c.id === 14);
+    const startUnitCount = eastCountry.units.length;
+
+    spawnGalaxyCore();
+
+    if (galaxyCores.length !== 1) problems.push(`expected exactly 1 Galaxy Core, got ${galaxyCores.length}`);
+    else if (galaxyCores[0].size !== GALAXY_CORE_SIZE) problems.push(`expected the core's size to be GALAXY_CORE_SIZE (${GALAXY_CORE_SIZE}), got ${galaxyCores[0].size}`);
+
+    const newGuards = eastCountry.units.slice(startUnitCount);
+    if (newGuards.length !== 3) problems.push(`expected 3 guard units added to Cyborg Planet East, got ${newGuards.length}`);
+    if (!newGuards.every(u => u.type === 'cyborgdreadnought')) problems.push('expected every guard to be a cyborgdreadnought');
+    if (galaxyCores.length === 1) {
+        const core = galaxyCores[0];
+        newGuards.forEach(u => {
+            const dist = Math.hypot(u.x - core.x, u.y - core.y);
+            if (dist > GALAXY_CORE_SIZE) problems.push(`expected guard within the core's own radius, got distance ${dist.toFixed(0)}`);
+        });
+    }
+    return problems;
+});
+
+check('spawnGalaxyCore() is safe to call with no Cyborg Planet East in the roster (still places the core, just no guards)', () => {
+    const problems = [];
+    gameState.countries = [new Country(0, 'Solo', '#ff0000', new Island(0, 0, 0), true)];
+    galaxyCores.length = 0;
+    spawnGalaxyCore();
+    if (galaxyCores.length !== 1) problems.push('expected the core to be placed regardless of whether Cyborg Planet East exists');
+    return problems;
+});
+
+check('healNearGalaxyCores() heals every damaged unit within range - any country, aliens included - capped at max HP, and leaves out-of-range units alone', () => {
+    const problems = [];
+    galaxyCores.length = 0;
+    const core = new GalaxyCore(0, 0);
+    galaxyCores.push(core);
+
+    const humanCountry = new Country(0, 'Human', '#ff0000', new Island(1000000, 0, 0), true);
+    const alienCountry = new Country(16, 'Zoonester', '#9d00ff', new Island(2000000, 0, 16), false);
+    alienCountry.isZoonester = true;
+    gameState.countries = [humanCountry, alienCountry];
+
+    const nearHuman = makeUnit('deepglider', 0);
+    nearHuman.x = GALAXY_CORE_HEAL_RANGE - 10; nearHuman.y = 0;
+    nearHuman.hp = 1;
+    humanCountry.units = [nearHuman];
+
+    const nearAlien = makeUnit('cyborgdreadnought', 16);
+    nearAlien.x = 0; nearAlien.y = GALAXY_CORE_HEAL_RANGE - 10;
+    nearAlien.hp = 1;
+    alienCountry.units = [nearAlien];
+
+    const farHuman = makeUnit('deepglider', 0);
+    farHuman.x = GALAXY_CORE_HEAL_RANGE + 5000; farHuman.y = 0;
+    farHuman.hp = 1;
+    humanCountry.units.push(farHuman);
+
+    const fullHpNearby = makeUnit('deepglider', 0);
+    fullHpNearby.x = 10; fullHpNearby.y = 0;
+    humanCountry.units.push(fullHpNearby);
+    const startFullHp = fullHpNearby.hp;
+
+    healNearGalaxyCores();
+
+    const expectedHeal = nearHuman.getMaxHP() * GALAXY_CORE_HEAL_PERCENT;
+    if (Math.abs(nearHuman.hp - (1 + expectedHeal)) > 0.01) {
+        problems.push(`expected the in-range human unit healed by 15% of max HP (${(1 + expectedHeal).toFixed(1)}), got ${nearHuman.hp}`);
+    }
+    const expectedAlienHeal = nearAlien.getMaxHP() * GALAXY_CORE_HEAL_PERCENT;
+    if (Math.abs(nearAlien.hp - (1 + expectedAlienHeal)) > 0.01) {
+        problems.push(`expected the in-range ALIEN unit healed too (${(1 + expectedAlienHeal).toFixed(1)}), got ${nearAlien.hp}`);
+    }
+    if (farHuman.hp !== 1) problems.push(`expected the out-of-range unit untouched, got hp ${farHuman.hp}`);
+    if (fullHpNearby.hp !== startFullHp) problems.push(`expected an already-full-HP unit left exactly at max, got ${fullHpNearby.hp}`);
+
+    // Heal-to-cap: start just under max, confirm it never overshoots.
+    const almostFull = makeUnit('deepglider', 0);
+    almostFull.x = 5; almostFull.y = 0;
+    almostFull.hp = almostFull.getMaxHP() - 1;
+    humanCountry.units.push(almostFull);
+    healNearGalaxyCores();
+    if (almostFull.hp !== almostFull.getMaxHP()) problems.push(`expected healing to cap exactly at max HP, got ${almostFull.hp}/${almostFull.getMaxHP()}`);
+
+    return problems;
+});
+
+check('healNearGalaxyCores() is a safe no-op when there is no Galaxy Core (e.g. Campaign mode)', () => {
+    const problems = [];
+    galaxyCores.length = 0;
+    const country = new Country(0, 'NoCoreTest', '#ff0000', new Island(0, 0, 0), true);
+    const u = makeUnit('deepglider', 0);
+    u.hp = 1;
+    country.units = [u];
+    gameState.countries = [country];
+    healNearGalaxyCores();
+    if (u.hp !== 1) problems.push(`expected no healing with zero Galaxy Cores, got hp ${u.hp}`);
+    return problems;
+});
+
+check('startCampaignStage() clears galaxyCores - Campaign mode must never inherit a Standard Game leftover', () => {
+    const problems = [];
+    galaxyCores.push(new GalaxyCore(0, 0)); // simulate the leftover from initGame()'s automatic run
+    selectCampaignNation(0);
+    startCampaignStage(0);
+    if (galaxyCores.length !== 0) problems.push(`expected galaxyCores cleared in Campaign mode, got ${galaxyCores.length}`);
     return problems;
 });
 
