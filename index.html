@@ -893,6 +893,26 @@
                 });
             }
         }
+
+        // Building-destroyed sound effect (2026-09-03, per direct request) - see
+        // Building.takeDamage() for exactly when this fires: only when it's relevant
+        // to whoever's turn is currently active (gameState.playerCountry) - their own
+        // building was just destroyed, or their own troops just destroyed someone
+        // else's. Deliberately never fires for an AI-vs-AI destruction the active
+        // player had no part in - that would be near-constant background noise on a
+        // 27-country map. A fresh Audio() per play, not a single shared/looping
+        // instance like bgMusic - destructions can happen in quick succession
+        // (multiple buildings falling the same turn) and each needs its own
+        // independent playback rather than cutting the previous one off.
+        const BUILDING_DESTROYED_SOUND_URL = 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Sound%20Effects/Building%20destroyed.mp3';
+        function playBuildingDestroyedSound() {
+            if (!soundEnabled) return;
+            try {
+                const sfx = new Audio(BUILDING_DESTROYED_SOUND_URL);
+                sfx.volume = 0.5;
+                sfx.play().catch(err => { console.log('Audio play failed:', err); });
+            } catch (e) { /* audio not available in this environment */ }
+        }
         
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
@@ -1975,12 +1995,27 @@
                 this.hasAttacked = false;
             }
 
-            takeDamage(amount = 1) {
+            // attackerCountryId is optional (and unused by anything but the sound
+            // effect below) - every real call site passes it, but omitting it just
+            // means the "your troops destroyed it" half of that check can't fire,
+            // not a crash.
+            takeDamage(amount = 1, attackerCountryId = null) {
                 if (!this.destroyed) {
                     this.hp -= amount;
                     if (this.hp <= 0) {
                         this.hp = 0;
                         this.destroyed = true;
+                        // Building-destroyed sound (2026-09-03, per direct request) -
+                        // "only when your troops destroy a building or one of your
+                        // buildings gets destroyed". Building has no owner
+                        // back-reference, so find it by searching countries - cheap,
+                        // only runs once per actual destruction, never per frame.
+                        if (gameState.playerCountry) {
+                            const owningCountry = gameState.countries.find(c => c.island.buildings.includes(this));
+                            const isOwnBuilding = owningCountry === gameState.playerCountry;
+                            const isOwnAttack = attackerCountryId === gameState.playerCountry.id;
+                            if (isOwnBuilding || isOwnAttack) playBuildingDestroyedSound();
+                        }
                     }
                 }
             }
@@ -2979,7 +3014,7 @@
                             }
                         } else {
                             if (!unit.canAttackBuildings()) { unit.attackMoveTarget = null; return; }
-                            order.building.takeDamage(unit.getAttackPower());
+                            order.building.takeDamage(unit.getAttackPower(), unit.countryId);
                             unit.hasAttacked = true;
                             if (order.building.destroyed) unit.attackMoveTarget = null;
                         }
@@ -3536,7 +3571,7 @@
                                         });
 
                                         if (nearestBuilding && nearestBuildingDist < attacker.getRange()) {
-                                            nearestBuilding.takeDamage(attacker.getAttackPower());
+                                            nearestBuilding.takeDamage(attacker.getAttackPower(), attacker.countryId);
                                             attacker.hasAttacked = true;
                                             targetFound = true;
                                         }
@@ -5661,7 +5696,7 @@
             drawRadarPulses();
             const now=Date.now();laserEffects=laserEffects.filter(l=>{const age=now-l.createdAt;if(age>l.duration)return false;const alpha=1-(age/l.duration);const base=l.color||DEFAULT_LASER_COLOR;const c1=`rgba(${base},${alpha*0.3})`;const c2=`rgba(${lightenRgb(base,0.35)},${alpha*0.6})`;const c3=`rgba(${lightenRgb(base,0.65)},${alpha})`;ctx.strokeStyle=c1;ctx.lineWidth=12*camera.zoom;ctx.beginPath();ctx.moveTo(l.startX,l.startY);ctx.lineTo(l.endX,l.endY);ctx.stroke();ctx.strokeStyle=c2;ctx.lineWidth=6*camera.zoom;ctx.beginPath();ctx.moveTo(l.startX,l.startY);ctx.lineTo(l.endX,l.endY);ctx.stroke();ctx.strokeStyle=c3;ctx.lineWidth=2*camera.zoom;ctx.beginPath();ctx.moveTo(l.startX,l.startY);ctx.lineTo(l.endX,l.endY);ctx.stroke();return true;});
             if(!gameState.paused){spaceMines.forEach(mine=>{gameState.countries.forEach(country=>{country.units.forEach(unit=>{if(unit.isGroundUnit()&&unit.isInHarbor)return;const dx=unit.x-mine.x,dy=unit.y-mine.y,dist=Math.sqrt(dx*dx+dy*dy);if(dist<mine.detectionRange&&mine.countryId!==country.id){unit.hp-=Math.ceil(unit.hp*mine.damage);mine.hp=0;}});});});spaceMines=spaceMines.filter(m=>m.hp>0);}
-            if(!gameState.paused){missiles.forEach(m=>{m.update();if(!m.active&&m.targetBuilding&&m.targetCountry&&!m.targetBuilding.destroyed)m.targetBuilding.takeDamage(m.damage);});missiles=missiles.filter(m=>m.active);}
+            if(!gameState.paused){missiles.forEach(m=>{m.update();if(!m.active&&m.targetBuilding&&m.targetCountry&&!m.targetBuilding.destroyed)m.targetBuilding.takeDamage(m.damage, m.countryId);});missiles=missiles.filter(m=>m.active);}
 
             ctx.restore();
 
@@ -5968,21 +6003,21 @@
                                                     unitsInRange++;
                                                     } else {
                                                         const damage = attacker.getAttackPower();
-                                                        targetBuilding.takeDamage(damage);
+                                                        targetBuilding.takeDamage(damage, attacker.countryId);
                                                         attacker.hasAttacked = true;
                                                         anyAttacked = true;
                                                         unitsInRange++;
                                                     }
                                                 } else {
                                                     const damage = attacker.getAttackPower();
-                                                    targetBuilding.takeDamage(damage);
+                                                    targetBuilding.takeDamage(damage, attacker.countryId);
                                                     attacker.hasAttacked = true;
                                                     anyAttacked = true;
                                                     unitsInRange++;
                                                 }
                                             } else {
                                                 const damage = attacker.getAttackPower();
-                                                targetBuilding.takeDamage(damage);
+                                                targetBuilding.takeDamage(damage, attacker.countryId);
                                                 attacker.hasAttacked = true;
                                                 anyAttacked = true;
                                                 unitsInRange++;

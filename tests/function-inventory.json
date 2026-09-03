@@ -60,6 +60,7 @@
     "openInstructions",
     "openSingleMapSetup",
     "openStatsScreen",
+    "playBuildingDestroyedSound",
     "playUIClickSound",
     "pollLoadingScreen",
     "processAttackMoveOrders",
