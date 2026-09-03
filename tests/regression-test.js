@@ -3562,6 +3562,69 @@ check('awardGalaxyBounty() breaks a tie by lowest country id, and is a safe no-o
     return problems;
 });
 
+// ---------- 28. Building-destroyed sound effect (2026-09-03) ----------
+//    Per direct request: only when it's relevant to whoever's turn is
+//    currently active - their own building was destroyed, or their own
+//    troops destroyed someone else's - never for an AI-vs-AI destruction
+//    they had no part in. Spies on playBuildingDestroyedSound() itself
+//    (reassigned inside the sandboxed context, restored after) rather than
+//    asserting on Audio internals, which have no observable state in jsdom -
+//    the real behavior worth verifying is Building.takeDamage()'s gating
+//    logic, not what playBuildingDestroyedSound() does with an Audio object.
+
+check("Building.takeDamage() plays the destroyed sound only when it's relevant to the active player, never for an AI-vs-AI destruction", () => {
+    const problems = [];
+    vm.runInContext('this.__soundPlayCount = 0; this.__origPlayBuildingDestroyedSound = playBuildingDestroyedSound; playBuildingDestroyedSound = () => { this.__soundPlayCount++; };', context);
+    const soundPlayCount = () => vm.runInContext('this.__soundPlayCount', context);
+
+    const playerIsland = new Island(0, 0, 0);
+    const playerCountry = new Country(0, 'Player', '#ff0000', playerIsland, true);
+    const enemyIsland = new Island(1000000, 0, 1);
+    const enemyCountry = new Country(1, 'Enemy', '#00ff00', enemyIsland, false);
+    const bystanderIsland = new Island(2000000, 0, 2);
+    const bystanderCountry = new Country(2, 'Bystander', '#0000ff', bystanderIsland, false);
+    gameState.countries = [playerCountry, enemyCountry, bystanderCountry];
+    gameState.playerCountry = playerCountry;
+
+    try {
+        // Case 1: an AI (enemy) destroys the PLAYER's own building - should play.
+        let building = playerIsland.buildings[1];
+        building.hp = 1; building.destroyed = false;
+        building.takeDamage(999, enemyCountry.id);
+        if (soundPlayCount() !== 1) problems.push(`expected the sound to play when the PLAYER's own building is destroyed, count=${soundPlayCount()}`);
+
+        // Case 2: the PLAYER's own troops destroy an enemy building - should play.
+        building = enemyIsland.buildings[1];
+        building.hp = 1; building.destroyed = false;
+        building.takeDamage(999, playerCountry.id);
+        if (soundPlayCount() !== 2) problems.push(`expected the sound to play when the player's own troops destroy an enemy building, count=${soundPlayCount()}`);
+
+        // Case 3: a bystander AI destroys another AI's building - neither side is the
+        // active player - should NOT play.
+        building = enemyIsland.buildings[2];
+        building.hp = 1; building.destroyed = false;
+        building.takeDamage(999, bystanderCountry.id);
+        if (soundPlayCount() !== 2) problems.push(`expected no sound for an AI-vs-AI destruction the player had no part in, count=${soundPlayCount()}`);
+
+        // Case 4: damage that doesn't destroy the building - should never play, even
+        // when the player is the attacker.
+        building = bystanderIsland.buildings[1];
+        building.hp = 100; building.destroyed = false;
+        building.takeDamage(1, playerCountry.id);
+        if (soundPlayCount() !== 2) problems.push(`expected no sound for damage that doesn't destroy the building, count=${soundPlayCount()}`);
+
+        // Case 5: no attackerCountryId passed at all (a call site that doesn't know
+        // one) - still plays for the PLAYER's own building, per case 1's rule.
+        building = playerIsland.buildings[2];
+        building.hp = 1; building.destroyed = false;
+        building.takeDamage(999);
+        if (soundPlayCount() !== 3) problems.push(`expected the sound to still play for the player's own building with no attackerCountryId, count=${soundPlayCount()}`);
+    } finally {
+        vm.runInContext('playBuildingDestroyedSound = this.__origPlayBuildingDestroyedSound;', context);
+    }
+    return problems;
+});
+
 report();
 process.exit(failures.length > 0 ? 1 : 0);
 
