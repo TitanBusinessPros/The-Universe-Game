@@ -127,13 +127,14 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage };',
     context,
     { filename: 'grab-refs.js' }
 );
 const {
     Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat,
     ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS,
+    UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS,
     DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas,
     canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS,
     AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame,
@@ -166,6 +167,10 @@ const ALL_TYPES = [
 ];
 const GROUND_TYPES = ['groundpounders', 'ironbeast', 'boomcannon'];
 const COMBAT_TYPES = ALL_TYPES.filter(t => t !== 'radar' && t !== 'cargohauler');
+// Every type buildUnit() actually spawns for a human/AI country - excludes the
+// alien-only special units (cyborgdreadnought/zoonparasite/roufestreal), which
+// aiTurn() spawns directly and never through buildUnit()/canBuildUnit().
+const BUILDABLE_TYPES = ALL_TYPES.filter(t => !['cyborgdreadnought', 'zoonparasite', 'roufestreal'].includes(t));
 
 function makeUnit(type, countryId) {
     return new Unit(0, 0, type, countryId);
@@ -2305,6 +2310,90 @@ check('Island.getHarbor()/getDefenseGun()/getHarborWorldPosition() find the righ
     harbor.destroyed = true;
     if (island.getHarbor()) problems.push('expected getHarbor() to return nothing once the harbor is destroyed');
     if (island.getHarborWorldPosition()) problems.push('expected getHarborWorldPosition() to return null once the harbor is destroyed');
+    return problems;
+});
+
+// ---------- 24. Building-gated unit production (2026-09-03) ----------
+//    A destroyed building used to have zero effect on what a country could
+//    still build - buildUnit() only ever checked tech/resources. Now every
+//    buildable unit type is mapped (UNIT_BUILDING_REQUIREMENTS) to the one
+//    fixed building slot that actually produces it - Harbor (vessels), Marine
+//    Base (ground troops), or War Factory (aircraft) - and canBuildUnit()
+//    refuses once that building is destroyed. Applies identically to the
+//    player and every AI/alien country, since aiTurn()'s build calls funnel
+//    through the same Country.buildUnit()/canBuildUnit().
+
+check('UNIT_BUILDING_REQUIREMENTS maps every buildable unit type exactly once, to a real production building', () => {
+    const problems = [];
+    BUILDABLE_TYPES.forEach(type => {
+        const key = UNIT_BUILDING_REQUIREMENTS[type];
+        if (!key) problems.push(`"${type}" has no entry in UNIT_BUILDING_REQUIREMENTS - it would be buildable even with every building destroyed`);
+        else if (!PRODUCTION_BUILDING_LABELS[key]) problems.push(`"${type}" maps to unknown building key "${key}"`);
+    });
+    return problems;
+});
+
+check('Island.getMarineBase()/getWarFactory()/getProductionBuilding() find the right building and ignore destroyed ones', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const marineBase = island.getMarineBase();
+    const warFactory = island.getWarFactory();
+    if (!marineBase || !marineBase.isMarineBase) problems.push('expected getMarineBase() to find the Marine Base building');
+    if (!warFactory || !warFactory.isWarFactory) problems.push('expected getWarFactory() to find the War Factory building');
+    if (island.getProductionBuilding('harbor') !== island.getHarbor()) problems.push('expected getProductionBuilding("harbor") to match getHarbor()');
+    if (island.getProductionBuilding('marinebase') !== marineBase) problems.push('expected getProductionBuilding("marinebase") to match getMarineBase()');
+    if (island.getProductionBuilding('warfactory') !== warFactory) problems.push('expected getProductionBuilding("warfactory") to match getWarFactory()');
+    if (island.getProductionBuilding('nonsense') !== null) problems.push('expected an unknown key to return null');
+
+    marineBase.destroyed = true;
+    if (island.getMarineBase()) problems.push('expected getMarineBase() to return nothing once the Marine Base is destroyed');
+    warFactory.destroyed = true;
+    if (island.getWarFactory()) problems.push('expected getWarFactory() to return nothing once the War Factory is destroyed');
+    return problems;
+});
+
+check('canBuildUnit()/buildUnit() are blocked once the mapped building is destroyed, and only that category', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'BuildingGateTest', '#ff0000', island, true);
+    gameState.countries = [country];
+
+    // Sanity: fully intact, one representative unit per category all buildable.
+    if (!country.canBuildUnit('deepglider')) problems.push('expected deepglider (Harbor) buildable before any building is destroyed');
+    if (!country.canBuildUnit('groundpounders')) problems.push('expected groundpounders (Marine Base) buildable before any building is destroyed');
+    if (!country.canBuildUnit('radar')) problems.push('expected radar (War Factory) buildable before any building is destroyed');
+
+    island.getHarbor().destroyed = true;
+    if (country.canBuildUnit('deepglider')) problems.push('expected deepglider blocked once the Harbor is destroyed');
+    if (country.buildUnit('deepglider')) problems.push('expected buildUnit(deepglider) to fail once the Harbor is destroyed');
+    if (!country.canBuildUnit('groundpounders')) problems.push('destroying the Harbor should not block groundpounders (Marine Base)');
+    if (!country.canBuildUnit('radar')) problems.push('destroying the Harbor should not block radar (War Factory)');
+
+    island.getMarineBase().destroyed = true;
+    if (country.canBuildUnit('groundpounders')) problems.push('expected groundpounders blocked once the Marine Base is destroyed');
+    if (country.buildUnit('groundpounders')) problems.push('expected buildUnit(groundpounders) to fail once the Marine Base is destroyed');
+    if (!country.canBuildUnit('radar')) problems.push('destroying the Marine Base should not block radar (War Factory)');
+
+    island.getWarFactory().destroyed = true;
+    if (country.canBuildUnit('radar')) problems.push('expected radar blocked once the War Factory is destroyed');
+    if (country.buildUnit('radar')) problems.push('expected buildUnit(radar) to fail once the War Factory is destroyed');
+    return problems;
+});
+
+check('buildUnit() (the global wrapper) tells the player which destroyed building is blocking a unit, distinct from a research gate', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'BuildingGateMessageTest', '#ff0000', island, true);
+    gameState.countries = [country];
+    gameState.playerCountry = country;
+    gameState.humanCountryIds = [0];
+    gameState.campaignActive = false;
+    gameState.paused = false;
+
+    island.getMarineBase().destroyed = true;
+    const startUnitCount = country.units.length;
+    buildUnit('groundpounders'); // should hit the building-gate branch, not the tech-gate branch, and build nothing
+    if (country.units.length !== startUnitCount) problems.push('expected no unit spawned when the required building is destroyed');
     return problems;
 });
 

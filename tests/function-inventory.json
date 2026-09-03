@@ -122,7 +122,10 @@
       "getDefenseGun",
       "getHarbor",
       "getHarborWorldPosition",
-      "getResearchLab"
+      "getMarineBase",
+      "getProductionBuilding",
+      "getResearchLab",
+      "getWarFactory"
     ],
     "Unit": [
       "canAttackBuildings",
