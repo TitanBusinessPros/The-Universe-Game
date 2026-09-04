@@ -127,7 +127,7 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage, assignAttackTargets, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS, randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER, nearestMinimapLandmark };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage, assignAttackTargets, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS, randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER, nearestMinimapLandmark, spawnHotsun, damageNearHotsun, HOTSUN_IMAGE_URL, HOTSUN_SIZE, HOTSUN_RADIATION_RANGE, HOTSUN_DAMAGE_PERCENT, PLANET_SCALE };',
     context,
     { filename: 'grab-refs.js' }
 );
@@ -160,7 +160,7 @@ const {
     whenImagesReady, spaceElements, loadMineImage, mineImage,
     assignAttackTargets, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS,
     randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER,
-    nearestMinimapLandmark
+    nearestMinimapLandmark, spawnHotsun, damageNearHotsun, HOTSUN_IMAGE_URL, HOTSUN_SIZE, HOTSUN_RADIATION_RANGE, HOTSUN_DAMAGE_PERCENT, PLANET_SCALE
 } = context.__test;
 
 // ---------- Test data: the full combat unit roster ----------
@@ -3480,7 +3480,7 @@ check('startCampaignStage() clears galaxyCores - Campaign mode must never inheri
 });
 
 // ---------- 27. Galaxy Bounty (2026-09-03) ----------
-//    A second landmark (Galaxy-2.png), twice the size of the (healing) Galaxy
+//    A second landmark (new-galaxy-2.png), twice the size of the (healing) Galaxy
 //    Core, in the opposite corner of the map. Doesn't heal - instead, each
 //    turn it pays GALAXY_BOUNTY_GOLD_PER_ROUND to whichever country has the
 //    most of its own ships (>= GALAXY_BOUNTY_MIN_SHIPS) within
@@ -4118,7 +4118,9 @@ check('showCampaignStageComplete() plays the endgame sound only when the whole c
 //    invisible on the minimap and excluded from getGalaxyBounds() - unlike
 //    the Galaxy Core/Bounty, its position must never be tell-tale there.
 
-check('spawnBlackHole() places exactly one Nerfflasma Hole at the map center with the right size/HP', () => {
+check('spawnBlackHole() places exactly one Nerfflasma Hole a safe distance from Hotsun at dead-center, with the right size/HP', () => {
+    // Used to spawn exactly at map center; now offset (2026-09-04) since Hotsun
+    // permanently occupies that exact point - see spawnBlackHole()'s own comment.
     const problems = [];
     blackHoles.length = 0;
     spawnBlackHole();
@@ -4127,7 +4129,11 @@ check('spawnBlackHole() places exactly one Nerfflasma Hole at the map center wit
         const hole = blackHoles[0];
         if (hole.size !== BLACK_HOLE_SIZE) problems.push(`expected size BLACK_HOLE_SIZE (${BLACK_HOLE_SIZE}), got ${hole.size}`);
         if (hole.hp !== BLACK_HOLE_MAX_HP || hole.maxHp !== BLACK_HOLE_MAX_HP) problems.push(`expected hp/maxHp BLACK_HOLE_MAX_HP (${BLACK_HOLE_MAX_HP}), got ${hole.hp}/${hole.maxHp}`);
-        if (hole.x !== MAP_WIDTH / 2 || hole.y !== MAP_HEIGHT / 2) problems.push(`expected it centered on the map, got (${hole.x}, ${hole.y})`);
+        const distFromCenter = Math.hypot(hole.x - MAP_WIDTH / 2, hole.y - MAP_HEIGHT / 2);
+        const expectedDist = HOTSUN_SIZE + HOTSUN_RADIATION_RANGE + BLACK_HOLE_SIZE;
+        if (Math.abs(distFromCenter - expectedDist) > 1) {
+            problems.push(`expected it offset ${expectedDist} from center (clear of Hotsun's radiation range), got ${distFromCenter.toFixed(0)}`);
+        }
     }
     return problems;
 });
@@ -4771,6 +4777,125 @@ check('drawMinimap()\'s camera viewport rectangle has a minimum visible size, pe
     if (!/Math\.max\(bottomRightRaw\.y - topLeftRaw\.y, MIN_VIEWPORT_BOX_PX\)/.test(script)) {
         problems.push('expected the viewport box height to be clamped to at least MIN_VIEWPORT_BOX_PX');
     }
+    return problems;
+});
+
+// ---------- Hotsun (2026-09-04) ----------
+// Direct request: "This image is to be placed in the center of the map
+// Hotsun.png... 10 times larger then a planet. Any ship that goes a distance
+// of 2000 near this sun will start losing health. Every ship will loose 20%
+// health due to radiation poisioning."
+
+check('spawnHotsun() places exactly one Hotsun at dead-center, 10x a planet\'s size, built from Hotsun.png', () => {
+    const problems = [];
+    galaxyCores.length = 0;
+    spawnHotsun();
+    const suns = galaxyCores.filter(c => c.kind === 'hotsun');
+    if (suns.length !== 1) { problems.push(`expected exactly 1 Hotsun, got ${suns.length}`); return problems; }
+    const sun = suns[0];
+    if (sun.x !== MAP_WIDTH / 2 || sun.y !== MAP_HEIGHT / 2) problems.push(`expected it at dead-center, got (${sun.x}, ${sun.y})`);
+    if (sun.size !== HOTSUN_SIZE) problems.push(`expected size HOTSUN_SIZE (${HOTSUN_SIZE}), got ${sun.size}`);
+    if (HOTSUN_SIZE !== 250 * PLANET_SCALE * 10) problems.push(`expected HOTSUN_SIZE to be 10x a planet's base size, got ${HOTSUN_SIZE}`);
+    // Not sun.sprite.src - by this point in the suite the image-load queue's
+    // concurrency limit is permanently saturated with earlier tests' never-
+    // resolving loads (jsdom never actually fetches images), so a freshly
+    // queued image's .src may never get assigned. HOTSUN_IMAGE_URL itself -
+    // what queueImageLoad() was actually called with - is the real assertion.
+    if (!HOTSUN_IMAGE_URL.includes('Hotsun.png')) problems.push(`expected HOTSUN_IMAGE_URL to reference Hotsun.png, got ${HOTSUN_IMAGE_URL}`);
+    galaxyCores.length = 0;
+    return problems;
+});
+
+check('spawnHotsun() is idempotent - calling it again replaces the old Hotsun, never adds a second one', () => {
+    galaxyCores.length = 0;
+    spawnHotsun();
+    spawnHotsun();
+    const count = galaxyCores.filter(c => c.kind === 'hotsun').length;
+    galaxyCores.length = 0;
+    return count === 1 ? [] : [`expected exactly 1 Hotsun after calling spawnHotsun() twice, got ${count}`];
+});
+
+check("damageNearHotsun() takes 20% of max HP from every ship within HOTSUN_RADIATION_RANGE, every country/faction included, and leaves out-of-range ships alone", () => {
+    const problems = [];
+    galaxyCores.length = 0;
+    spawnHotsun();
+    const sun = galaxyCores.find(c => c.kind === 'hotsun');
+
+    const a = new Country(0, 'A', '#fff', new Island(2000000, 0, 0), false);
+    const nearShip = makeUnit('stormbreaker', 0);
+    nearShip.x = sun.x + HOTSUN_RADIATION_RANGE - 10; nearShip.y = sun.y; // just inside range
+    const farShip = makeUnit('stormbreaker', 0);
+    farShip.x = sun.x + HOTSUN_RADIATION_RANGE + 5000; farShip.y = sun.y; // well outside range
+    a.units = [nearShip, farShip];
+
+    const alien = new Country(12, 'Alien', '#0ff', new Island(-2000000, 0, 12), false);
+    alien.isCyborg = true;
+    const nearAlienShip = makeUnit('cyborgdreadnought', 12);
+    nearAlienShip.x = sun.x; nearAlienShip.y = sun.y + HOTSUN_RADIATION_RANGE - 10;
+    alien.units = [nearAlienShip];
+
+    gameState.countries = [a, alien];
+
+    const nearMaxHp = nearShip.getMaxHP(), farMaxHp = farShip.getMaxHP(), alienMaxHp = nearAlienShip.getMaxHP();
+    const nearHpBefore = nearShip.hp, farHpBefore = farShip.hp, alienHpBefore = nearAlienShip.hp;
+
+    damageNearHotsun();
+
+    const expectedNearHp = nearHpBefore - nearMaxHp * HOTSUN_DAMAGE_PERCENT;
+    if (Math.abs(nearShip.hp - expectedNearHp) > 0.01) {
+        problems.push(`expected the near ship to lose ${HOTSUN_DAMAGE_PERCENT * 100}% of its max HP (${nearMaxHp}), got hp ${nearShip.hp} (was ${nearHpBefore})`);
+    }
+    if (farShip.hp !== farHpBefore) problems.push(`expected the far ship (outside range) untouched, got hp ${farShip.hp} (was ${farHpBefore})`);
+    const expectedAlienHp = alienHpBefore - alienMaxHp * HOTSUN_DAMAGE_PERCENT;
+    if (Math.abs(nearAlienShip.hp - expectedAlienHp) > 0.01) {
+        problems.push(`expected the alien ship (near, different faction) to also take radiation damage, got hp ${nearAlienShip.hp} (was ${alienHpBefore})`);
+    }
+    galaxyCores.length = 0;
+    return problems;
+});
+
+check('damageNearHotsun() is a safe no-op when there is no Hotsun in the roster', () => {
+    galaxyCores.length = 0;
+    const a = new Country(0, 'A', '#fff', new Island(0, 0, 0), false);
+    const ship = makeUnit('stormbreaker', 0);
+    ship.x = 0; ship.y = 0;
+    a.units = [ship];
+    gameState.countries = [a];
+    const hpBefore = ship.hp;
+    damageNearHotsun();
+    return ship.hp === hpBefore ? [] : [`expected no damage with zero Hotsuns present, hp went ${hpBefore} -> ${ship.hp}`];
+});
+
+check("HOTSUN_RADIATION_RANGE is measured from Hotsun's own edge (size + 2000), not its center", () => {
+    const expected = HOTSUN_SIZE + 2000;
+    return Math.abs(HOTSUN_RADIATION_RANGE - expected) < 0.01
+        ? []
+        : [`expected HOTSUN_RADIATION_RANGE = HOTSUN_SIZE + 2000 (${expected}), got ${HOTSUN_RADIATION_RANGE}`];
+});
+
+check('initGame() spawns Hotsun (Standard Game only, alongside the other landmarks)', () => {
+    return script.includes('spawnHotsun();') ? [] : ['expected initGame() to call spawnHotsun()'];
+});
+
+check('nextTurn() applies Hotsun radiation every turn, alongside the Galaxy Core heal/Bounty award', () => {
+    return script.includes('damageNearHotsun();') ? [] : ['expected nextTurn() to call damageNearHotsun()'];
+});
+
+// ---------- Galaxy Core/Bounty/Hotsun spin (2026-09-04) ----------
+// Direct request: "After replacement you will make galaxy 1 and 2 spin like
+// the planets." Applied to the whole shared GalaxyCore class (heal/bounty/
+// hotsun all use it), same rotationAngle/rotationSpeed pattern already used
+// by Island (planets) and ResourceDeposit.
+
+check('GalaxyCore instances spin in place like planets once their sprite is loaded', () => {
+    const problems = [];
+    const core = new GalaxyCore(0, 0);
+    if (typeof core.rotationAngle !== 'number') problems.push('expected a rotationAngle field on GalaxyCore instances');
+    if (typeof core.rotationSpeed !== 'number' || core.rotationSpeed === 0) problems.push('expected a non-zero rotationSpeed field on GalaxyCore instances');
+    core.sprite = { complete: true, naturalWidth: 10 }; // force the "loaded" branch of draw()
+    const before = core.rotationAngle;
+    core.draw();
+    if (core.rotationAngle === before) problems.push("expected draw() to advance rotationAngle once the sprite is loaded (the spin itself)");
     return problems;
 });
 
