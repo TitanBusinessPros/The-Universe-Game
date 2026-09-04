@@ -4620,14 +4620,39 @@ check('a real initGame() run keeps the Galaxy Core and Galaxy Bounty clear of ev
 // have to use the real, dynamic getGalaxyBounds() instead, since Standard
 // Game planets can land well outside that fixed box.
 
-check('PLANET_SPREAD_MULTIPLIER scales PLANET_MIN_SEPARATION, and sits within the requested 3-5x range', () => {
+check('PLANET_SPREAD_MULTIPLIER scales PLANET_MIN_SEPARATION off the map\'s LARGER dimension, and sits within the requested (compounded) 20-40x range', () => {
+    // Follow-up direct report (2026-09-04): "I still think these planets are
+    // too close... Lets spread them out 5-10 times futhrur away". Compounds on
+    // the previous 4x (same "X times further than they are now" phrasing, read
+    // the same way both times) - 4 * (5 to 10) = 20 to 40 total.
     const problems = [];
-    const expected = Math.min(MAP_WIDTH, MAP_HEIGHT) * 0.12 * PLANET_SPREAD_MULTIPLIER;
+    const expected = Math.max(MAP_WIDTH, MAP_HEIGHT) * 0.12 * PLANET_SPREAD_MULTIPLIER;
     if (Math.abs(PLANET_MIN_SEPARATION - expected) > 1) {
-        problems.push(`expected PLANET_MIN_SEPARATION to scale by PLANET_SPREAD_MULTIPLIER, got ${PLANET_MIN_SEPARATION} vs expected ${expected}`);
+        problems.push(`expected PLANET_MIN_SEPARATION to scale off the larger dimension by PLANET_SPREAD_MULTIPLIER, got ${PLANET_MIN_SEPARATION} vs expected ${expected}`);
     }
-    if (PLANET_SPREAD_MULTIPLIER < 3 || PLANET_SPREAD_MULTIPLIER > 5) {
-        problems.push(`expected PLANET_SPREAD_MULTIPLIER within the requested 3-5x range, got ${PLANET_SPREAD_MULTIPLIER}`);
+    if (PLANET_SPREAD_MULTIPLIER < 20 || PLANET_SPREAD_MULTIPLIER > 40) {
+        problems.push(`expected PLANET_SPREAD_MULTIPLIER within the requested compounded 20-40x range, got ${PLANET_SPREAD_MULTIPLIER}`);
+    }
+    return problems;
+});
+
+check("initGame()'s planet-spread box is a true square (both axes sized off the map's larger dimension), not shaped like the screen - per direct report of empty space at the top and bottom", () => {
+    // A square box means a real initGame() run's planets should cover
+    // comparable vertical and horizontal extents - not the screen's own (wider)
+    // aspect ratio, which is what caused the reported empty top/bottom bands
+    // regardless of how big PLANET_SPREAD_MULTIPLIER was.
+    const problems = [];
+    gameState.countries = [];
+    vm.runInContext('initGame();', context, { filename: 'square-spread-check.js' });
+    const xs = gameState.countries.map(c => c.island.x);
+    const ys = gameState.countries.map(c => c.island.y);
+    const xRange = Math.max(...xs) - Math.min(...xs);
+    const yRange = Math.max(...ys) - Math.min(...ys);
+    // Loose tolerance - this is about "roughly square", not pixel-exact, since
+    // random placement won't perfectly fill a box's every last corner.
+    const ratio = xRange / yRange;
+    if (ratio < 0.5 || ratio > 2) {
+        problems.push(`expected the real galaxy's X and Y extents to be roughly comparable (square spread box), got xRange=${xRange.toFixed(0)}, yRange=${yRange.toFixed(0)} (ratio ${ratio.toFixed(2)})`);
     }
     return problems;
 });
