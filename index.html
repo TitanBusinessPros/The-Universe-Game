@@ -864,18 +864,20 @@
         // this so auto-enabling sound once the map starts never overrides a player's
         // own explicit "sound off" (or "sound on") choice made at any point before then.
         let soundManuallySet = false;
-        // Start-screen intro music (2026-09-03, per direct request) - "Humanity Does
-        // Not Disappear.mp3", starts as the game loads (initAudio() runs once,
-        // unconditionally, from initGame() - see its own call site) and plays through
-        // ONCE (loop=false), same muted-until-unmuted mechanism as bgMusic below so it
-        // can actually start without a user gesture (browsers allow muted autoplay,
-        // never unmuted autoplay). Per a direct follow-up correction, it's deliberately
-        // NEVER force-stopped by picking a country, the briefing video ("the ad"), a
-        // loading screen, or bgMusic starting - it's meant to play over/through all of
-        // that and simply run out on its own (setSoundEnabled() below only ever
-        // resumes/unmutes it, never restarts it once finished).
+        // Start-screen intro music (2026-09-03, per direct request, track swapped to
+        // "The Last Order Standing.mp3" the same day per a direct follow-up - was
+        // "Humanity Does Not Disappear.mp3") - starts as the game loads (initAudio()
+        // runs once, unconditionally, from initGame() - see its own call site) and
+        // plays through ONCE (loop=false), same muted-until-unmuted mechanism as
+        // bgMusic below so it can actually start without a user gesture (browsers
+        // allow muted autoplay, never unmuted autoplay). Per a direct follow-up
+        // correction, it's deliberately NEVER force-stopped by picking a country, the
+        // briefing video ("the ad"), a loading screen, or bgMusic starting - it's
+        // meant to play over/through all of that and simply run out on its own
+        // (setSoundEnabled() below only ever resumes/unmutes it, never restarts it
+        // once finished).
         let introMusic = null;
-        const INTRO_MUSIC_URL = 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Sound%20Effects/Humanity%20Does%20Not%20Disappear.mp3';
+        const INTRO_MUSIC_URL = 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Sound%20Effects/The%20Last%20Order%20Standing.mp3';
 
         function initAudio() {
             bgMusic = new Audio('https://raw.githubusercontent.com/TitanBusinessPros/SGA-1/main/Stellar%20Voyage.mp3');
@@ -1009,6 +1011,52 @@
             try {
                 const sfx = new Audio(LASER_SOUND_URL);
                 sfx.volume = 0.4;
+                sfx.play().catch(err => { console.log('Audio play failed:', err); });
+            } catch (e) { /* audio not available in this environment */ }
+        }
+
+        // Home-under-attack sound effect (2026-09-03, per direct request) - "every
+        // turn your buildings are under attack this sound will come on once per turn
+        // ... we don't want it to overlap multiple attacks", and "no matter where you
+        // are on the map" (per a direct follow-up - i.e. never gated on camera/
+        // viewport position, same as every other sound here already). Fires from
+        // Building.takeDamage() on ANY hit to one of the active player's own
+        // buildings (not just a destroying one - "under attack" means any damage),
+        // for whoever's turn is currently active (gameState.playerCountry), same
+        // ownership check playBuildingDestroyedSound() already needs there. The
+        // once-per-turn gate is homeUnderAttackPlayedThisTurn, reset in nextTurn() -
+        // it's only ever marked once the sound actually plays (soundEnabled true),
+        // so if sound is off when the first hit lands this turn, turning it on later
+        // the same turn still lets a later hit alert the player, rather than having
+        // silently "used up" the one alert for a turn no sound was ever heard.
+        const HOME_UNDER_ATTACK_SOUND_URL = 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Sound%20Effects/homeunderattack.mp3';
+        let homeUnderAttackPlayedThisTurn = false;
+        function playHomeUnderAttackSound() {
+            if (homeUnderAttackPlayedThisTurn || !soundEnabled) return;
+            homeUnderAttackPlayedThisTurn = true;
+            try {
+                const sfx = new Audio(HOME_UNDER_ATTACK_SOUND_URL);
+                sfx.volume = 0.6;
+                sfx.play().catch(err => { console.log('Audio play failed:', err); });
+            } catch (e) { /* audio not available in this environment */ }
+        }
+
+        // Endgame (victory) sound effect (2026-09-03, per direct request) - "when the
+        // screen pops up that you won the game this will start playing automatically
+        // over any sound" (i.e. layers on top of whatever's already playing, same
+        // non-exclusive "can play at the same time" philosophy as the intro music -
+        // never pauses bgMusic or anything else for it) "and finish before the game
+        // ends" - it plays through once (a fresh Audio(), not looped), same as every
+        // other one-shot sound here. Called only from the two real "you actually won"
+        // moments - showGameOver(true, ...) (Standard Game/hot-seat) and
+        // showCampaignStageComplete() specifically when the whole campaign (not just
+        // one stage) is cleared - never on a defeat or an ordinary per-stage clear.
+        const ENDGAME_SOUND_URL = 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Sound%20Effects/Endgame.mp3';
+        function playEndgameSound() {
+            if (!soundEnabled) return;
+            try {
+                const sfx = new Audio(ENDGAME_SOUND_URL);
+                sfx.volume = 0.6;
                 sfx.play().catch(err => { console.log('Audio play failed:', err); });
             } catch (e) { /* audio not available in this environment */ }
         }
@@ -2101,17 +2149,24 @@
             takeDamage(amount = 1, attackerCountryId = null) {
                 if (!this.destroyed) {
                     this.hp -= amount;
+                    // Building has no owner back-reference, so find it by searching
+                    // countries - cheap (at most a few dozen countries x 6 buildings
+                    // each), and takeDamage() itself only runs on real combat hits,
+                    // never per frame.
+                    const owningCountry = gameState.playerCountry && gameState.countries.find(c => c.island.buildings.includes(this));
+                    const isOwnBuilding = owningCountry === gameState.playerCountry;
+                    // Home-under-attack sound (2026-09-03, per direct request) - any
+                    // hit on the active player's own building, not just a destroying
+                    // one - see playHomeUnderAttackSound()'s own comment for the
+                    // once-per-turn gating.
+                    if (isOwnBuilding) playHomeUnderAttackSound();
                     if (this.hp <= 0) {
                         this.hp = 0;
                         this.destroyed = true;
                         // Building-destroyed sound (2026-09-03, per direct request) -
                         // "only when your troops destroy a building or one of your
-                        // buildings gets destroyed". Building has no owner
-                        // back-reference, so find it by searching countries - cheap,
-                        // only runs once per actual destruction, never per frame.
+                        // buildings gets destroyed".
                         if (gameState.playerCountry) {
-                            const owningCountry = gameState.countries.find(c => c.island.buildings.includes(this));
-                            const isOwnBuilding = owningCountry === gameState.playerCountry;
                             const isOwnAttack = attackerCountryId === gameState.playerCountry.id;
                             if (isOwnBuilding || isOwnAttack) playBuildingDestroyedSound();
                         }
@@ -4500,6 +4555,7 @@
         function nextTurn() {
             gameState.turn++;
             gameState.turnTimeRemaining = TURN_TIME_SECONDS;
+            homeUnderAttackPlayedThisTurn = false; // per direct request - resets the once-per-turn alert budget
             gameState.countries.forEach(c => {
                 c.collectResources();
                 c.resetAttacks();
@@ -4603,6 +4659,7 @@
         function showGameOver(victory, message) {
             gameState.paused = true;
             clearAutosave(); // don't offer "Continue" into a game that's already over
+            if (victory) playEndgameSound(); // per direct request - only a real win, never a defeat
 
             // A campaign win is never routed here (checkGameOver() calls
             // showCampaignStageComplete() instead), so the only campaign case reaching this
@@ -5171,7 +5228,13 @@
             saveCampaignProgress(nextIndex);
 
             lifetimeStats.campaign.stagesCleared++;
-            if (nextIndex >= gameState.campaignStages.length) lifetimeStats.campaign.campaignsCompleted++;
+            // Per direct request: only the whole campaign finishing counts as
+            // "winning the game" - an ordinary per-stage clear is just progress,
+            // not a win, so playEndgameSound() is deliberately scoped to this branch.
+            if (nextIndex >= gameState.campaignStages.length) {
+                lifetimeStats.campaign.campaignsCompleted++;
+                playEndgameSound();
+            }
             saveLifetimeStats();
 
             const titleEl = document.getElementById('campaignStageTitle');

@@ -63,6 +63,8 @@
     "openSingleMapSetup",
     "openStatsScreen",
     "playBuildingDestroyedSound",
+    "playEndgameSound",
+    "playHomeUnderAttackSound",
     "playLaserAttackSound",
     "playUIClickSound",
     "pollLoadingScreen",
