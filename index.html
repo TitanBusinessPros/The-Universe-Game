@@ -4122,11 +4122,18 @@
                 ));
             });
 
+            // Scattered across wherever the actual galaxy is (see getGalaxyBounds()),
+            // not a fixed MAP_WIDTH/MAP_HEIGHT box - Standard Game planets can now
+            // land well outside that box (see PLANET_SPREAD_MULTIPLIER), and this
+            // function is shared with Campaign mode (built independently per
+            // stage), so a dynamic bounds keeps both modes' extra deposits actually
+            // scattered across their own real roster instead of one fixed area.
+            const bounds = getGalaxyBounds();
             let placed = 0, attempts = 0;
             while (placed < EXTRA_DEPOSIT_COUNT && attempts < EXTRA_DEPOSIT_COUNT * 30) {
                 attempts++;
-                const x = Math.random() * MAP_WIDTH;
-                const y = Math.random() * MAP_HEIGHT;
+                const x = bounds.minX + Math.random() * (bounds.maxX - bounds.minX);
+                const y = bounds.minY + Math.random() * (bounds.maxY - bounds.minY);
                 const tooCloseToIsland = gameState.countries.some(c =>
                     Math.hypot(x - c.island.x, y - c.island.y) < c.island.collisionSize + 300
                 );
@@ -4281,10 +4288,17 @@
                 hole.y += Math.sin(moveAngle) * step;
                 // Bounce gently off the galaxy's edges rather than wandering off it
                 // forever - "travels around the galaxy" implies staying within it.
-                if (hole.x < 0 || hole.x > MAP_WIDTH) hole.wanderAngle = Math.PI - hole.wanderAngle;
-                if (hole.y < 0 || hole.y > MAP_HEIGHT) hole.wanderAngle = -hole.wanderAngle;
-                hole.x = Math.max(0, Math.min(MAP_WIDTH, hole.x));
-                hole.y = Math.max(0, Math.min(MAP_HEIGHT, hole.y));
+                // Bounds come from getGalaxyBounds() (the real, current extent of
+                // every planet), not the fixed MAP_WIDTH/MAP_HEIGHT box - Standard
+                // Game planets can now land well outside that box (see
+                // PLANET_SPREAD_MULTIPLIER), and this hole is Standard-Game-only
+                // (see spawnBlackHole()), so it should actually be able to reach
+                // all of them, not just the old smaller central area.
+                const bounds = getGalaxyBounds();
+                if (hole.x < bounds.minX || hole.x > bounds.maxX) hole.wanderAngle = Math.PI - hole.wanderAngle;
+                if (hole.y < bounds.minY || hole.y > bounds.maxY) hole.wanderAngle = -hole.wanderAngle;
+                hole.x = Math.max(bounds.minX, Math.min(bounds.maxX, hole.x));
+                hole.y = Math.max(bounds.minY, Math.min(bounds.maxY, hole.y));
 
                 gameState.countries.forEach(country => {
                     country.units.forEach(unit => {
@@ -4371,10 +4385,27 @@
             return best;
         }
 
+        // Per direct request (2026-09-04): "The planets were not spread out far
+        // enough from each other. I want them to be 3-5 times futhrur away from
+        // each other as they are now. I don't want planets close to one another."
+        // Middle of the requested 3-5x range. Deliberately NOT done by growing
+        // MAP_WIDTH/MAP_HEIGHT/GALAXY_SPACING_SCALE themselves - those also drive
+        // Campaign mode's own layout (campaignNationPosition() reads MAP_WIDTH/
+        // HEIGHT directly) and would have ballooned its spacing too as an
+        // unrelated side effect. Instead, only the Standard Game/hot-seat planet
+        // spread area and PLANET_MIN_SEPARATION below scale by this factor
+        // together, which preserves the same packing feasibility (area needed
+        // for N planets at a given minimum spacing scales with the square of
+        // that spacing, and the spread area below scales by the square of this
+        // same multiplier, so the ratio - and therefore how comfortably
+        // randomSpreadPosition() can actually satisfy the minimum - stays
+        // unchanged from before this multiplier existed).
+        const PLANET_SPREAD_MULTIPLIER = 4;
+
         // How far apart planets must be from one another, at minimum - a fraction of
         // the map's own size so it scales sanely regardless of screen resolution
         // (MAP_WIDTH/MAP_HEIGHT are derived from canvas.width/height).
-        const PLANET_MIN_SEPARATION = Math.min(MAP_WIDTH, MAP_HEIGHT) * 0.12;
+        const PLANET_MIN_SEPARATION = Math.min(MAP_WIDTH, MAP_HEIGHT) * 0.12 * PLANET_SPREAD_MULTIPLIER;
 
         // Distance from galaxy center to the farthest planet's island - used by
         // spawnGalaxyCore()/spawnGalaxyBounty() to place their landmark just outside
@@ -4405,17 +4436,25 @@
             // Initialize audio
             initAudio();
 
-            const marginX = MAP_WIDTH * 0.1;
-            const marginY = MAP_HEIGHT * 0.1;
+            // Planet-spread bounding box: the same center as everywhere else
+            // (MAP_WIDTH/2, MAP_HEIGHT/2), scaled outward by PLANET_SPREAD_MULTIPLIER
+            // - see that constant's comment for why this scales the box instead of
+            // MAP_WIDTH/MAP_HEIGHT themselves.
+            const centerX = MAP_WIDTH / 2;
+            const centerY = MAP_HEIGHT / 2;
+            const spreadHalfWidth = MAP_WIDTH * 0.4 * PLANET_SPREAD_MULTIPLIER;
+            const spreadHalfHeight = MAP_HEIGHT * 0.4 * PLANET_SPREAD_MULTIPLIER;
+            const spreadMinX = centerX - spreadHalfWidth, spreadMaxX = centerX + spreadHalfWidth;
+            const spreadMinY = centerY - spreadHalfHeight, spreadMaxY = centerY + spreadHalfHeight;
             // Tracks every planet position placed below, regardless of faction, so
             // PLANET_MIN_SEPARATION applies galaxy-wide - "far from each other",
             // not just within one group. Seeded with the exact map center (not a
             // real planet) so nothing randomly lands there - spawnBlackHole() starts
             // the Nerfflasma Hole at dead center and assumes that spot is clear.
-            const planetPositions = [{ x: MAP_WIDTH / 2, y: MAP_HEIGHT / 2 }];
+            const planetPositions = [{ x: centerX, y: centerY }];
 
             for (let i = 0; i < 12; i++) {
-                const pos = randomSpreadPosition(marginX, MAP_WIDTH - marginX, marginY, MAP_HEIGHT - marginY, planetPositions, PLANET_MIN_SEPARATION);
+                const pos = randomSpreadPosition(spreadMinX, spreadMaxX, spreadMinY, spreadMaxY, planetPositions, PLANET_MIN_SEPARATION);
                 planetPositions.push(pos);
                 const island = new Island(pos.x, pos.y, i);
                 const country = new Country(i, COUNTRY_NAMES[i], COUNTRY_COLORS[i], island, false);
@@ -4430,7 +4469,7 @@
             ];
 
             cyborgPlanets.forEach(planet => {
-                const pos = randomSpreadPosition(marginX, MAP_WIDTH - marginX, marginY, MAP_HEIGHT - marginY, planetPositions, PLANET_MIN_SEPARATION);
+                const pos = randomSpreadPosition(spreadMinX, spreadMaxX, spreadMinY, spreadMaxY, planetPositions, PLANET_MIN_SEPARATION);
                 planetPositions.push(pos);
                 const island = new Island(pos.x, pos.y, planet.id);
                 island.size = 350 * PLANET_SCALE;
@@ -4441,7 +4480,7 @@
 
             // Zoonester planet - used to sit a fixed distance north of the northernmost
             // Cyborg planet; now just another randomly-placed planet like everything else.
-            const zoonesterPos = randomSpreadPosition(marginX, MAP_WIDTH - marginX, marginY, MAP_HEIGHT - marginY, planetPositions, PLANET_MIN_SEPARATION);
+            const zoonesterPos = randomSpreadPosition(spreadMinX, spreadMaxX, spreadMinY, spreadMaxY, planetPositions, PLANET_MIN_SEPARATION);
             planetPositions.push(zoonesterPos);
             const zoonesterIsland = new Island(zoonesterPos.x, zoonesterPos.y, 16);
             zoonesterIsland.size = 350 * PLANET_SCALE;
@@ -4484,7 +4523,7 @@
                 // customIsland.xOffset/yOffset are no longer used for placement (see
                 // randomSpreadPosition() and its comment above initGame()) - kept on the
                 // CUSTOM_ISLANDS entries themselves only as unused legacy metadata.
-                const customPos = randomSpreadPosition(marginX, MAP_WIDTH - marginX, marginY, MAP_HEIGHT - marginY, planetPositions, PLANET_MIN_SEPARATION);
+                const customPos = randomSpreadPosition(spreadMinX, spreadMaxX, spreadMinY, spreadMaxY, planetPositions, PLANET_MIN_SEPARATION);
                 planetPositions.push(customPos);
                 const island = new Island(customPos.x, customPos.y, nextCustomId);
                 island.size = (customIsland.size || 350) * PLANET_SCALE;
@@ -4972,9 +5011,15 @@
         }
 
         function viewAll() {
-            camera.x = MAP_WIDTH / 2;
-            camera.y = MAP_HEIGHT / 2;
-            camera.zoom = Math.min(canvas.width / MAP_WIDTH, canvas.height / MAP_HEIGHT) * 0.9;
+            // Fits the real current extent of the galaxy (getGalaxyBounds()), not
+            // the fixed MAP_WIDTH/MAP_HEIGHT box - Standard Game planets can now
+            // land well outside that box (see PLANET_SPREAD_MULTIPLIER), and a
+            // fixed-box zoom would cut off the outer planets instead of actually
+            // showing "all" of them.
+            const b = getGalaxyBounds();
+            camera.x = (b.minX + b.maxX) / 2;
+            camera.y = (b.minY + b.maxY) / 2;
+            camera.zoom = Math.min(canvas.width / (b.maxX - b.minX), canvas.height / (b.maxY - b.minY)) * 0.9;
         }
 
         // Galaxy Core healing (2026-09-03, per direct request) - runs once per turn
@@ -6129,15 +6174,16 @@
             const { mmX, mmY } = minimapBounds();
             return screenX >= mmX && screenX <= mmX + MINIMAP_WIDTH && screenY >= mmY && screenY <= mmY + MINIMAP_HEIGHT;
         }
-        // The Cyborg/Zoonester/custom-island planets sit well outside the [0,MAP_WIDTH]x
-        // [0,MAP_HEIGHT] box (some are 60-70k units off-center, while MAP_WIDTH/HEIGHT
-        // are only sized for the 12-nation grid) - they're still perfectly reachable in
-        // the real 2D world, but mapping the minimap straight off MAP_WIDTH/HEIGHT put
-        // their dots outside the minimap's own rectangle, so over half the galaxy never
-        // showed up on it. Instead, scale the minimap to whatever the actual galaxy's
-        // extent is this game, computed fresh from every planet that actually exists
-        // (works the same for the 27-planet standard galaxy and Campaign Mode's smaller
-        // per-stage roster).
+        // Standard Game planets are randomly scattered (see randomSpreadPosition()/
+        // PLANET_SPREAD_MULTIPLIER) well outside the fixed [0,MAP_WIDTH]x[0,MAP_HEIGHT]
+        // box - they're still perfectly reachable in the real 2D world, but mapping
+        // the minimap straight off MAP_WIDTH/HEIGHT would put plenty of planets
+        // outside the minimap's own rectangle. Instead, scale the minimap (and
+        // anything else that needs "the whole galaxy" - viewAll(), the black hole's
+        // wander bounds, extra resource deposit scatter) to whatever the actual
+        // galaxy's extent is this game, computed fresh from every planet that
+        // actually exists (works the same for the scattered Standard Game galaxy
+        // and Campaign Mode's smaller, differently-laid-out per-stage roster).
         function getGalaxyBounds() {
             if (!gameState.countries || gameState.countries.length === 0) {
                 return { minX: 0, maxX: MAP_WIDTH, minY: 0, maxY: MAP_HEIGHT };
