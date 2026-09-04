@@ -3581,17 +3581,23 @@
                 // by reassignEliminatedAttackTargets(). See the big comment above
                 // assignAttackTargets() for why this exists.
                 this.attackTargetIds = [];
-                // Fog of war (2026-09-04, Standard Game/hot-seat only) - which OTHER
-                // countries/landmarks this country (when human-controlled) has ever
-                // revealed on the minimap by getting a unit within sight range of them.
-                // Permanent once revealed, per direct request ("if my troops come across
-                // a planet it will now show on the minimap") - not re-hidden if the unit
-                // that found it later leaves. Kept per-country (not global) so hot-seat's
-                // several human seats each have their own fog, same reasoning
-                // gameState.playerCountry already keys everything else human-specific on.
-                // See updateFogOfWar()/drawMinimap().
-                this.exploredCountryIds = new Set();
-                this.exploredCoreKinds = new Set();
+                // Fog of war (2026-09-04, Standard Game/hot-seat only; rebuilt the same
+                // day into real continuous-space coverage - see direct follow-up report
+                // below). Every circle {x, y, radius} this country (when human-
+                // controlled) has ever revealed by getting a unit within sight range of
+                // that point. Permanent once revealed, per direct request ("if my troops
+                // come across a planet it will now show on the minimap") - never
+                // re-hidden once the unit that found it leaves. Drives BOTH the minimap
+                // (a country/landmark dot only shows if its position falls inside one of
+                // these circles - isPointRevealed()) and the main map itself (drawn as a
+                // black overlay with holes punched out at these circles plus whatever's
+                // in real-time sight range right now - drawFogOfWarOverlay()), per direct
+                // follow-up: "On the regular map it is not blacked out but needs to be. I
+                // should only see my planet to start and everything else is black until
+                // it is explored." Kept per-country (not global) so hot-seat's several
+                // human seats each have their own fog, same reasoning gameState.playerCountry
+                // already keys everything else human-specific on. See updateFogOfWar().
+                this.exploredRegions = [];
             }
 
             collectResources() {
@@ -6410,13 +6416,13 @@
             const fogActive = fogOfWarEnabled && !gameState.campaignActive && !!gameState.playerCountry;
             let best = null, bestDist = maxPixelDist;
             gameState.countries.forEach(country => {
-                if (fogActive && !country.isPlayer && !gameState.playerCountry.exploredCountryIds.has(country.id)) return;
+                if (fogActive && !country.isPlayer && !isPointRevealed(gameState.playerCountry, country.island.x, country.island.y, country.island.size)) return;
                 const p = worldToMinimap(country.island.x, country.island.y);
                 const d = Math.hypot(p.x - screenX, p.y - screenY);
                 if (d < bestDist) { bestDist = d; best = { x: country.island.x, y: country.island.y }; }
             });
             galaxyCores.forEach(core => {
-                if (fogActive && !gameState.playerCountry.exploredCoreKinds.has(core.kind)) return;
+                if (fogActive && !isPointRevealed(gameState.playerCountry, core.x, core.y, core.size)) return;
                 const p = worldToMinimap(core.x, core.y);
                 const d = Math.hypot(p.x - screenX, p.y - screenY);
                 if (d < bestDist) { bestDist = d; best = { x: core.x, y: core.y }; }
@@ -6424,46 +6430,134 @@
             return best;
         }
 
-        // Fog of war (2026-09-04, per direct request) - Standard Game/hot-seat only,
-        // never Campaign mode. Runs every frame (real-time, matching how units
-        // actually move - not turn-based) for every human seat
-        // (gameState.humanCountryIds), checking each of that human's own units
-        // against every OTHER country's island and every galaxyCore, using the
-        // same sight-range rules the main map's existing enemy-unit fog-of-war
-        // already uses (getEffectiveSightRange(), UNIT_SIGHT_RANGE/
-        // RADAR_SIGHT_RANGE) - edge-measured from the target's own size, same
-        // convention as every other range in this game. Also grants vision
+        // Fog of war (2026-09-04, per direct request; rebuilt the same day into
+        // real continuous-space coverage - see the direct follow-up quoted on
+        // Country.exploredRegions). True if the given point (with its own
+        // objectRadius, default 0 for a bare point) has ever come within any
+        // circle human has revealed - edge-to-edge, same convention as every
+        // other range in this game, not center-to-center. Matters here: a
+        // sight circle just touching the EDGE of something as big as a planet
+        // or Hotsun wouldn't otherwise reach its center at all. The minimap dot
+        // checks (drawMinimap()/nearestMinimapLandmark()) pass the target's own
+        // island.size/core.size; the main-map overlay checks bare points
+        // (objectRadius 0 - "was this raw coordinate ever in sight", not "is
+        // some specific object discovered").
+        function isPointRevealed(human, x, y, objectRadius = 0) {
+            return human.exploredRegions.some(r => Math.hypot(x - r.x, y - r.y) <= r.radius + objectRadius);
+        }
+
+        // Records that human has revealed a circle of the given radius around
+        // (x, y), permanently. Skipped if that whole circle already falls inside
+        // an existing one - without this, a stationary or slow-moving unit would
+        // push a near-duplicate entry every single frame forever, growing
+        // exploredRegions unboundedly over a long game.
+        function revealRegion(human, x, y, radius) {
+            const alreadyCovered = human.exploredRegions.some(r => Math.hypot(x - r.x, y - r.y) + radius <= r.radius);
+            if (!alreadyCovered) human.exploredRegions.push({ x, y, radius });
+        }
+
+        // Standard Game/hot-seat only, never Campaign mode. Runs every frame
+        // (real-time, matching how units actually move - not turn-based) for
+        // every human seat (gameState.humanCountryIds), revealing a circle
+        // around each of that human's own units using the same sight-range
+        // rules the main map's existing enemy-unit fog-of-war already uses
+        // (getEffectiveSightRange(), UNIT_SIGHT_RANGE/RADAR_SIGHT_RANGE), plus
         // around each human's own homeworld (same reasoning as Unit.draw()'s
         // existing fog-of-war: without it, a human with zero units built could
-        // never see anything beyond their own dot). Once revealed, stays
-        // revealed - see the Set fields' comment on Country - this only ever adds.
+        // never see anything beyond their own dot). A moving unit's own
+        // revealRegion() calls are throttled to once per half its sight range of
+        // travel (not every frame) - since that's always less than the sight
+        // range itself, the unit never actually leaves its own last-committed
+        // circle in between, so coverage stays gap-free without needing a
+        // separate "right now" punch in drawFogOfWarOverlay() on top of it.
         function updateFogOfWar() {
             if (gameState.campaignActive) return;
-
-            function reveal(human, x, y, sightRange) {
-                gameState.countries.forEach(other => {
-                    if (other.id === human.id || human.exploredCountryIds.has(other.id)) return;
-                    const dist = Math.hypot(x - other.island.x, y - other.island.y) - other.island.size;
-                    if (dist <= sightRange) human.exploredCountryIds.add(other.id);
-                });
-                galaxyCores.forEach(core => {
-                    if (human.exploredCoreKinds.has(core.kind)) return;
-                    const dist = Math.hypot(x - core.x, y - core.y) - core.size;
-                    if (dist <= sightRange) human.exploredCoreKinds.add(core.kind);
-                });
-            }
 
             (gameState.humanCountryIds || []).forEach(id => {
                 const human = gameState.countries.find(c => c.id === id);
                 if (!human) return;
                 human.units.forEach(unit => {
                     if (unit.isGroundUnit() && unit.isInHarbor) return;
-                    reveal(human, unit.x, unit.y, getEffectiveSightRange(human, hasRadarDetection(unit)));
+                    const sightRange = getEffectiveSightRange(human, hasRadarDetection(unit));
+                    const moved = unit.lastFogRevealX === undefined
+                        ? Infinity
+                        : Math.hypot(unit.x - unit.lastFogRevealX, unit.y - unit.lastFogRevealY);
+                    if (moved > sightRange * 0.5) {
+                        revealRegion(human, unit.x, unit.y, sightRange);
+                        unit.lastFogRevealX = unit.x;
+                        unit.lastFogRevealY = unit.y;
+                    }
                 });
                 const radarTower = human.island.buildings.find(b => b.name === 'Radar Tower');
                 const homeSightRange = getEffectiveSightRange(human, radarTower && !radarTower.destroyed);
-                reveal(human, human.island.x, human.island.y, homeSightRange);
+                revealRegion(human, human.island.x, human.island.y, homeSightRange);
             });
+        }
+
+        // Reused across frames rather than a fresh offscreen canvas every time -
+        // see drawFogOfWarOverlay()'s own comment for why this has to be a
+        // separate canvas at all, not just draw()n straight onto the main one.
+        let fogOverlayCanvas = null;
+        let fogOverlayCtx = null;
+
+        // Per direct follow-up report: "On the regular map it is not blacked
+        // out but needs to be. I should only see my planet to start and
+        // everything else is black until it is explored." Builds solid black
+        // with a hole punched out for every circle the active human seat has
+        // ever revealed (Country.exploredRegions) - only ones anywhere near the
+        // current camera viewport, so a long game's full exploration history
+        // doesn't have to be redrawn every frame.
+        //
+        // Built in a SEPARATE offscreen canvas, not directly on the main one -
+        // canvas has no real "layers"; destination-out erases whatever pixels
+        // are already sitting in the buffer it's drawn into. Punching holes
+        // straight into the main canvas (which the world was already drawn
+        // into this same frame) would erase the world itself in those spots,
+        // not reveal it - confirmed live: a "revealed" pixel came back fully
+        // transparent, not showing the planet actually drawn there moments
+        // earlier. Finishing the black-with-holes shape in its own buffer first
+        // and drawImage()-ing the RESULT onto the main canvas (normal
+        // compositing) correctly overlays it on top of the already-drawn world
+        // instead of erasing into it.
+        //
+        // Screen-space, drawn after ctx.restore() like every other manually-
+        // projected overlay in gameLoop() (galaxyCores/blackHoles/deposits/
+        // missiles) - see that comment for why. Standard Game/hot-seat only,
+        // and only while the toggle is on - a no-op otherwise.
+        function drawFogOfWarOverlay() {
+            if (!fogOfWarEnabled || gameState.campaignActive || !gameState.playerCountry) return;
+            const human = gameState.playerCountry;
+
+            if (!fogOverlayCanvas) {
+                fogOverlayCanvas = document.createElement('canvas');
+                fogOverlayCtx = fogOverlayCanvas.getContext('2d');
+            }
+            if (fogOverlayCanvas.width !== canvas.width || fogOverlayCanvas.height !== canvas.height) {
+                fogOverlayCanvas.width = canvas.width;
+                fogOverlayCanvas.height = canvas.height;
+            }
+
+            const halfW = canvas.width / 2 / camera.zoom;
+            const halfH = canvas.height / 2 / camera.zoom;
+            const margin = Math.max(halfW, halfH) * 0.1 + 500; // generous, avoids a hole's edge clipping right at the viewport border
+            const viewMinX = camera.x - halfW - margin, viewMaxX = camera.x + halfW + margin;
+            const viewMinY = camera.y - halfH - margin, viewMaxY = camera.y + halfH + margin;
+
+            fogOverlayCtx.globalCompositeOperation = 'source-over';
+            fogOverlayCtx.fillStyle = '#000';
+            fogOverlayCtx.fillRect(0, 0, fogOverlayCanvas.width, fogOverlayCanvas.height);
+            fogOverlayCtx.globalCompositeOperation = 'destination-out';
+            human.exploredRegions.forEach(r => {
+                if (r.x + r.radius < viewMinX || r.x - r.radius > viewMaxX ||
+                    r.y + r.radius < viewMinY || r.y - r.radius > viewMaxY) return;
+                const screenX = (r.x - camera.x) * camera.zoom + canvas.width / 2;
+                const screenY = (r.y - camera.y) * camera.zoom + canvas.height / 2;
+                fogOverlayCtx.beginPath();
+                fogOverlayCtx.arc(screenX, screenY, r.radius * camera.zoom, 0, Math.PI * 2);
+                fogOverlayCtx.fill();
+            });
+
+            ctx.drawImage(fogOverlayCanvas, 0, 0);
         }
 
         function drawMinimap() {
@@ -6484,7 +6578,7 @@
             const fogActive = fogOfWarEnabled && !gameState.campaignActive && !!gameState.playerCountry;
             gameState.countries.forEach(country => {
                 const isPlayer = country.isPlayer;
-                if (fogActive && !isPlayer && !gameState.playerCountry.exploredCountryIds.has(country.id)) return;
+                if (fogActive && !isPlayer && !isPointRevealed(gameState.playerCountry, country.island.x, country.island.y, country.island.size)) return;
                 const p = worldToMinimap(country.island.x, country.island.y);
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, isPlayer ? 4 : 2.5, 0, Math.PI * 2);
@@ -6505,7 +6599,7 @@
             // orange-red for Hotsun (matches the hazard it actually is). Same fog-of-
             // war gating as countries above.
             galaxyCores.forEach(core => {
-                if (fogActive && !gameState.playerCountry.exploredCoreKinds.has(core.kind)) return;
+                if (fogActive && !isPointRevealed(gameState.playerCountry, core.x, core.y, core.size)) return;
                 const p = worldToMinimap(core.x, core.y);
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
@@ -6517,11 +6611,23 @@
             });
 
             // Your own units, so the fleet is visible without flying out there first.
+            // Per direct report ("I sent 4 aircraft in 4 different directions and it
+            // does not show them on the mini map any longer"): worldToMinimap() scales
+            // off getGalaxyBounds() (wherever planets/landmarks actually are), which
+            // has no idea where your own scouts have wandered off to - a unit past
+            // that box used to project outside the minimap's own rectangle entirely
+            // and just never appear. Clamped to the rectangle's edge instead, so a
+            // far-flung scout still shows up pinned in the right direction rather
+            // than vanishing.
             if (gameState.playerCountry) {
                 ctx.fillStyle = '#39ff6a';
                 gameState.playerCountry.units.forEach(unit => {
                     if (unit.isGroundUnit() && unit.isInHarbor) return;
-                    const p = worldToMinimap(unit.x, unit.y);
+                    const pRaw = worldToMinimap(unit.x, unit.y);
+                    const p = {
+                        x: Math.max(mmX + 2, Math.min(mmX + MINIMAP_WIDTH - 2, pRaw.x)),
+                        y: Math.max(mmY + 2, Math.min(mmY + MINIMAP_HEIGHT - 2, pRaw.y))
+                    };
                     const isSelected = gameState.selectedUnits.includes(unit);
                     ctx.beginPath();
                     ctx.arc(p.x, p.y, isSelected ? 2 : 1.3, 0, Math.PI * 2);
@@ -6655,6 +6761,13 @@
             gameState.countries.forEach(country => {
                 country.units.forEach(unit => unit.draw());
             });
+
+            // Per direct follow-up report ("On the regular map it is not blacked
+            // out but needs to be") - drawn after every world object above so it
+            // actually covers them, before the selection-box UI overlay below so a
+            // live drag-select box (an active interaction, not "the world") is
+            // never itself hidden by it.
+            drawFogOfWarOverlay();
 
             const timerDisplay = document.getElementById('timerDisplay');
             if (timerDisplay && AUTO_TURN_ENABLED) {
