@@ -127,7 +127,7 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage, assignAttackTargets, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage, assignAttackTargets, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS, randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR };',
     context,
     { filename: 'grab-refs.js' }
 );
@@ -158,7 +158,8 @@ const {
     getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR,
     getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground,
     whenImagesReady, spaceElements, loadMineImage, mineImage,
-    assignAttackTargets, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS
+    assignAttackTargets, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS,
+    randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR
 } = context.__test;
 
 // ---------- Test data: the full combat unit roster ----------
@@ -4411,6 +4412,121 @@ check('nextTurn() calls reassignEliminatedAttackTargets() before AI nations act,
     const problems = [];
     if (!script.includes('reassignEliminatedAttackTargets();')) problems.push('expected nextTurn() to call reassignEliminatedAttackTargets()');
     if (!/campaignActive\)\s*reassignEliminatedAttackTargets\(\);/.test(script)) problems.push('expected the call to be guarded by !gameState.campaignActive');
+    return problems;
+});
+
+// ---------- Random galaxy-wide planet spread (2026-09-04) ----------
+// Direct request: "make the planets not uniform and spread them out
+// throughout the galaxy all over. They don't need to be close to each other
+// and should be far from each other randomly all over the map." Replaces the
+// old 4x3 grid (regular nations) + fixed cardinal/hand-tuned offsets
+// (Cyborg/Zoonester/CUSTOM_ISLANDS) with randomSpreadPosition(), used for
+// every planet in initGame(). See also farthestPlanetRadius()/
+// GALAXY_LANDMARK_CORNER_DIR, which keep the Galaxy Core/Bounty clear of and
+// in opposite corners from the newly-scattered galaxy.
+
+check('randomSpreadPosition() returns a point within bounds, at least minDistance from every existing point', () => {
+    const problems = [];
+    const existing = [{ x: 0, y: 0 }, { x: 1000, y: 0 }];
+    for (let i = 0; i < 50; i++) {
+        const p = randomSpreadPosition(-5000, 5000, -5000, 5000, existing, 500);
+        if (p.x < -5000 || p.x > 5000 || p.y < -5000 || p.y > 5000) {
+            problems.push(`point (${p.x.toFixed(0)}, ${p.y.toFixed(0)}) fell outside the requested bounds`);
+        }
+        const nearestDist = Math.min(...existing.map(e => Math.hypot(p.x - e.x, p.y - e.y)));
+        if (nearestDist < 500) problems.push(`point landed only ${nearestDist.toFixed(0)} from an existing point, wanted >= 500`);
+    }
+    return problems;
+});
+
+check('randomSpreadPosition() with an empty existingPoints list places anywhere in bounds (no distance constraint to satisfy)', () => {
+    const p = randomSpreadPosition(-100, 100, -100, 100, [], 99999);
+    return (p.x >= -100 && p.x <= 100 && p.y >= -100 && p.y <= 100) ? [] : [`expected a point within bounds, got (${p.x}, ${p.y})`];
+});
+
+check('randomSpreadPosition() still returns a usable point (never hangs or throws) when minDistance is impossible to satisfy in the given bounds', () => {
+    const existing = [{ x: 0, y: 0 }];
+    const p = randomSpreadPosition(-10, 10, -10, 10, existing, 999999);
+    return (typeof p.x === 'number' && typeof p.y === 'number' && isFinite(p.x) && isFinite(p.y))
+        ? []
+        : [`expected a finite fallback point, got ${JSON.stringify(p)}`];
+});
+
+check('farthestPlanetRadius() finds the actual farthest island from map center', () => {
+    const problems = [];
+    const centerX = MAP_WIDTH / 2, centerY = MAP_HEIGHT / 2;
+    gameState.countries = [
+        new Country(0, 'Near', '#fff', new Island(centerX + 100, centerY, 0), false),
+        new Country(1, 'Far', '#fff', new Island(centerX + 5000, centerY + 5000, 1), false),
+    ];
+    const expected = Math.hypot(5000, 5000);
+    const got = farthestPlanetRadius();
+    if (Math.abs(got - expected) > 1) problems.push(`expected farthestPlanetRadius() ~${expected.toFixed(0)}, got ${got.toFixed(0)}`);
+    return problems;
+});
+
+check('GALAXY_LANDMARK_CORNER_DIR is a unit vector', () => {
+    const len = Math.hypot(GALAXY_LANDMARK_CORNER_DIR.x, GALAXY_LANDMARK_CORNER_DIR.y);
+    return Math.abs(len - 1) < 0.0001 ? [] : [`expected a unit vector (length 1), got length ${len}`];
+});
+
+check('a real initGame() run scatters every planet randomly - two runs produce different layouts, not a repeatable grid/fixed pattern', () => {
+    const problems = [];
+    gameState.countries = [];
+    vm.runInContext('initGame();', context, { filename: 'planet-spread-run1.js' });
+    const positionsA = gameState.countries.map(c => ({ id: c.id, x: c.island.x, y: c.island.y }));
+
+    gameState.countries = [];
+    vm.runInContext('initGame();', context, { filename: 'planet-spread-run2.js' });
+    const positionsB = gameState.countries.map(c => ({ id: c.id, x: c.island.x, y: c.island.y }));
+
+    if (positionsA.length !== positionsB.length) {
+        problems.push(`expected the same roster size across two initGame() runs, got ${positionsA.length} vs ${positionsB.length}`);
+        return problems;
+    }
+    const anyDifferent = positionsA.some((p, i) => p.x !== positionsB[i].x || p.y !== positionsB[i].y);
+    if (!anyDifferent) problems.push('expected planet positions to differ between two separate initGame() runs (still looks like a fixed/deterministic layout)');
+    return problems;
+});
+
+check('a real initGame() run keeps every planet at least PLANET_MIN_SEPARATION from every other planet', () => {
+    const problems = [];
+    gameState.countries = [];
+    vm.runInContext('initGame();', context, { filename: 'planet-spread-separation.js' });
+    const countries = gameState.countries;
+    for (let i = 0; i < countries.length; i++) {
+        for (let j = i + 1; j < countries.length; j++) {
+            const d = Math.hypot(countries[i].island.x - countries[j].island.x, countries[i].island.y - countries[j].island.y);
+            if (d < PLANET_MIN_SEPARATION - 1) {
+                problems.push(`planets ${countries[i].name} and ${countries[j].name} are only ${d.toFixed(0)} apart, wanted >= ${PLANET_MIN_SEPARATION.toFixed(0)}`);
+            }
+        }
+    }
+    return problems;
+});
+
+check('a real initGame() run keeps the Galaxy Core and Galaxy Bounty clear of every planet, in opposite corners of the map', () => {
+    const problems = [];
+    gameState.countries = [];
+    galaxyCores.length = 0;
+    vm.runInContext('initGame(); spawnGalaxyCore(); spawnGalaxyBounty();', context, { filename: 'landmark-clearance.js' });
+    const core = galaxyCores.find(c => c.kind === 'heal');
+    const bounty = galaxyCores.find(c => c.kind === 'bounty');
+    if (!core || !bounty) { problems.push('expected both a heal-kind core and a bounty-kind core to exist'); return problems; }
+
+    gameState.countries.forEach(country => {
+        const distToCore = Math.hypot(country.island.x - core.x, country.island.y - core.y);
+        if (distToCore < core.size) problems.push(`${country.name}'s island is inside the Galaxy Core's own radius (${distToCore.toFixed(0)} < ${core.size})`);
+        const distToBounty = Math.hypot(country.island.x - bounty.x, country.island.y - bounty.y);
+        if (distToBounty < bounty.size) problems.push(`${country.name}'s island is inside the Galaxy Bounty's own radius (${distToBounty.toFixed(0)} < ${bounty.size})`);
+    });
+
+    // Opposite corners: the Core and Bounty should sit on opposite sides of center.
+    const centerX = MAP_WIDTH / 2, centerY = MAP_HEIGHT / 2;
+    const coreVec = { x: core.x - centerX, y: core.y - centerY };
+    const bountyVec = { x: bounty.x - centerX, y: bounty.y - centerY };
+    const dot = coreVec.x * bountyVec.x + coreVec.y * bountyVec.y;
+    if (dot >= 0) problems.push(`expected the Core and Bounty in opposite directions from map center, got a non-negative dot product (${dot.toFixed(0)}) between their offset vectors`);
     return problems;
 });
 

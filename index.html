@@ -1074,9 +1074,9 @@
 
         // Supremacy-style redesign (2026-08-25): planets pulled much further apart so travel
         // between them takes real time and mining ships (see ResourceDeposit below) actually
-        // have distance to cover. Also used to scale the Cyborg/Zoonester/CUSTOM_ISLANDS
-        // frontier-planet offsets in initGame() so their relative distance from the home grid
-        // doesn't collapse just because the home grid itself got bigger.
+        // have distance to cover. Feeds directly into MAP_WIDTH/MAP_HEIGHT below, which set
+        // the size of the whole galaxy every planet is randomly scattered across - see
+        // randomSpreadPosition() and initGame().
         const GALAXY_SPACING_SCALE = 2.5;
         const MAP_WIDTH = canvas.width * 50 * GALAXY_SPACING_SCALE;   // 10x the original spacing, now x2.5 more on top
         const MAP_HEIGHT = canvas.height * 50 * GALAXY_SPACING_SCALE;
@@ -4092,18 +4092,16 @@
             galaxyCores.push(...healSurvivors);
             const centerX = MAP_WIDTH / 2;
             const centerY = MAP_HEIGHT / 2;
-            // Clear of the Cyborg Planet cluster (±30000*GALAXY_SPACING_SCALE from
-            // center) and every CUSTOM_ISLANDS outpost (offsets up to ±70000) - see
-            // their placement in initGame()/CUSTOM_ISLANDS above - but NOT further out
-            // than those (a previous version used 130000/100000 here, which placed it
-            // outside getGalaxyBounds()' range - that function only ever looks at
-            // countries' island positions, so anything further out than the farthest
-            // outpost silently fell off the edge of the minimap AND was a much longer
-            // flight than anything else in the game). 90000/-70000 is the same order of
-            // magnitude as the farthest outposts (Drovannis/Merrowdusk at 70000/±30000),
-            // in a quadrant none of them occupy.
-            const coreX = centerX + 90000 * GALAXY_SPACING_SCALE;
-            const coreY = centerY - 70000 * GALAXY_SPACING_SCALE;
+            // Placed just past the farthest planet from center (whatever shape
+            // randomSpreadPosition() in initGame() happened to scatter the galaxy
+            // into), in a fixed corner direction - see GALAXY_LANDMARK_CORNER_DIR -
+            // so it's clear of every planet without assuming the old fixed, tight
+            // cluster layout. A previous version used a hardcoded offset here, which
+            // relied on that assumption and would no longer be clear of anything now
+            // that planets can land much farther out.
+            const clearRadius = farthestPlanetRadius() + GALAXY_CORE_SIZE * 4;
+            const coreX = centerX + GALAXY_LANDMARK_CORNER_DIR.x * clearRadius;
+            const coreY = centerY + GALAXY_LANDMARK_CORNER_DIR.y * clearRadius;
             const core = new GalaxyCore(coreX, coreY);
             core.kind = 'heal';
             galaxyCores.push(core);
@@ -4138,8 +4136,12 @@
             galaxyCores.push(...bountySurvivors);
             const centerX = MAP_WIDTH / 2;
             const centerY = MAP_HEIGHT / 2;
-            const coreX = centerX - 90000 * GALAXY_SPACING_SCALE;
-            const coreY = centerY + 70000 * GALAXY_SPACING_SCALE;
+            // Opposite corner from the Galaxy Core - same GALAXY_LANDMARK_CORNER_DIR,
+            // negated - see spawnGalaxyCore()'s comment for why the distance is now
+            // adaptive instead of a fixed offset.
+            const clearRadius = farthestPlanetRadius() + GALAXY_BOUNTY_SIZE * 4;
+            const coreX = centerX - GALAXY_LANDMARK_CORNER_DIR.x * clearRadius;
+            const coreY = centerY - GALAXY_LANDMARK_CORNER_DIR.y * clearRadius;
             const bounty = new GalaxyCore(coreX, coreY, GALAXY_BOUNTY_IMAGE_URL, GALAXY_BOUNTY_SIZE);
             bounty.kind = 'bounty';
             galaxyCores.push(bounty);
@@ -4160,9 +4162,9 @@
         }
 
         // Called once from initGame() - Standard Game only, same reasoning as
-        // spawnGalaxyCore()/spawnGalaxyBounty(). Starts at the exact map center -
-        // clear of the Cyborg Planet cluster (each offset ±30000*GALAXY_SPACING_SCALE
-        // FROM that center, per initGame() below) and every CUSTOM_ISLANDS outpost -
+        // spawnGalaxyCore()/spawnGalaxyBounty(). Starts at the exact map center, which
+        // randomSpreadPosition() (see initGame()) keeps clear of every planet by
+        // seeding planetPositions with that exact point before placing any of them -
         // then wanders on its own from there (see updateBlackHoles()), so its
         // starting point only needs to not spawn it on top of something, not predict
         // where it'll end up.
@@ -4263,52 +4265,114 @@
             }
         }
 
+        // Per direct request (2026-09-04): "make the planets not uniform and spread
+        // them out throughout the galaxy all over. They don't need to be close to
+        // each other and should be far from each other randomly all over the map."
+        // Replaces the old 4x3 grid (regular nations) + fixed cardinal/hand-tuned
+        // offsets (Cyborg/Zoonester/CUSTOM_ISLANDS) with one shared random-placement
+        // helper, used by every planet in initGame() below - so the whole galaxy
+        // reads as scattered rather than a visible grid/constellation pattern.
+        //
+        // Picks a random point in [minX,maxX]x[minY,maxY] at least minDistance from
+        // every point already in existingPoints (checked against the WHOLE galaxy so
+        // far, not just planets of the same faction - "far from each other" means
+        // every planet, regardless of type). Retries up to maxAttempts times; if
+        // none qualifies (only possible on an unrealistically packed map), falls
+        // back to the single best (farthest-from-its-nearest-neighbor) candidate
+        // seen, so placement always terminates and still ends up as spread out as
+        // the map allows rather than throwing or silently overlapping.
+        function randomSpreadPosition(minX, maxX, minY, maxY, existingPoints, minDistance, maxAttempts = 300) {
+            if (existingPoints.length === 0) {
+                return { x: minX + Math.random() * (maxX - minX), y: minY + Math.random() * (maxY - minY) };
+            }
+            let best = null, bestDist = -Infinity;
+            for (let i = 0; i < maxAttempts; i++) {
+                const x = minX + Math.random() * (maxX - minX);
+                const y = minY + Math.random() * (maxY - minY);
+                let nearestDist = Infinity;
+                for (const p of existingPoints) {
+                    const d = Math.hypot(x - p.x, y - p.y);
+                    if (d < nearestDist) nearestDist = d;
+                }
+                if (nearestDist >= minDistance) return { x, y };
+                if (nearestDist > bestDist) { bestDist = nearestDist; best = { x, y }; }
+            }
+            return best;
+        }
+
+        // How far apart planets must be from one another, at minimum - a fraction of
+        // the map's own size so it scales sanely regardless of screen resolution
+        // (MAP_WIDTH/MAP_HEIGHT are derived from canvas.width/height).
+        const PLANET_MIN_SEPARATION = Math.min(MAP_WIDTH, MAP_HEIGHT) * 0.12;
+
+        // Distance from galaxy center to the farthest planet's island - used by
+        // spawnGalaxyCore()/spawnGalaxyBounty() to place their landmark just outside
+        // the whole scattered galaxy, whatever shape randomSpreadPosition() above
+        // happened to produce, instead of assuming a small fixed cluster.
+        function farthestPlanetRadius() {
+            const centerX = MAP_WIDTH / 2;
+            const centerY = MAP_HEIGHT / 2;
+            let maxR = 0;
+            gameState.countries.forEach(c => {
+                const r = Math.hypot(c.island.x - centerX, c.island.y - centerY);
+                if (r > maxR) maxR = r;
+            });
+            return maxR;
+        }
+
+        // Fixed corner direction (unit vector) the Galaxy Core/Bounty are placed
+        // along - preserves the original layout's "opposite corners of the map"
+        // feel (the Core toward +X/-Y, the Bounty toward the exact opposite corner)
+        // now that both scale their distance off farthestPlanetRadius() instead of
+        // a fixed offset. See spawnGalaxyCore()/spawnGalaxyBounty().
+        const GALAXY_LANDMARK_CORNER_DIR = (() => {
+            const len = Math.hypot(90000, -70000);
+            return { x: 90000 / len, y: -70000 / len };
+        })();
+
         function initGame() {
             // Initialize audio
             initAudio();
-            
-            const cols = 4;
-            const rows = 3;
-            const baseMarginX = MAP_WIDTH * 0.15;
-            const baseMarginY = MAP_HEIGHT * 0.15;
-            
-            const marginX = baseMarginX * ISLAND_SPACING_MULTIPLIER;
-            const marginY = baseMarginY * ISLAND_SPACING_MULTIPLIER;
-            const spacingX = (MAP_WIDTH - marginX * 2) / (cols - 1);
-            const spacingY = (MAP_HEIGHT - marginY * 2) / (rows - 1);
+
+            const marginX = MAP_WIDTH * 0.1;
+            const marginY = MAP_HEIGHT * 0.1;
+            // Tracks every planet position placed below, regardless of faction, so
+            // PLANET_MIN_SEPARATION applies galaxy-wide - "far from each other",
+            // not just within one group. Seeded with the exact map center (not a
+            // real planet) so nothing randomly lands there - spawnBlackHole() starts
+            // the Nerfflasma Hole at dead center and assumes that spot is clear.
+            const planetPositions = [{ x: MAP_WIDTH / 2, y: MAP_HEIGHT / 2 }];
 
             for (let i = 0; i < 12; i++) {
-                const col = i % cols;
-                const row = Math.floor(i / cols);
-                const x = marginX + col * spacingX;
-                const y = marginY + row * spacingY;
-                
-                const island = new Island(x, y, i);
+                const pos = randomSpreadPosition(marginX, MAP_WIDTH - marginX, marginY, MAP_HEIGHT - marginY, planetPositions, PLANET_MIN_SEPARATION);
+                planetPositions.push(pos);
+                const island = new Island(pos.x, pos.y, i);
                 const country = new Country(i, COUNTRY_NAMES[i], COUNTRY_COLORS[i], island, false);
                 gameState.countries.push(country);
             }
 
-            const centerX = MAP_WIDTH / 2;
-            const centerY = MAP_HEIGHT / 2;
-            
             const cyborgPlanets = [
-                { x: centerX, y: centerY - 30000 * GALAXY_SPACING_SCALE, name: 'Cyborg Planet North', id: 12 },
-                { x: centerX, y: centerY + 30000 * GALAXY_SPACING_SCALE, name: 'Cyborg Planet South', id: 13 },
-                { x: centerX + 30000 * GALAXY_SPACING_SCALE, y: centerY, name: 'Cyborg Planet East', id: 14 },
-                { x: centerX - 30000 * GALAXY_SPACING_SCALE, y: centerY, name: 'Cyborg Planet West', id: 15 }
+                { name: 'Cyborg Planet North', id: 12 },
+                { name: 'Cyborg Planet South', id: 13 },
+                { name: 'Cyborg Planet East', id: 14 },
+                { name: 'Cyborg Planet West', id: 15 }
             ];
 
             cyborgPlanets.forEach(planet => {
-                const island = new Island(planet.x, planet.y, planet.id);
+                const pos = randomSpreadPosition(marginX, MAP_WIDTH - marginX, marginY, MAP_HEIGHT - marginY, planetPositions, PLANET_MIN_SEPARATION);
+                planetPositions.push(pos);
+                const island = new Island(pos.x, pos.y, planet.id);
                 island.size = 350 * PLANET_SCALE;
                 island.collisionSize = 350;
                 const country = new Country(planet.id, planet.name, '#00ffff', island, false);
                 gameState.countries.push(country);
             });
-            
-            // Add Zoonester planet 1000 units north of northernmost Cyborg planet
-            const zoonesterY = centerY - 30000 * GALAXY_SPACING_SCALE - 10000 * GALAXY_SPACING_SCALE;
-            const zoonesterIsland = new Island(centerX, zoonesterY, 16);
+
+            // Zoonester planet - used to sit a fixed distance north of the northernmost
+            // Cyborg planet; now just another randomly-placed planet like everything else.
+            const zoonesterPos = randomSpreadPosition(marginX, MAP_WIDTH - marginX, marginY, MAP_HEIGHT - marginY, planetPositions, PLANET_MIN_SEPARATION);
+            planetPositions.push(zoonesterPos);
+            const zoonesterIsland = new Island(zoonesterPos.x, zoonesterPos.y, 16);
             zoonesterIsland.size = 350 * PLANET_SCALE;
             zoonesterIsland.collisionSize = 350;
             // planetImage is already set from ISLAND_IMAGES[16] by the Island constructor above -
@@ -4346,9 +4410,12 @@
                     ISLAND_STRUCTURES[nextCustomId] = ['Custom Structure 1', 'Custom Structure 2', 'Harbor', 'Marine Base', 'War Factory', 'Defense Gun'];
                 }
 
-                const customX = centerX + customIsland.xOffset * GALAXY_SPACING_SCALE;
-                const customY = centerY + customIsland.yOffset * GALAXY_SPACING_SCALE;
-                const island = new Island(customX, customY, nextCustomId);
+                // customIsland.xOffset/yOffset are no longer used for placement (see
+                // randomSpreadPosition() and its comment above initGame()) - kept on the
+                // CUSTOM_ISLANDS entries themselves only as unused legacy metadata.
+                const customPos = randomSpreadPosition(marginX, MAP_WIDTH - marginX, marginY, MAP_HEIGHT - marginY, planetPositions, PLANET_MIN_SEPARATION);
+                planetPositions.push(customPos);
+                const island = new Island(customPos.x, customPos.y, nextCustomId);
                 island.size = (customIsland.size || 350) * PLANET_SCALE;
                 // Balance pass (2026-08-24): every custom island used the same
                 // 350 for BOTH its visual size and its collision/stand-off
