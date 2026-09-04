@@ -3204,6 +3204,15 @@ check('the two real asteroid images are wired into the CSS classes the JS actual
     return problems;
 });
 
+check("the .asteroid CSS rule never intercepts clicks - per direct report, drifting asteroids were blocking the canvas/UI buttons underneath them", () => {
+    const asteroidRuleMatch = html.match(/\.asteroid\s*\{[^}]*\}/);
+    if (!asteroidRuleMatch) return ['could not find the .asteroid CSS rule to check'];
+    if (!/pointer-events:\s*none/.test(asteroidRuleMatch[0])) {
+        return ['expected .asteroid { pointer-events: none; } so drifting asteroids never block clicks on whatever is underneath them'];
+    }
+    return [];
+});
+
 check('drawSpaceBackground() tiles the real Background-1.png photo instead of the old procedural nebula blobs', () => {
     const problems = [];
     if (!html.includes('Backgrounds/Background-1.png')) problems.push('Background-1.png not referenced');
