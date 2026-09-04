@@ -127,7 +127,7 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage, assignAttackTargets, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS, randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER, nearestMinimapLandmark, spawnHotsun, damageNearHotsun, HOTSUN_IMAGE_URL, HOTSUN_SIZE, HOTSUN_RADIATION_RANGE, HOTSUN_DAMAGE_PERCENT, PLANET_SCALE };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage, assignAttackTargets, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS, randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER, nearestMinimapLandmark, spawnHotsun, damageNearHotsun, HOTSUN_IMAGE_URL, HOTSUN_SIZE, HOTSUN_RADIATION_RANGE, HOTSUN_DAMAGE_PERCENT, PLANET_SCALE, updateFogOfWar, toggleFogOfWar, drawMinimap };',
     context,
     { filename: 'grab-refs.js' }
 );
@@ -160,7 +160,8 @@ const {
     whenImagesReady, spaceElements, loadMineImage, mineImage,
     assignAttackTargets, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS,
     randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER,
-    nearestMinimapLandmark, spawnHotsun, damageNearHotsun, HOTSUN_IMAGE_URL, HOTSUN_SIZE, HOTSUN_RADIATION_RANGE, HOTSUN_DAMAGE_PERCENT, PLANET_SCALE
+    nearestMinimapLandmark, spawnHotsun, damageNearHotsun, HOTSUN_IMAGE_URL, HOTSUN_SIZE, HOTSUN_RADIATION_RANGE, HOTSUN_DAMAGE_PERCENT, PLANET_SCALE,
+    updateFogOfWar, toggleFogOfWar, drawMinimap
 } = context.__test;
 
 // ---------- Test data: the full combat unit roster ----------
@@ -4434,6 +4435,82 @@ check('reassignEliminatedAttackTargets() leaves a still-living target alone', ()
         : [`expected a still-living target to be left untouched, got ${JSON.stringify(a.attackTargetIds)}`];
 });
 
+// Real gap found by direct verification (2026-09-04): "Verify one alien enemy
+// planet and one enemy ai country is assigned to the user at all times, even
+// when the user defeats that enemy assigned to them a new enemy is now
+// assigned." The check above (and the one before it) only prove an ATTACKER
+// whose own target died gets reassigned - neither proves a VICTIM whose
+// attacker died gets a NEW attacker, which is the actual property requested
+// here and was NOT previously guaranteed (a dead attacker's attackTargetIds
+// still validly points at its living victim, so pass 1 alone never touches it).
+
+check('reassignEliminatedAttackTargets() assigns a brand-new living rival to a nation whose only rival attacker was just eliminated', () => {
+    const problems = [];
+    const victim = new Country(0, 'Victim', '#fff', new Island(0, 0, 0), true);
+    const deadAttacker = new Country(1, 'DeadAttacker', '#fff', new Island(100000, 0, 1), false);
+    const otherNation = new Country(2, 'Other', '#fff', new Island(200000, 0, 2), false);
+    deadAttacker.attackTargetIds = [0]; // was the victim's sole assigned rival
+    deadAttacker.island.buildings.forEach(b => { b.destroyed = true; }); // just eliminated
+    gameState.countries = [victim, deadAttacker, otherNation];
+
+    reassignEliminatedAttackTargets();
+
+    const livingAttackersOfVictim = gameState.countries.filter(c =>
+        c.id !== 0 && c.island.buildings.some(b => !b.destroyed) && c.attackTargetIds.includes(0));
+    if (livingAttackersOfVictim.length === 0) {
+        problems.push('expected a new living nation to be assigned to attack the victim once its old attacker was eliminated, got none');
+    }
+    return problems;
+});
+
+check('reassignEliminatedAttackTargets() assigns a brand-new living alien attacker to a nation whose only alien attacker was just eliminated', () => {
+    const problems = [];
+    const victim = new Country(0, 'Victim', '#fff', new Island(0, 0, 0), true);
+    const deadAlien = new Country(12, 'DeadAlien', '#0ff', new Island(100000, 0, 12), false);
+    deadAlien.isCyborg = true;
+    const otherAlien = new Country(13, 'OtherAlien', '#0ff', new Island(200000, 0, 13), false);
+    otherAlien.isCyborg = true;
+    deadAlien.attackTargetIds = [0];
+    deadAlien.island.buildings.forEach(b => { b.destroyed = true; });
+    gameState.countries = [victim, deadAlien, otherAlien];
+
+    reassignEliminatedAttackTargets();
+
+    const livingAlienAttackers = gameState.countries.filter(c =>
+        (c.isCyborg || c.isZoonester || c.isRoufestreal) &&
+        c.island.buildings.some(b => !b.destroyed) &&
+        c.attackTargetIds.includes(0));
+    return livingAlienAttackers.length > 0
+        ? []
+        : ['expected a new living alien nation to be assigned to attack the victim once its old alien attacker was eliminated, got none'];
+});
+
+check('reassignEliminatedAttackTargets() never leaves a living regular nation with zero attackers, across a whole roster of eliminations', () => {
+    const problems = [];
+    const nations = [0, 1, 2, 3, 4].map(id => new Country(id, `N${id}`, '#fff', new Island(id * 100000, 0, id), false));
+    const alien = new Country(12, 'Alien', '#0ff', new Island(500000, 0, 12), false);
+    alien.isCyborg = true;
+    gameState.countries = [...nations, alien];
+    assignAttackTargets();
+
+    // Eliminate a couple of nations (their own attacker assignments, and
+    // whatever they were attacking, both potentially now stale).
+    nations[1].island.buildings.forEach(b => { b.destroyed = true; });
+    nations[3].island.buildings.forEach(b => { b.destroyed = true; });
+    reassignEliminatedAttackTargets();
+
+    const survivors = gameState.countries.filter(c => c.island.buildings.some(b => !b.destroyed) && !c.isCyborg);
+    survivors.forEach(victim => {
+        const hasRegularAttacker = gameState.countries.some(a =>
+            a.id !== victim.id && !a.isCyborg && a.island.buildings.some(b => !b.destroyed) && a.attackTargetIds.includes(victim.id));
+        if (!hasRegularAttacker) problems.push(`expected surviving nation ${victim.name} to have at least one living regular attacker`);
+        const hasAlienAttacker = gameState.countries.some(a =>
+            a.isCyborg && a.island.buildings.some(b => !b.destroyed) && a.attackTargetIds.includes(victim.id));
+        if (!hasAlienAttacker) problems.push(`expected surviving nation ${victim.name} to have at least one living alien attacker`);
+    });
+    return problems;
+});
+
 check('pickAssignedTarget() returns null when no target is assigned, or when the only assigned target is dead, and the live target otherwise', () => {
     const problems = [];
     const a = new Country(0, 'A', '#fff', new Island(0, 0, 0), false);
@@ -4897,6 +4974,154 @@ check('GalaxyCore instances spin in place like planets once their sprite is load
     core.draw();
     if (core.rotationAngle === before) problems.push("expected draw() to advance rotationAngle once the sprite is loaded (the spin itself)");
     return problems;
+});
+
+// ---------- Fog of war (2026-09-04) ----------
+// Direct request: "We need to add a fog of war to the single player map and
+// not the campaign mode. When one of your units goes in space they can see
+// that area on the minimap. For example, if my troops come across a planet
+// it will now show on the minimap... Give me the option to turn fog of war
+// on and off on the map."
+
+check("updateFogOfWar() reveals another country once a human's unit gets within sight range, and it stays revealed after the unit moves away", () => {
+    const problems = [];
+    const human = new Country(0, 'Human', '#fff', new Island(0, 0, 0), true);
+    const other = new Country(1, 'Other', '#fff', new Island(1000000, 0, 1), false);
+    const scout = makeUnit('deepglider', 0);
+    scout.x = 2000000; scout.y = 2000000; // far from everything at first
+    human.units = [scout];
+    gameState.countries = [human, other];
+    gameState.humanCountryIds = [0];
+    gameState.campaignActive = false;
+
+    updateFogOfWar();
+    if (human.exploredCountryIds.has(1)) problems.push('expected Other to be unrevealed before the scout ever got close');
+
+    // Bring the scout within sight range of Other's island, then run one frame.
+    scout.x = other.island.x + other.island.size + 100;
+    scout.y = other.island.y;
+    updateFogOfWar();
+    if (!human.exploredCountryIds.has(1)) problems.push("expected Other to be revealed once the scout got within sight range - troops \"coming across a planet\"");
+
+    // Move the scout far away again - per direct request, once revealed it stays
+    // revealed ("will now show on the minimap", not "only while nearby").
+    scout.x = 2000000; scout.y = 2000000;
+    updateFogOfWar();
+    if (!human.exploredCountryIds.has(1)) problems.push('expected Other to remain revealed after the scout moved away');
+    return problems;
+});
+
+check('updateFogOfWar() reveals a Galaxy Core/Bounty/Hotsun the same way it reveals countries', () => {
+    const problems = [];
+    const human = new Country(0, 'Human', '#fff', new Island(0, 0, 0), true);
+    galaxyCores.length = 0;
+    const core = new GalaxyCore(1000000, 0);
+    core.kind = 'heal';
+    galaxyCores.push(core);
+    const scout = makeUnit('deepglider', 0);
+    scout.x = 2000000; scout.y = 2000000;
+    human.units = [scout];
+    gameState.countries = [human];
+    gameState.humanCountryIds = [0];
+    gameState.campaignActive = false;
+
+    updateFogOfWar();
+    if (human.exploredCoreKinds.has('heal')) problems.push('expected the core unrevealed before the scout got close');
+
+    scout.x = core.x + core.size + 100; scout.y = core.y;
+    updateFogOfWar();
+    galaxyCores.length = 0;
+    return human.exploredCoreKinds.has('heal') ? [] : ['expected the core revealed once the scout got within sight range'];
+});
+
+check("updateFogOfWar() grants vision around a human's own homeworld without needing any units nearby", () => {
+    const problems = [];
+    const human = new Country(0, 'Human', '#fff', new Island(0, 0, 0), true);
+    const near = new Country(1, 'Near', '#fff', new Island(500, 0, 1), false); // well within UNIT_SIGHT_RANGE
+    human.units = []; // no units at all
+    gameState.countries = [human, near];
+    gameState.humanCountryIds = [0];
+    gameState.campaignActive = false;
+    updateFogOfWar();
+    return human.exploredCountryIds.has(1) ? [] : ["expected a nation right next to home to be revealed by homeworld vision alone, per the same reasoning Unit.draw()'s existing fog-of-war already uses"];
+});
+
+check('updateFogOfWar() never reveals a human\'s own country to itself, and is a no-op in Campaign mode', () => {
+    const problems = [];
+    const human = new Country(0, 'Human', '#fff', new Island(0, 0, 0), true);
+    gameState.countries = [human];
+    gameState.humanCountryIds = [0];
+    gameState.campaignActive = false;
+    updateFogOfWar();
+    if (human.exploredCountryIds.has(0)) problems.push('expected a country never to reveal itself');
+
+    const other = new Country(1, 'Other', '#fff', new Island(200, 0, 1), false); // within home vision range
+    gameState.countries = [human, other];
+    gameState.campaignActive = true;
+    updateFogOfWar();
+    if (human.exploredCountryIds.has(1)) problems.push('expected updateFogOfWar() to do nothing at all in Campaign mode');
+    gameState.campaignActive = false;
+    return problems;
+});
+
+check('nearestMinimapLandmark() only snaps to a dot the fog of war actually reveals (own country and explored ones always count, unexplored ones never do while the toggle is on)', () => {
+    const problems = [];
+    const human = new Country(0, 'Human', '#fff', new Island(0, 0, 0), true);
+    const hidden = new Country(1, 'Hidden', '#fff', new Island(1000000, 0, 1), false);
+    gameState.countries = [human, hidden];
+    gameState.playerCountry = human;
+    gameState.humanCountryIds = [0];
+    gameState.campaignActive = false;
+    vm.runInContext('fogOfWarEnabled = true;', context);
+
+    const pHidden = worldToMinimap(1000000, 0);
+    if (nearestMinimapLandmark(pHidden.x, pHidden.y, 8) !== null) {
+        problems.push('expected an unexplored country\'s dot to never be snappable while fog of war is on');
+    }
+
+    const pOwn = worldToMinimap(0, 0);
+    if (nearestMinimapLandmark(pOwn.x, pOwn.y, 8) === null) {
+        problems.push('expected the human\'s own country to always be snappable regardless of fog of war');
+    }
+
+    human.exploredCountryIds.add(1);
+    if (nearestMinimapLandmark(pHidden.x, pHidden.y, 8) === null) {
+        problems.push('expected a now-explored country\'s dot to be snappable');
+    }
+
+    vm.runInContext('fogOfWarEnabled = false;', context);
+    human.exploredCountryIds.delete(1);
+    if (nearestMinimapLandmark(pHidden.x, pHidden.y, 8) === null) {
+        problems.push('expected every dot snappable once the fog of war toggle is off, explored or not');
+    }
+    vm.runInContext('fogOfWarEnabled = true;', context);
+    return problems;
+});
+
+check('toggleFogOfWar() flips the live setting', () => {
+    vm.runInContext('fogOfWarEnabled = true;', context);
+    toggleFogOfWar();
+    const afterFirst = vm.runInContext('fogOfWarEnabled', context);
+    toggleFogOfWar();
+    const afterSecond = vm.runInContext('fogOfWarEnabled', context);
+    const problems = [];
+    if (afterFirst !== false) problems.push(`expected fogOfWarEnabled to flip to false, got ${afterFirst}`);
+    if (afterSecond !== true) problems.push(`expected a second toggle to flip it back to true, got ${afterSecond}`);
+    return problems;
+});
+
+check('drawMinimap() source gates both countries and galaxyCores on fog of war, skipping Campaign mode', () => {
+    const problems = [];
+    if (!/fogActive = fogOfWarEnabled && !gameState\.campaignActive/.test(script)) {
+        problems.push('expected drawMinimap() to compute a fogActive flag gated on both fogOfWarEnabled and !campaignActive');
+    }
+    if (!script.includes('exploredCountryIds.has(country.id)')) problems.push('expected drawMinimap() to check exploredCountryIds for countries');
+    if (!script.includes('exploredCoreKinds.has(core.kind)')) problems.push('expected drawMinimap() to check exploredCoreKinds for galaxyCores');
+    return problems;
+});
+
+check('gameLoop() calls updateFogOfWar() every frame, alongside the other per-frame updates', () => {
+    return script.includes('updateFogOfWar();') ? [] : ['expected gameLoop() to call updateFogOfWar()'];
 });
 
 report();
