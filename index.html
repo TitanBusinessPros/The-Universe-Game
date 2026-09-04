@@ -749,6 +749,7 @@
                     <button onclick="loadGame()" style="background: #0088ff;">📂 LOAD FROM FILE</button>
                     <button onclick="newGame()" style="background: #ff8800;">🔄 NEW GAME</button>
                     <button id="soundToggle" onclick="toggleSound()" style="background: #ffaa00;">🔇 SOUND OFF</button>
+                    <button id="fogOfWarToggle" onclick="toggleFogOfWar()" style="background: #556b2f;">🌫️ FOG OF WAR ON</button>
                     <button onclick="openInstructions()" style="background: #00aaff;">📖 INSTRUCTIONS</button>
                 </div>
             </div>
@@ -869,6 +870,14 @@
         // this so auto-enabling sound once the map starts never overrides a player's
         // own explicit "sound off" (or "sound on") choice made at any point before then.
         let soundManuallySet = false;
+
+        // Fog of war (2026-09-04, per direct request) - Standard Game/hot-seat only,
+        // never Campaign mode (see updateFogOfWar()'s own guard and drawMinimap()'s
+        // rendering checks). Defaults on since it's the feature being added; the
+        // toggle (toggleFogOfWar()) lets a player turn it back off. Harmless to leave
+        // true during Campaign - every check that matters is itself gated on
+        // !gameState.campaignActive, so this setting simply has no effect there.
+        let fogOfWarEnabled = true;
         // Start-screen intro music (2026-09-03, per direct request, track swapped to
         // "The Last Order Standing.mp3" the same day per a direct follow-up - was
         // "Humanity Does Not Disappear.mp3") - starts as the game loads (initAudio()
@@ -938,6 +947,16 @@
         function toggleSound() {
             soundManuallySet = true;
             setSoundEnabled(!soundEnabled);
+        }
+
+        // Per direct request: "Give me the option to turn fog of war on and off on
+        // the map." Only the setting itself - drawMinimap()/nearestMinimapLandmark()
+        // both already no-op the fog check entirely in Campaign mode, so this has no
+        // effect there regardless of which way it's left.
+        function toggleFogOfWar() {
+            fogOfWarEnabled = !fogOfWarEnabled;
+            const btn = document.getElementById('fogOfWarToggle');
+            if (btn) btn.textContent = fogOfWarEnabled ? '🌫️ FOG OF WAR ON' : '🌍 FOG OF WAR OFF';
         }
 
         // Per direct request: "allow the sound to turn on automatically once the map
@@ -1703,11 +1722,23 @@
         // randomly pick another planet to target." Runs every turn (cheap - just
         // id lookups) so a nation's assigned attacker(s) never keep aiming at a
         // target that's already been eliminated.
+        //
+        // Two passes, not one - a real gap found by direct verification
+        // (2026-09-04: "Verify one alien enemy planet and one enemy ai country is
+        // assigned to the user at all times, even when the user defeats that
+        // enemy assigned to them a new enemy is now assigned"). Pass 1 (original)
+        // only fixes an ATTACKER whose own target died - it does nothing for a
+        // VICTIM whose attacker died, since that dead attacker's attackTargetIds
+        // still validly points at the living victim from pass 1's point of view.
+        // Without pass 2, defeating your assigned rival/alien left you with no
+        // attacker at all, forever - exactly the gap this was asked to verify.
         function reassignEliminatedAttackTargets() {
             const aliveIds = gameState.countries
                 .filter(c => c.island.buildings.some(b => !b.destroyed))
                 .map(c => c.id);
             if (aliveIds.length === 0) return;
+
+            // Pass 1: an attacker whose own assigned target died gets a new one.
             gameState.countries.forEach(country => {
                 if (!country.attackTargetIds || country.attackTargetIds.length === 0) return;
                 country.attackTargetIds = country.attackTargetIds.map(targetId => {
@@ -1718,6 +1749,32 @@
                     if (candidates.length === 0) return targetId; // nothing else alive - leave as-is, harmless
                     return candidates[Math.floor(Math.random() * candidates.length)];
                 });
+            });
+
+            // Pass 2: every living regular nation must have at least one living
+            // regular-nation attacker AND at least one living alien attacker
+            // pointed at it. A nation picked here to cover a gap simply gains an
+            // extra target on top of whatever it already has - the "exactly one"
+            // balance from assignAttackTargets() is a nice-to-have at game start,
+            // not a hard invariant worth leaving anyone permanently unattacked to
+            // preserve as nations die off.
+            const livingRegular = gameState.countries.filter(c =>
+                aliveIds.includes(c.id) && !c.isCyborg && !c.isZoonester && !c.isRoufestreal);
+            const livingAlien = gameState.countries.filter(c =>
+                aliveIds.includes(c.id) && (c.isCyborg || c.isZoonester || c.isRoufestreal));
+
+            livingRegular.forEach(victim => {
+                const hasLivingRegularAttacker = livingRegular.some(a => a.id !== victim.id && a.attackTargetIds.includes(victim.id));
+                if (!hasLivingRegularAttacker && livingRegular.length >= 2) {
+                    const candidates = livingRegular.filter(a => a.id !== victim.id);
+                    const attacker = candidates[Math.floor(Math.random() * candidates.length)];
+                    attacker.attackTargetIds.push(victim.id);
+                }
+                const hasLivingAlienAttacker = livingAlien.some(a => a.attackTargetIds.includes(victim.id));
+                if (!hasLivingAlienAttacker && livingAlien.length > 0) {
+                    const attacker = livingAlien[Math.floor(Math.random() * livingAlien.length)];
+                    attacker.attackTargetIds.push(victim.id);
+                }
             });
         }
 
@@ -3524,6 +3581,17 @@
                 // by reassignEliminatedAttackTargets(). See the big comment above
                 // assignAttackTargets() for why this exists.
                 this.attackTargetIds = [];
+                // Fog of war (2026-09-04, Standard Game/hot-seat only) - which OTHER
+                // countries/landmarks this country (when human-controlled) has ever
+                // revealed on the minimap by getting a unit within sight range of them.
+                // Permanent once revealed, per direct request ("if my troops come across
+                // a planet it will now show on the minimap") - not re-hidden if the unit
+                // that found it later leaves. Kept per-country (not global) so hot-seat's
+                // several human seats each have their own fog, same reasoning
+                // gameState.playerCountry already keys everything else human-specific on.
+                // See updateFogOfWar()/drawMinimap().
+                this.exploredCountryIds = new Set();
+                this.exploredCoreKinds = new Set();
             }
 
             collectResources() {
@@ -6336,18 +6404,66 @@
         // object - not just "close" in world-space. Returns null if nothing's
         // close enough, so a click on truly empty space still behaves as before.
         function nearestMinimapLandmark(screenX, screenY, maxPixelDist = 8) {
+            // Fog of war (2026-09-04): only snap to a dot that's actually shown -
+            // same gating drawMinimap() uses, so a click can never precisely "find"
+            // something the player hasn't revealed yet.
+            const fogActive = fogOfWarEnabled && !gameState.campaignActive && !!gameState.playerCountry;
             let best = null, bestDist = maxPixelDist;
             gameState.countries.forEach(country => {
+                if (fogActive && !country.isPlayer && !gameState.playerCountry.exploredCountryIds.has(country.id)) return;
                 const p = worldToMinimap(country.island.x, country.island.y);
                 const d = Math.hypot(p.x - screenX, p.y - screenY);
                 if (d < bestDist) { bestDist = d; best = { x: country.island.x, y: country.island.y }; }
             });
             galaxyCores.forEach(core => {
+                if (fogActive && !gameState.playerCountry.exploredCoreKinds.has(core.kind)) return;
                 const p = worldToMinimap(core.x, core.y);
                 const d = Math.hypot(p.x - screenX, p.y - screenY);
                 if (d < bestDist) { bestDist = d; best = { x: core.x, y: core.y }; }
             });
             return best;
+        }
+
+        // Fog of war (2026-09-04, per direct request) - Standard Game/hot-seat only,
+        // never Campaign mode. Runs every frame (real-time, matching how units
+        // actually move - not turn-based) for every human seat
+        // (gameState.humanCountryIds), checking each of that human's own units
+        // against every OTHER country's island and every galaxyCore, using the
+        // same sight-range rules the main map's existing enemy-unit fog-of-war
+        // already uses (getEffectiveSightRange(), UNIT_SIGHT_RANGE/
+        // RADAR_SIGHT_RANGE) - edge-measured from the target's own size, same
+        // convention as every other range in this game. Also grants vision
+        // around each human's own homeworld (same reasoning as Unit.draw()'s
+        // existing fog-of-war: without it, a human with zero units built could
+        // never see anything beyond their own dot). Once revealed, stays
+        // revealed - see the Set fields' comment on Country - this only ever adds.
+        function updateFogOfWar() {
+            if (gameState.campaignActive) return;
+
+            function reveal(human, x, y, sightRange) {
+                gameState.countries.forEach(other => {
+                    if (other.id === human.id || human.exploredCountryIds.has(other.id)) return;
+                    const dist = Math.hypot(x - other.island.x, y - other.island.y) - other.island.size;
+                    if (dist <= sightRange) human.exploredCountryIds.add(other.id);
+                });
+                galaxyCores.forEach(core => {
+                    if (human.exploredCoreKinds.has(core.kind)) return;
+                    const dist = Math.hypot(x - core.x, y - core.y) - core.size;
+                    if (dist <= sightRange) human.exploredCoreKinds.add(core.kind);
+                });
+            }
+
+            (gameState.humanCountryIds || []).forEach(id => {
+                const human = gameState.countries.find(c => c.id === id);
+                if (!human) return;
+                human.units.forEach(unit => {
+                    if (unit.isGroundUnit() && unit.isInHarbor) return;
+                    reveal(human, unit.x, unit.y, getEffectiveSightRange(human, hasRadarDetection(unit)));
+                });
+                const radarTower = human.island.buildings.find(b => b.name === 'Radar Tower');
+                const homeSightRange = getEffectiveSightRange(human, radarTower && !radarTower.destroyed);
+                reveal(human, human.island.x, human.island.y, homeSightRange);
+            });
         }
 
         function drawMinimap() {
@@ -6360,9 +6476,16 @@
             ctx.lineWidth = 2;
             ctx.strokeRect(mmX, mmY, MINIMAP_WIDTH, MINIMAP_HEIGHT);
 
+            // Fog of war (2026-09-04, per direct request): outside Campaign mode,
+            // and only while the toggle is on, every OTHER country only shows once
+            // the active human seat has actually revealed it (see
+            // updateFogOfWar()) - own dot always shows regardless, same as
+            // homeworld vision already works on the main map.
+            const fogActive = fogOfWarEnabled && !gameState.campaignActive && !!gameState.playerCountry;
             gameState.countries.forEach(country => {
-                const p = worldToMinimap(country.island.x, country.island.y);
                 const isPlayer = country.isPlayer;
+                if (fogActive && !isPlayer && !gameState.playerCountry.exploredCountryIds.has(country.id)) return;
+                const p = worldToMinimap(country.island.x, country.island.y);
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, isPlayer ? 4 : 2.5, 0, Math.PI * 2);
                 ctx.fillStyle = country.color || COUNTRY_COLORS[country.id] || '#888';
@@ -6374,17 +6497,19 @@
                 }
             });
 
-            // Galaxy Core (2026-09-03, per direct request - "make it visible on the
-            // minimap too because i can't find it"). Drawn bigger than a country dot and
-            // in a distinct color so it reads as a landmark, not another nation.
+            // Galaxy Core/Bounty/Hotsun (2026-09-03/04, per direct request - "make it
+            // visible on the minimap too because i can't find it"). Drawn bigger than
+            // a country dot and in a distinct color per kind so each reads as its own
+            // landmark, not just "some colored dot" - purple for the healing Galaxy
+            // Core, gold for the Galaxy Bounty (matches what it actually pays out),
+            // orange-red for Hotsun (matches the hazard it actually is). Same fog-of-
+            // war gating as countries above.
             galaxyCores.forEach(core => {
+                if (fogActive && !gameState.playerCountry.exploredCoreKinds.has(core.kind)) return;
                 const p = worldToMinimap(core.x, core.y);
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
-                // Distinct color per kind so the two landmarks read apart on the
-                // minimap, not just "some purple dot" - purple for the healing Galaxy
-                // Core, gold for the Galaxy Bounty (matches what it actually pays out).
-                ctx.fillStyle = core.kind === 'bounty' ? '#ffd700' : '#b060f0';
+                ctx.fillStyle = core.kind === 'bounty' ? '#ffd700' : core.kind === 'hotsun' ? '#ff4500' : '#b060f0';
                 ctx.fill();
                 ctx.strokeStyle = '#ffffff';
                 ctx.lineWidth = 1;
@@ -6503,6 +6628,7 @@
                 updateBlackHoles(frameDeltaTime);
                 processAttackMoveOrders();
                 updateMiningAndResearch();
+                updateFogOfWar();
             }
 
             drawRadarPulses();
