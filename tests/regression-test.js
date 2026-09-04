@@ -127,7 +127,7 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage, assignAttackTargets, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS, randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage, assignAttackTargets, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS, randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER, nearestMinimapLandmark };',
     context,
     { filename: 'grab-refs.js' }
 );
@@ -159,7 +159,8 @@ const {
     getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground,
     whenImagesReady, spaceElements, loadMineImage, mineImage,
     assignAttackTargets, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS,
-    randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER
+    randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER,
+    nearestMinimapLandmark
 } = context.__test;
 
 // ---------- Test data: the full combat unit roster ----------
@@ -4697,6 +4698,79 @@ check("updateBlackHoles() bounces off the real galaxy bounds (getGalaxyBounds())
         problems.push(`expected the hole to stay near its real-bounds-safe starting position (${farX + 10000}), got x=${hole.x.toFixed(0)} - looks clamped to the old fixed MAP_WIDTH box (${MAP_WIDTH})`);
     }
     blackHoles.length = 0;
+    return problems;
+});
+
+// ---------- Minimap precision at the new galaxy scale (2026-09-04) ----------
+// Direct report: "when i click on a planet on the mini map i can no longer
+// find it. Also, when i scroll out I no longer see a box in the mini map."
+// Both are consequences of the galaxy's much bigger scale (see
+// PLANET_SPREAD_MULTIPLIER) outrunning the minimap's fixed pixel resolution.
+
+check('nearestMinimapLandmark() snaps to a nearby country/core exactly, and returns null when nothing is close enough', () => {
+    const problems = [];
+    gameState.countries = [
+        new Country(0, 'A', '#fff', new Island(0, 0, 0), false),
+        new Country(1, 'B', '#fff', new Island(500000, 0, 1), false),
+    ];
+    galaxyCores.length = 0;
+    const p = worldToMinimap(0, 0);
+    const near = nearestMinimapLandmark(p.x + 2, p.y + 1, 8); // a few px off, within tolerance
+    if (!near || near.x !== 0 || near.y !== 0) {
+        problems.push(`expected a click near country A's minimap dot to snap exactly to (0,0), got ${JSON.stringify(near)}`);
+    }
+    const far = nearestMinimapLandmark(p.x + 2, p.y + 1, 1); // same click, tolerance too tight now
+    if (far !== null) problems.push(`expected null when nothing is within the (tighter) tolerance, got ${JSON.stringify(far)}`);
+    const empty = nearestMinimapLandmark(-1000, -1000, 8); // nowhere near any dot
+    if (empty !== null) problems.push(`expected null for a click far from every landmark, got ${JSON.stringify(empty)}`);
+    return problems;
+});
+
+check('nearestMinimapLandmark() also snaps to a Galaxy Core/Bounty dot, not just countries', () => {
+    const problems = [];
+    gameState.countries = [new Country(0, 'A', '#fff', new Island(500000, 500000, 0), false)];
+    galaxyCores.length = 0;
+    const core = new GalaxyCore(0, 0);
+    galaxyCores.push(core);
+    const p = worldToMinimap(0, 0);
+    const near = nearestMinimapLandmark(p.x, p.y, 8);
+    galaxyCores.length = 0;
+    if (!near || near.x !== 0 || near.y !== 0) problems.push(`expected a click on the core's dot to snap to (0,0), got ${JSON.stringify(near)}`);
+    return problems;
+});
+
+check("a plain minimap click with nothing selected navigates the camera to the exact landmark position when close to one, not just an imprecise nearby point", () => {
+    // Direct simulation of the mouseup handler's own logic (see canvas's
+    // mouseup listener) rather than dispatching a real DOM event - this suite
+    // tests game logic directly; see tests/browser/interaction-test.js for
+    // real DOM event coverage.
+    const problems = [];
+    gameState.countries = [
+        new Country(0, 'A', '#fff', new Island(1234, 5678, 0), false),
+        new Country(1, 'B', '#fff', new Island(-800000, 800000, 1), false),
+    ];
+    galaxyCores.length = 0;
+    gameState.selectedUnits = [];
+    const p = worldToMinimap(1234, 5678);
+    const w = minimapToWorld(p.x + 1, p.y + 1); // the raw (imprecise) conversion
+    const snapped = nearestMinimapLandmark(p.x + 1, p.y + 1);
+    const finalX = snapped ? snapped.x : w.x;
+    const finalY = snapped ? snapped.y : w.y;
+    if (finalX !== 1234 || finalY !== 5678) {
+        problems.push(`expected the click to resolve to A's exact position (1234, 5678), got (${finalX}, ${finalY}) - the raw imprecise conversion alone gave (${w.x.toFixed(0)}, ${w.y.toFixed(0)})`);
+    }
+    return problems;
+});
+
+check('drawMinimap()\'s camera viewport rectangle has a minimum visible size, per direct report ("no longer see a box in the mini map")', () => {
+    const problems = [];
+    if (!script.includes('MIN_VIEWPORT_BOX_PX')) problems.push('expected a minimum-viewport-box-size clamp in drawMinimap()');
+    if (!/Math\.max\(bottomRightRaw\.x - topLeftRaw\.x, MIN_VIEWPORT_BOX_PX\)/.test(script)) {
+        problems.push('expected the viewport box width to be clamped to at least MIN_VIEWPORT_BOX_PX');
+    }
+    if (!/Math\.max\(bottomRightRaw\.y - topLeftRaw\.y, MIN_VIEWPORT_BOX_PX\)/.test(script)) {
+        problems.push('expected the viewport box height to be clamped to at least MIN_VIEWPORT_BOX_PX');
+    }
     return problems;
 });
 

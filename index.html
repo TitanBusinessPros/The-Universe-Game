@@ -6243,6 +6243,35 @@
             };
         }
 
+        // Per direct report (2026-09-04): "when i click on a planet on the mini map
+        // i can no longer find it." Root cause: a plain minimapToWorld() click
+        // conversion is only as precise as one minimap pixel (MINIMAP_WIDTH=220
+        // wide) - now that the galaxy can span millions of world units (see
+        // PLANET_SPREAD_MULTIPLIER), a single minimap pixel covers thousands of
+        // world units, which can easily be bigger than the entire camera viewport
+        // at normal zoom. A click that visually landed right on a planet's dot
+        // could still navigate the camera to empty space thousands of units away
+        // from that planet. This snaps a click to the exact position of whatever
+        // real landmark (country island or Galaxy Core/Bounty - the same things
+        // drawn as dots on the minimap) is within maxPixelDist minimap-screen-
+        // pixels of the click, so clicking a dot reliably takes you to that exact
+        // object - not just "close" in world-space. Returns null if nothing's
+        // close enough, so a click on truly empty space still behaves as before.
+        function nearestMinimapLandmark(screenX, screenY, maxPixelDist = 8) {
+            let best = null, bestDist = maxPixelDist;
+            gameState.countries.forEach(country => {
+                const p = worldToMinimap(country.island.x, country.island.y);
+                const d = Math.hypot(p.x - screenX, p.y - screenY);
+                if (d < bestDist) { bestDist = d; best = { x: country.island.x, y: country.island.y }; }
+            });
+            galaxyCores.forEach(core => {
+                const p = worldToMinimap(core.x, core.y);
+                const d = Math.hypot(p.x - screenX, p.y - screenY);
+                if (d < bestDist) { bestDist = d; best = { x: core.x, y: core.y }; }
+            });
+            return best;
+        }
+
         function drawMinimap() {
             const { mmX, mmY } = minimapBounds();
 
@@ -6298,11 +6327,24 @@
                 });
             }
 
-            // Camera viewport rectangle
+            // Camera viewport rectangle. Per direct report ("when i scroll out I no
+            // longer see a box in the mini map"): at the galaxy's new much bigger
+            // scale (see PLANET_SPREAD_MULTIPLIER), the normal camera viewport can
+            // cover a tiny fraction of a single minimap pixel, shrinking this
+            // rectangle to literally nothing. Clamped to a minimum visible size
+            // (still centered on the real viewport center) so it's always visible
+            // regardless of scale.
             const halfW = (canvas.width / 2) / camera.zoom;
             const halfH = (canvas.height / 2) / camera.zoom;
-            const topLeft = worldToMinimap(camera.x - halfW, camera.y - halfH);
-            const bottomRight = worldToMinimap(camera.x + halfW, camera.y + halfH);
+            const topLeftRaw = worldToMinimap(camera.x - halfW, camera.y - halfH);
+            const bottomRightRaw = worldToMinimap(camera.x + halfW, camera.y + halfH);
+            const MIN_VIEWPORT_BOX_PX = 4;
+            const viewportCenterX = (topLeftRaw.x + bottomRightRaw.x) / 2;
+            const viewportCenterY = (topLeftRaw.y + bottomRightRaw.y) / 2;
+            const boxW = Math.max(bottomRightRaw.x - topLeftRaw.x, MIN_VIEWPORT_BOX_PX);
+            const boxH = Math.max(bottomRightRaw.y - topLeftRaw.y, MIN_VIEWPORT_BOX_PX);
+            const topLeft = { x: viewportCenterX - boxW / 2, y: viewportCenterY - boxH / 2 };
+            const bottomRight = { x: viewportCenterX + boxW / 2, y: viewportCenterY + boxH / 2 };
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
             ctx.lineWidth = 1;
             ctx.strokeRect(
@@ -6932,8 +6974,11 @@
                         deselectAllUnits();
                     } else {
                         // Nothing selected - plain click just navigates the camera there.
-                        camera.x = w.x;
-                        camera.y = w.y;
+                        // Snap to the exact position of whatever landmark dot the click was
+                        // actually near, per direct report - see nearestMinimapLandmark().
+                        const snapped = nearestMinimapLandmark(sx, sy);
+                        camera.x = snapped ? snapped.x : w.x;
+                        camera.y = snapped ? snapped.y : w.y;
                     }
 
                     minimapSelectionBox = null;
