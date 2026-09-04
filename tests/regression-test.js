@@ -127,7 +127,7 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage, assignAttackTargets, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS, randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage, assignAttackTargets, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS, randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER };',
     context,
     { filename: 'grab-refs.js' }
 );
@@ -159,7 +159,7 @@ const {
     getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground,
     whenImagesReady, spaceElements, loadMineImage, mineImage,
     assignAttackTargets, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS,
-    randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR
+    randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER
 } = context.__test;
 
 // ---------- Test data: the full combat unit roster ----------
@@ -890,10 +890,22 @@ check('toggleUI() toggles the side panel\'s visible class, and viewAll() recente
     toggleUI();
     if (ui.classList.contains('visible') !== hadVisible) problems.push('expected a second toggleUI() to flip it back');
 
+    // viewAll() fits the real current extent of the galaxy (getGalaxyBounds()),
+    // not a fixed MAP_WIDTH/MAP_HEIGHT box (2026-09-04 fix - see that function's
+    // own comment: Standard Game planets can now land well outside that box).
+    gameState.countries = [
+        new Country(0, 'A', '#fff', new Island(0, 0, 0), false),
+        new Country(1, 'B', '#fff', new Island(10000, 6000, 1), false),
+    ];
+    galaxyCores.length = 0;
     camera.x = 1; camera.y = 1; camera.zoom = 5;
     viewAll();
-    if (camera.x !== MAP_WIDTH / 2 || camera.y !== MAP_HEIGHT / 2) problems.push(`expected the camera centered on the map, got (${camera.x}, ${camera.y})`);
-    const expectedZoom = Math.min(canvas.width / MAP_WIDTH, canvas.height / MAP_HEIGHT) * 0.9;
+    const b = getGalaxyBounds();
+    const expectedX = (b.minX + b.maxX) / 2, expectedY = (b.minY + b.maxY) / 2;
+    if (Math.abs(camera.x - expectedX) > 0.01 || Math.abs(camera.y - expectedY) > 0.01) {
+        problems.push(`expected the camera centered on the real galaxy bounds (${expectedX}, ${expectedY}), got (${camera.x}, ${camera.y})`);
+    }
+    const expectedZoom = Math.min(canvas.width / (b.maxX - b.minX), canvas.height / (b.maxY - b.minY)) * 0.9;
     if (Math.abs(camera.zoom - expectedZoom) > 0.0001) problems.push(`expected zoom ${expectedZoom}, got ${camera.zoom}`);
     return problems;
 });
@@ -4155,7 +4167,14 @@ check("updateBlackHoles() captures a nearby ship, drags it along every frame, an
     const farUnit = makeUnit('deepglider', 0);
     farUnit.x = BLACK_HOLE_CAPTURE_RANGE + 5000; farUnit.y = 0; // well outside range
     country.units = [nearbyUnit, farUnit];
-    gameState.countries = [country];
+    // updateBlackHoles() now bounces the hole off getGalaxyBounds() (the real
+    // current extent of every planet), not a fixed MAP_WIDTH/MAP_HEIGHT box
+    // (2026-09-04 fix) - country's own island is deliberately far away (see
+    // above), so add a second anchor far in the OPPOSITE direction purely to
+    // give getGalaxyBounds() a wide enough box to comfortably contain every
+    // coordinate this test actually moves the hole/units through (0 to ~12000).
+    const boundsAnchor = new Country(1, 'BoundsAnchor', '#000000', new Island(-20000, 0, 1), false);
+    gameState.countries = [country, boundsAnchor];
 
     updateBlackHoles(1 / 60);
     if (nearbyUnit.trappedByBlackHole !== hole) problems.push('expected the nearby unit to be captured');
@@ -4194,7 +4213,10 @@ check('updateBlackHoles() releases every trapped ship and removes itself once it
     const trapped = makeUnit('deepglider', 0);
     trapped.x = 0; trapped.y = 0;
     country.units = [trapped];
-    gameState.countries = [country];
+    // See the getGalaxyBounds()-anchor comment in the capture/drag test above -
+    // same reasoning, same fix.
+    const boundsAnchor = new Country(1, 'BoundsAnchor', '#000000', new Island(-20000, 0, 1), false);
+    gameState.countries = [country, boundsAnchor];
 
     updateBlackHoles(1 / 60); // captures it
     if (!trapped.trappedByBlackHole) return ['expected setup to capture the unit before testing release'];
@@ -4587,6 +4609,69 @@ check('a real initGame() run keeps the Galaxy Core and Galaxy Bounty clear of ev
     const bountyVec = { x: bounty.x - centerX, y: bounty.y - centerY };
     const dot = coreVec.x * bountyVec.x + coreVec.y * bountyVec.y;
     if (dot >= 0) problems.push(`expected the Core and Bounty in opposite directions from map center, got a non-negative dot product (${dot.toFixed(0)}) between their offset vectors`);
+    return problems;
+});
+
+// ---------- Planet spread multiplier (2026-09-04) ----------
+// Direct follow-up request: "The planets were not spread out far enough from
+// each other. I want them to be 3-5 times futhrur away from each other as
+// they are now. I don't want planets close to one another." Also covers the
+// three places that used to assume a fixed MAP_WIDTH/MAP_HEIGHT box and now
+// have to use the real, dynamic getGalaxyBounds() instead, since Standard
+// Game planets can land well outside that fixed box.
+
+check('PLANET_SPREAD_MULTIPLIER scales PLANET_MIN_SEPARATION, and sits within the requested 3-5x range', () => {
+    const problems = [];
+    const expected = Math.min(MAP_WIDTH, MAP_HEIGHT) * 0.12 * PLANET_SPREAD_MULTIPLIER;
+    if (Math.abs(PLANET_MIN_SEPARATION - expected) > 1) {
+        problems.push(`expected PLANET_MIN_SEPARATION to scale by PLANET_SPREAD_MULTIPLIER, got ${PLANET_MIN_SEPARATION} vs expected ${expected}`);
+    }
+    if (PLANET_SPREAD_MULTIPLIER < 3 || PLANET_SPREAD_MULTIPLIER > 5) {
+        problems.push(`expected PLANET_SPREAD_MULTIPLIER within the requested 3-5x range, got ${PLANET_SPREAD_MULTIPLIER}`);
+    }
+    return problems;
+});
+
+check('spawnResourceDeposits() scatters extra deposits across the real galaxy bounds (getGalaxyBounds()), not a fixed MAP_WIDTH/MAP_HEIGHT box', () => {
+    const problems = [];
+    // Countries placed well outside the old fixed [0,MAP_WIDTH]x[0,MAP_HEIGHT] box -
+    // exactly what randomSpreadPosition()/PLANET_SPREAD_MULTIPLIER now do for real.
+    const farX = MAP_WIDTH * 3;
+    gameState.countries = [
+        new Country(0, 'Far1', '#fff', new Island(farX, 0, 0), false),
+        new Country(1, 'Far2', '#fff', new Island(farX + 20000, 5000, 1), false),
+    ];
+    spawnResourceDeposits();
+    const homeDepositCount = gameState.countries.length; // one per country
+    const extras = resourceDeposits.slice(homeDepositCount);
+    if (extras.length === 0) return ['expected at least one extra deposit to have been placed'];
+    const anyNearFarCountries = extras.some(d => d.x > MAP_WIDTH);
+    if (!anyNearFarCountries) {
+        problems.push('expected extra deposits scattered near the real (far-out) galaxy bounds, but every one landed inside the old fixed MAP_WIDTH box');
+    }
+    return problems;
+});
+
+check("updateBlackHoles() bounces off the real galaxy bounds (getGalaxyBounds()), not a fixed MAP_WIDTH/MAP_HEIGHT box", () => {
+    const problems = [];
+    // Countries far outside the old fixed box, same as the deposit test above.
+    const farX = MAP_WIDTH * 3;
+    gameState.countries = [
+        new Country(0, 'Far1', '#fff', new Island(farX, 0, 0), false),
+        new Country(1, 'Far2', '#fff', new Island(farX + 20000, 0, 1), false),
+    ];
+    galaxyCores.length = 0;
+    blackHoles.length = 0;
+    // Well past the OLD fixed MAP_WIDTH box, but safely inside the real
+    // (far-out) galaxy bounds - if updateBlackHoles() still clamped to the old
+    // fixed box, one call would immediately snap this back to MAP_WIDTH.
+    const hole = new BlackHole(farX + 10000, 0);
+    blackHoles.push(hole);
+    updateBlackHoles(1 / 60);
+    if (Math.abs(hole.x - (farX + 10000)) > 500) {
+        problems.push(`expected the hole to stay near its real-bounds-safe starting position (${farX + 10000}), got x=${hole.x.toFixed(0)} - looks clamped to the old fixed MAP_WIDTH box (${MAP_WIDTH})`);
+    }
+    blackHoles.length = 0;
     return problems;
 });
 
