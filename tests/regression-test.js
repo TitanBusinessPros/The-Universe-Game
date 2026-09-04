@@ -127,7 +127,7 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage };',
     context,
     { filename: 'grab-refs.js' }
 );
@@ -138,7 +138,7 @@ const {
     GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT,
     spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE,
     introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound,
-    playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver,
+    playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL,
     DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas,
     canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS,
     AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo,
@@ -4078,6 +4078,159 @@ check('showCampaignStageComplete() plays the endgame sound only when the whole c
         vm.runInContext('playEndgameSound = this.__origPlayEndgameSound;', context);
     }
     return problems;
+});
+
+// ---------- 32. Nerfflasma Hole (2026-09-03) ----------
+//    A single, unowned, roaming hazard - 3x a planet's radius, 10,000 HP,
+//    wanders uncontrolled at Skyfortress speed unless provoked (see
+//    updateBlackHoles()'s own comment for the full mechanic). Deliberately
+//    invisible on the minimap and excluded from getGalaxyBounds() - unlike
+//    the Galaxy Core/Bounty, its position must never be tell-tale there.
+
+check('spawnBlackHole() places exactly one Nerfflasma Hole at the map center with the right size/HP', () => {
+    const problems = [];
+    blackHoles.length = 0;
+    spawnBlackHole();
+    if (blackHoles.length !== 1) problems.push(`expected exactly 1 black hole, got ${blackHoles.length}`);
+    else {
+        const hole = blackHoles[0];
+        if (hole.size !== BLACK_HOLE_SIZE) problems.push(`expected size BLACK_HOLE_SIZE (${BLACK_HOLE_SIZE}), got ${hole.size}`);
+        if (hole.hp !== BLACK_HOLE_MAX_HP || hole.maxHp !== BLACK_HOLE_MAX_HP) problems.push(`expected hp/maxHp BLACK_HOLE_MAX_HP (${BLACK_HOLE_MAX_HP}), got ${hole.hp}/${hole.maxHp}`);
+        if (hole.x !== MAP_WIDTH / 2 || hole.y !== MAP_HEIGHT / 2) problems.push(`expected it centered on the map, got (${hole.x}, ${hole.y})`);
+    }
+    return problems;
+});
+
+check('updateBlackHoles() wanders when unprovoked, and is a safe no-op with zero black holes', () => {
+    const problems = [];
+    blackHoles.length = 0;
+    updateBlackHoles(1 / 60); // must not throw with none
+
+    // Proportional to MAP_WIDTH/HEIGHT (which can be tiny in this jsdom harness,
+    // unlike a real browser) rather than a hardcoded large number, so this starts
+    // safely within bounds and isn't immediately clamped/bounced off an edge.
+    const hole = new BlackHole(MAP_WIDTH / 4, MAP_HEIGHT / 4);
+    hole.wanderAngle = 0; // due "east"
+    hole.wanderChangeTimer = 999; // don't let it re-randomize mid-check
+    blackHoles.push(hole);
+    gameState.countries = [];
+
+    const before = { x: hole.x, y: hole.y };
+    updateBlackHoles(1);
+    if (hole.x <= before.x) problems.push(`expected it to move east (wanderAngle 0) with nothing provoking it, x went ${before.x} -> ${hole.x}`);
+    if (Math.abs(hole.y - before.y) > 0.01) problems.push(`expected no y movement for a due-east wander, y went ${before.y} -> ${hole.y}`);
+
+    blackHoles.length = 0;
+    return problems;
+});
+
+check("updateBlackHoles() captures a nearby ship, drags it along every frame, and chases whoever damages it", () => {
+    const problems = [];
+    blackHoles.length = 0;
+    const hole = new BlackHole(0, 0);
+    hole.wanderChangeTimer = 999;
+    blackHoles.push(hole);
+
+    const country = new Country(0, 'BlackHoleTest', '#ff0000', new Island(1000000, 0, 0), true);
+    const nearbyUnit = makeUnit('deepglider', 0);
+    nearbyUnit.x = BLACK_HOLE_CAPTURE_RANGE - 10; nearbyUnit.y = 0; // just inside range
+    const farUnit = makeUnit('deepglider', 0);
+    farUnit.x = BLACK_HOLE_CAPTURE_RANGE + 5000; farUnit.y = 0; // well outside range
+    country.units = [nearbyUnit, farUnit];
+    gameState.countries = [country];
+
+    updateBlackHoles(1 / 60);
+    if (nearbyUnit.trappedByBlackHole !== hole) problems.push('expected the nearby unit to be captured');
+    if (farUnit.trappedByBlackHole) problems.push('expected the far unit to remain free');
+
+    // Move the hole and confirm the trapped unit follows (dragged "like a comet").
+    hole.x = 500; hole.y = 500;
+    updateBlackHoles(1 / 60);
+    const expectedX = hole.x + nearbyUnit.blackHoleOffsetX;
+    const expectedY = hole.y + nearbyUnit.blackHoleOffsetY;
+    if (Math.abs(nearbyUnit.x - expectedX) > 0.01 || Math.abs(nearbyUnit.y - expectedY) > 0.01) {
+        problems.push(`expected the trapped unit dragged to hole position + its own offset, got (${nearbyUnit.x}, ${nearbyUnit.y}) vs expected (${expectedX}, ${expectedY})`);
+    }
+
+    // Provoke it with the still-free far unit - it should now chase that unit
+    // instead of continuing to wander.
+    hole.x = 0; hole.y = 0;
+    hole.targetUnit = farUnit;
+    const beforeChase = { x: hole.x, y: hole.y };
+    updateBlackHoles(1);
+    const distBefore = Math.hypot(farUnit.x - beforeChase.x, farUnit.y - beforeChase.y);
+    const distAfter = Math.hypot(farUnit.x - hole.x, farUnit.y - hole.y);
+    if (distAfter >= distBefore) problems.push(`expected the hole to move closer to its provoking target, distance went ${distBefore.toFixed(0)} -> ${distAfter.toFixed(0)}`);
+
+    blackHoles.length = 0;
+    return problems;
+});
+
+check('updateBlackHoles() releases every trapped ship and removes itself once its HP reaches zero', () => {
+    const problems = [];
+    blackHoles.length = 0;
+    const hole = new BlackHole(0, 0);
+    blackHoles.push(hole);
+
+    const country = new Country(0, 'BlackHoleDeathTest', '#ff0000', new Island(1000000, 0, 0), true);
+    const trapped = makeUnit('deepglider', 0);
+    trapped.x = 0; trapped.y = 0;
+    country.units = [trapped];
+    gameState.countries = [country];
+
+    updateBlackHoles(1 / 60); // captures it
+    if (!trapped.trappedByBlackHole) return ['expected setup to capture the unit before testing release'];
+
+    hole.hp = 0;
+    updateBlackHoles(1 / 60);
+    if (trapped.trappedByBlackHole) problems.push('expected the unit released once the black hole reaches 0 HP');
+    if (blackHoles.length !== 0) problems.push(`expected the destroyed black hole removed from the array, length=${blackHoles.length}`);
+    return problems;
+});
+
+check("a trapped unit can't move (Unit.update() is a no-op) and deals no damage (getAttackPower() returns 0)", () => {
+    const problems = [];
+    const unit = makeUnit('deepglider', 0);
+    unit.x = 0; unit.y = 0;
+    unit.targetX = 100000; unit.targetY = 0; // would otherwise travel far this call
+    unit.trappedByBlackHole = new BlackHole(0, 0); // any truthy value - update()/getAttackPower() only check truthiness
+
+    unit.update();
+    if (unit.x !== 0 || unit.y !== 0) problems.push(`expected a trapped unit's update() to be a complete no-op, moved to (${unit.x}, ${unit.y})`);
+    if (unit.getAttackPower() !== 0) problems.push(`expected a trapped unit's getAttackPower() to be 0, got ${unit.getAttackPower()}`);
+
+    unit.trappedByBlackHole = null;
+    unit.update();
+    if (unit.x === 0 && unit.y === 0) problems.push("expected update() to work normally again once released");
+    return problems;
+});
+
+check('startCampaignStage() clears blackHoles - Standard Game only, same as galaxyCores', () => {
+    blackHoles.push(new BlackHole(0, 0));
+    selectCampaignNation(0);
+    startCampaignStage(0);
+    return blackHoles.length !== 0 ? [`expected blackHoles cleared in Campaign mode, got ${blackHoles.length}`] : [];
+});
+
+check("getGalaxyBounds() never expands to include a Nerfflasma Hole - it must stay invisible on the minimap, never even indirectly via the minimap's own scale", () => {
+    const problems = [];
+    gameState.countries = [0, 1].map(id => new Country(id, `N${id}`, '#fff', new Island(id * 1000, 0, id), false));
+    const boundsBefore = getGalaxyBounds();
+
+    blackHoles.length = 0;
+    blackHoles.push(new BlackHole(50000000, -50000000)); // absurdly far - would obviously distort bounds if counted
+    const boundsAfter = getGalaxyBounds();
+
+    if (JSON.stringify(boundsAfter) !== JSON.stringify(boundsBefore)) {
+        problems.push(`expected getGalaxyBounds() unaffected by a black hole, got ${JSON.stringify(boundsBefore)} -> ${JSON.stringify(boundsAfter)}`);
+    }
+    blackHoles.length = 0;
+    return problems;
+});
+
+check('drawMinimap() never references blackHoles - "you can not see it on the mini map", per direct request', () => {
+    const src = vm.runInContext('drawMinimap.toString()', context);
+    return src.includes('blackHoles') ? ['expected drawMinimap() to never reference blackHoles at all'] : [];
 });
 
 report();

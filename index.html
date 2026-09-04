@@ -1438,6 +1438,30 @@
         'miningship': 1.6
         };
 
+        // Nerfflasma Hole (2026-09-03, per direct request) - a single, unowned,
+        // roaming hazard built from Nerfflasma-Hole.png. 3x a standard planet's
+        // radius, 10,000 HP, wanders the galaxy uncontrolled (no fixed path) at the
+        // same speed as a Skyfortress - unless a ship fires on it, in which case it
+        // beelines for whoever just hit it ("tries to consume them") until either
+        // that ship is captured or something else provokes it instead. See
+        // updateBlackHoles() for the real per-frame behavior (movement, capture,
+        // dragging trapped ships along, releasing them once it's destroyed).
+        // Standard Game only, per the same precedent as the Galaxy Core/Bounty
+        // (Campaign clears blackHoles the same way it clears galaxyCores - see
+        // startCampaignStage()). Deliberately NOT on the minimap ("you can not see
+        // it on the mini map") and NOT counted in getGalaxyBounds() either - unlike
+        // the Galaxy Core/Bounty, it must never influence the minimap's scale/
+        // framing, or its position would be indirectly tell-tale even while
+        // literally invisible there.
+        const BLACK_HOLE_IMAGE_URL = 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Nerfflasma-Hole.png';
+        const BLACK_HOLE_SIZE = 250 * PLANET_SCALE * 3;
+        const BLACK_HOLE_MAX_HP = 10000;
+        const BLACK_HOLE_SPEED = UNIT_SPEEDS['skyfortress'];
+        // "Traps ships within a 25 ship radius" - same SHIP_LENGTH_REFERENCE/
+        // measured-from-its-own-edge convention as GALAXY_CORE_HEAL_RANGE/
+        // GALAXY_BOUNTY_QUALIFY_RANGE above.
+        const BLACK_HOLE_CAPTURE_RANGE = BLACK_HOLE_SIZE + 25 * SHIP_LENGTH_REFERENCE;
+
         const HARBOR_LOAD_RANGE = 300;
         const HARBOR_UNLOAD_RANGE = 100;
         const TROOP_PICKUP_RANGE = 400;
@@ -1843,6 +1867,10 @@
         // plain array (like the two above) even though there's only ever one today, so
         // healNearGalaxyCores()/rendering don't need to special-case "exactly one".
         let galaxyCores = [];
+        // Nerfflasma Hole(s) (2026-09-03) - Standard Game only, see spawnBlackHole().
+        // Deliberately its OWN array, not merged into galaxyCores - unlike that one,
+        // this must never be drawn on the minimap or counted in getGalaxyBounds().
+        let blackHoles = [];
         let laserEffects = []; // {startX, startY, endX, endY, createdAt, duration, color}
 
         // Distinct laser-beam color per unit type ('r,g,b', no alpha - the draw
@@ -2290,6 +2318,57 @@
             }
         }
 
+        class BlackHole {
+            // Neutral, unowned, roaming hazard (2026-09-03) - see its constants'
+            // comment above for the full behavior. Purely position/HP/sprite state
+            // here; all the actual per-frame movement/capture/drag/release logic
+            // lives in updateBlackHoles(), same split as GalaxyCore (dumb data) vs
+            // healNearGalaxyCores()/awardGalaxyBounty() (behavior).
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.hp = BLACK_HOLE_MAX_HP;
+                this.maxHp = BLACK_HOLE_MAX_HP;
+                this.size = BLACK_HOLE_SIZE;
+                this.sprite = new Image();
+                this.sprite.onerror = () => { this.sprite = null; };
+                queueImageLoad(this.sprite, BLACK_HOLE_IMAGE_URL);
+                // Uncontrolled wandering direction/timer - see updateBlackHoles().
+                this.wanderAngle = Math.random() * Math.PI * 2;
+                this.wanderChangeTimer = 5 + Math.random() * 10;
+                // Set the moment any ship damages it ("starts moving in their
+                // direction and tries to consume them") - null while uncontrolled.
+                this.targetUnit = null;
+                this.rotationAngle = Math.random() * Math.PI * 2;
+                this.rotationSpeed = (0.0002 + Math.random() * 0.0003) * (Math.random() < 0.5 ? 1 : -1);
+            }
+            draw() {
+                const screenX = (this.x - camera.x) * camera.zoom + canvas.width / 2;
+                const screenY = (this.y - camera.y) * camera.zoom + canvas.height / 2;
+                const half = this.size * camera.zoom;
+                if (this.sprite && this.sprite.complete && this.sprite.naturalWidth > 0) {
+                    ctx.save();
+                    ctx.translate(screenX, screenY);
+                    ctx.rotate(this.rotationAngle);
+                    ctx.drawImage(this.sprite, -half, -half, half * 2, half * 2);
+                    ctx.restore();
+                } else {
+                    ctx.fillStyle = 'rgba(20, 0, 30, 0.85)';
+                    ctx.beginPath();
+                    ctx.arc(screenX, screenY, half, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = 'rgba(160, 0, 220, 0.7)';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                }
+                const barWidth = 60, hpPercent = Math.max(0, this.hp / this.maxHp);
+                ctx.fillStyle = '#330033';
+                ctx.fillRect(screenX - barWidth / 2, screenY - half - 12, barWidth, 5);
+                ctx.fillStyle = '#cc00ff';
+                ctx.fillRect(screenX - barWidth / 2, screenY - half - 12, barWidth * hpPercent, 5);
+            }
+        }
+
         class Missile {
             constructor(startX,startY,targetX,targetY,countryId,damage=25,imageUrl=null){ this.id=nextMissileId++;this.x=startX;this.y=startY;this.targetX=targetX;this.targetY=targetY;this.countryId=countryId;this.damage=damage;this.speed=0.5;this.size=6;this.active=true;this.hp=10;this.maxHp=10;this.sprite=null;if(imageUrl){this.sprite=new Image();this.sprite.src=imageUrl;}this.angle=Math.atan2(targetY-startY,targetX-startX); }
             update(){ if(!this.active)return;const s=this.speed*frameDeltaTime*60;/* frame-rate-independent, see frameDeltaTime's declaration */this.x+=Math.cos(this.angle)*s;this.y+=Math.sin(this.angle)*s;const dx=this.targetX-this.x,dy=this.targetY-this.y;if(Math.sqrt(dx*dx+dy*dy)<10)this.active=false; }
@@ -2561,6 +2640,14 @@
                 this.selected = false;
                 this.frozenTurns = 0;
                 this.frozenBy = null;
+                // Nerfflasma Hole capture (2026-09-03) - null, or a reference to the
+                // BlackHole instance currently holding it (see updateBlackHoles()).
+                // Deliberately not persisted through buildSaveData()/applySaveData() -
+                // black holes themselves aren't saved either (they wander continuously,
+                // unlike the fixed Galaxy Core/Bounty), so a loaded save always starts
+                // with every unit free rather than referencing a black hole that no
+                // longer exists.
+                this.trappedByBlackHole = null;
                 this.isInHarbor = this.isGroundUnit();
                 this.turnsSinceLastMine = 0;      // roufestreal mine-layer cooldown
                 this.turnsSinceLastMissile = 5;   // phantomstrike missile cooldown (starts ready)
@@ -2653,6 +2740,12 @@
             }
 
             getAttackPower() {
+                // Nerfflasma Hole capture (2026-09-03, per direct request) - a trapped
+                // unit is fully disabled, not just immobile - zeroing its damage here
+                // (rather than adding yet another guard at each of the many places combat
+                // damage is actually applied) is the one central choke point every attack
+                // already calls through to compute how much damage to deal.
+                if (this.trappedByBlackHole) return 0;
                 const powerMap = {
                     'radar': 0, 'thunderwing': 40, 'blazefalcon': 30,
                     'skyripper': 35, 'vortexhawk': 40, 'phantomstrike': 50, 'razorwing': 45, 'shadowglider': 70,
@@ -2789,6 +2882,14 @@
             }
 
             update() {
+                // Nerfflasma Hole capture (2026-09-03, per direct request) - "disabled and
+                // can't move... you lose your ship basically" - until released (see
+                // updateBlackHoles()), a trapped unit never advances toward its own
+                // targetX/targetY at all; updateBlackHoles() runs later in the same frame
+                // and positions it itself (dragged along like a comet), so nothing here
+                // fights that positioning.
+                if (this.trappedByBlackHole) return;
+
                 // Handle frozen units
                 if (this.frozenTurns > 0) {
                     return;
@@ -2947,7 +3048,22 @@
                     ctx.textAlign = 'center';
                     ctx.fillText('FROZEN ' + this.frozenTurns, 0, -size - 20);
                 }
-                
+
+                // Nerfflasma Hole capture indicator (2026-09-03) - same visual
+                // convention as the frozen indicator above.
+                if (this.trappedByBlackHole) {
+                    ctx.strokeStyle = '#cc00ff';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, size + 15, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#cc00ff';
+                    ctx.font = 'bold 12px Courier New';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('TRAPPED', 0, -size - 20);
+                }
+
                 if (gameState.selectedUnit && gameState.selectedUnit.id === this.id) {
                     ctx.strokeStyle = '#ffff00';
                     ctx.lineWidth = 3;
@@ -3926,6 +4042,110 @@
             }
         }
 
+        // Called once from initGame() - Standard Game only, same reasoning as
+        // spawnGalaxyCore()/spawnGalaxyBounty(). Starts at the exact map center -
+        // clear of the Cyborg Planet cluster (each offset ±30000*GALAXY_SPACING_SCALE
+        // FROM that center, per initGame() below) and every CUSTOM_ISLANDS outpost -
+        // then wanders on its own from there (see updateBlackHoles()), so its
+        // starting point only needs to not spawn it on top of something, not predict
+        // where it'll end up.
+        function spawnBlackHole() {
+            blackHoles.length = 0;
+            blackHoles.push(new BlackHole(MAP_WIDTH / 2, MAP_HEIGHT / 2));
+        }
+
+        // Per-frame behavior for every Nerfflasma Hole (2026-09-03) - called from
+        // gameLoop(), not nextTurn(), since "travels around the galaxy" / "drags
+        // ships with it" are continuous, real-time motions, not turn-based effects
+        // (unlike the Galaxy Core's heal/bounty). Handles: uncontrolled wandering
+        // (or beelining for whoever last damaged it), capturing any not-yet-trapped
+        // ship that comes within BLACK_HOLE_CAPTURE_RANGE, dragging every ship it's
+        // already captured along with it, and releasing everyone the moment it runs
+        // out of HP.
+        function updateBlackHoles(dt) {
+            if (blackHoles.length === 0) return;
+            blackHoles.forEach(hole => {
+                hole.rotationAngle += hole.rotationSpeed;
+
+                // Movement: chase whoever provoked it, or keep wandering. A target
+                // stops counting the moment it's actually captured (no more chasing
+                // something that's already "aboard") or destroyed.
+                if (hole.targetUnit && (hole.targetUnit.hp <= 0 || hole.targetUnit.trappedByBlackHole)) {
+                    hole.targetUnit = null;
+                }
+                let moveAngle;
+                if (hole.targetUnit) {
+                    moveAngle = Math.atan2(hole.targetUnit.y - hole.y, hole.targetUnit.x - hole.x);
+                } else {
+                    hole.wanderChangeTimer -= dt;
+                    if (hole.wanderChangeTimer <= 0) {
+                        hole.wanderAngle = Math.random() * Math.PI * 2;
+                        hole.wanderChangeTimer = 5 + Math.random() * 10;
+                    }
+                    moveAngle = hole.wanderAngle;
+                }
+                // Same "speed is tuned per 60fps frame" convention as Unit.update()/
+                // Missile.update() - frame-rate independent via frameDeltaTime.
+                const step = BLACK_HOLE_SPEED * dt * 60;
+                hole.x += Math.cos(moveAngle) * step;
+                hole.y += Math.sin(moveAngle) * step;
+                // Bounce gently off the galaxy's edges rather than wandering off it
+                // forever - "travels around the galaxy" implies staying within it.
+                if (hole.x < 0 || hole.x > MAP_WIDTH) hole.wanderAngle = Math.PI - hole.wanderAngle;
+                if (hole.y < 0 || hole.y > MAP_HEIGHT) hole.wanderAngle = -hole.wanderAngle;
+                hole.x = Math.max(0, Math.min(MAP_WIDTH, hole.x));
+                hole.y = Math.max(0, Math.min(MAP_HEIGHT, hole.y));
+
+                gameState.countries.forEach(country => {
+                    country.units.forEach(unit => {
+                        if (unit.trappedByBlackHole) return;
+                        if (Math.hypot(unit.x - hole.x, unit.y - hole.y) <= BLACK_HOLE_CAPTURE_RANGE) {
+                            // A fixed per-unit offset, assigned once at the moment of
+                            // capture, is what makes a swarm of trapped ships trail
+                            // along with it "like a comet" instead of all stacking
+                            // exactly on its center.
+                            const angle = Math.random() * Math.PI * 2;
+                            const dist = Math.random() * hole.size * 0.6;
+                            unit.blackHoleOffsetX = Math.cos(angle) * dist;
+                            unit.blackHoleOffsetY = Math.sin(angle) * dist;
+                            unit.trappedByBlackHole = hole;
+                        }
+                    });
+                });
+            });
+
+            // Drag every currently-trapped ship along with its own black hole -
+            // AFTER the movement above, so it follows this frame's new position, not
+            // last frame's.
+            gameState.countries.forEach(country => {
+                country.units.forEach(unit => {
+                    if (unit.trappedByBlackHole) {
+                        unit.x = unit.trappedByBlackHole.x + unit.blackHoleOffsetX;
+                        unit.y = unit.trappedByBlackHole.y + unit.blackHoleOffsetY;
+                    }
+                });
+            });
+
+            // "Only after it has lost all hp will all ships be free" - release
+            // everyone it's holding, then remove it. Mutates blackHoles IN PLACE
+            // (never reassigns the binding) - the same real bug bit galaxyCores
+            // earlier this session: a reassignment leaves anything holding an
+            // earlier reference to the array (this file's own test harness
+            // included) looking at a stale, un-updated copy forever after.
+            const survivors = blackHoles.filter(h => h.hp > 0);
+            if (survivors.length !== blackHoles.length) {
+                blackHoles.filter(h => h.hp <= 0).forEach(hole => {
+                    gameState.countries.forEach(country => {
+                        country.units.forEach(unit => {
+                            if (unit.trappedByBlackHole === hole) unit.trappedByBlackHole = null;
+                        });
+                    });
+                });
+                blackHoles.length = 0;
+                blackHoles.push(...survivors);
+            }
+        }
+
         function initGame() {
             // Initialize audio
             initAudio();
@@ -4061,6 +4281,7 @@
             spawnResourceDeposits();
             spawnGalaxyCore(); // Standard Game only, per direct request - see its own comment
             spawnGalaxyBounty(); // ditto
+            spawnBlackHole(); // ditto
 
             const selectDiv = document.getElementById('countrySelect');
 
@@ -5153,6 +5374,7 @@
             // here. Clear it explicitly, same as the three arrays above, or a Campaign
             // stage would inherit and render/heal from a Standard Game leftover.
             galaxyCores.length = 0;
+            blackHoles.length = 0; // ditto - Standard Game only, same reasoning
 
             const outpostTotal = stage.objectives.filter(o => o.kind === 'outpost').length;
 
@@ -5834,6 +6056,7 @@
             });
 
             if (!gameState.paused) {
+                updateBlackHoles(frameDeltaTime);
                 processAttackMoveOrders();
                 updateMiningAndResearch();
             }
@@ -5854,6 +6077,7 @@
             // exception, just permanently invisible. Proven via ctx.getTransform()
             // captured at the actual draw() call site; see deposit-visibility-test.js.
             galaxyCores.forEach(g=>g.draw());
+            blackHoles.forEach(h=>h.draw());
             spaceMines.forEach(m=>m.draw());
             resourceDeposits.forEach(d=>d.draw());
             missiles.forEach(m=>m.draw());
@@ -5948,6 +6172,9 @@
                         });
                     }
                 });
+                if (!clickedEnemy) {
+                    clickedEnemy = blackHoles.some(hole => Math.hypot(hole.x - worldX, hole.y - worldY) < hole.size + 100);
+                }
                 gameState.actionMode = clickedEnemy ? 'attack' : 'move';
             }
 
@@ -6191,6 +6418,38 @@
                                     alert('No valid units to attack this building! (Ground units must be deployed from harbor first)');
                                 }
                             }
+                        }
+                    });
+                }
+
+                // Nerfflasma Hole targeting (2026-09-03, per direct request) - "if any
+                // ship fires on it it starts moving in their direction and tries to
+                // consume them". Player-only: this click handler is the one place a
+                // human deliberately aims at something specific - AI ships don't
+                // proactively target it, which would need much deeper changes across
+                // aiTurn()'s several independent combat loops for a single rare,
+                // roaming hazard. Ground units can't reach it (it roams open space).
+                if (!anyAttacked) {
+                    blackHoles.forEach(hole => {
+                        if (Math.hypot(hole.x - worldX, hole.y - worldY) > hole.size + 100) return;
+                        let holeAttacked = false;
+                        gameState.selectedUnits.forEach(attacker => {
+                            if (attacker.isGroundUnit() || attacker.hasAttacked || attacker.frozenTurns > 0 || attacker.trappedByBlackHole) return;
+                            const attackDist = Math.hypot(hole.x - attacker.x, hole.y - attacker.y);
+                            if (attackDist < attacker.getRange()) {
+                                hole.hp -= attacker.getAttackPower();
+                                hole.targetUnit = attacker;
+                                attacker.hasAttacked = true;
+                                holeAttacked = true;
+                                anyAttacked = true;
+                            } else {
+                                attacker.moveTo(hole.x, hole.y);
+                            }
+                        });
+                        if (holeAttacked) {
+                            updateUI();
+                            cancelAction();
+                            alert(`Attacked the Nerfflasma Hole! Remaining HP: ${Math.max(0, hole.hp)}/${BLACK_HOLE_MAX_HP}`);
                         }
                     });
                 }
