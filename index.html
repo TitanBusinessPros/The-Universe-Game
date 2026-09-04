@@ -859,16 +859,21 @@
         // Audio setup
         let bgMusic = null;
         let soundEnabled = false;
+        // True the moment the player has ever clicked the sound toggle themselves -
+        // enableSoundAutomatically() (2026-09-03, see its own comment below) checks
+        // this so auto-enabling sound once the map starts never overrides a player's
+        // own explicit "sound off" (or "sound on") choice made at any point before then.
+        let soundManuallySet = false;
         // Start-screen intro music (2026-09-03, per direct request) - "Humanity Does
         // Not Disappear.mp3", starts as the game loads (initAudio() runs once,
         // unconditionally, from initGame() - see its own call site) and plays through
-        // ONCE (loop=false), same muted-until-toggled mechanism as bgMusic below so it
+        // ONCE (loop=false), same muted-until-unmuted mechanism as bgMusic below so it
         // can actually start without a user gesture (browsers allow muted autoplay,
-        // never unmuted autoplay) - turning sound on just unmutes whatever point it's
-        // already reached, per direct request, rather than restarting it. Only for the
-        // start screen: stopIntroMusic() (called the moment the player picks their
-        // country, loads a save, starts hot-seat, or starts a campaign - see its own
-        // call sites) cuts it off there even if it hasn't finished on its own yet.
+        // never unmuted autoplay). Per a direct follow-up correction, it's deliberately
+        // NEVER force-stopped by picking a country, the briefing video ("the ad"), a
+        // loading screen, or bgMusic starting - it's meant to play over/through all of
+        // that and simply run out on its own (setSoundEnabled() below only ever
+        // resumes/unmutes it, never restarts it once finished).
         let introMusic = null;
         const INTRO_MUSIC_URL = 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Sound%20Effects/Humanity%20Does%20Not%20Disappear.mp3';
 
@@ -884,7 +889,7 @@
             introMusic.muted = true; // Start muted, same reasoning as bgMusic above
             // Plays once per game start (per direct request) - a flag rather than
             // comparing currentTime/duration (which can be NaN/imprecise right at the
-            // boundary) is what stops toggleSound() from replaying it from the top
+            // boundary) is what stops setSoundEnabled() from replaying it from the top
             // after it's already finished on its own.
             introMusic.__finished = false;
             introMusic.addEventListener('ended', () => { introMusic.__finished = true; });
@@ -893,8 +898,12 @@
             });
         }
 
-        function toggleSound() {
-            soundEnabled = !soundEnabled;
+        // Shared by toggleSound() (a real click - marks soundManuallySet) and
+        // enableSoundAutomatically() (map-start auto-enable - never marks it, see its
+        // own comment) so there's exactly one place that actually flips bgMusic's and
+        // introMusic's mute/play state, instead of two copies that could drift apart.
+        function setSoundEnabled(enabled) {
+            soundEnabled = enabled;
             if (bgMusic) {
                 bgMusic.muted = !soundEnabled;
                 document.getElementById('soundToggle').textContent = soundEnabled ? '🔊 SOUND ON' : '🔇 SOUND OFF';
@@ -919,13 +928,20 @@
             }
         }
 
-        // Only for the start screen - see introMusic's own comment above for why and
-        // where this gets called.
-        function stopIntroMusic() {
-            if (introMusic) {
-                introMusic.pause();
-                introMusic.currentTime = 0;
-            }
+        function toggleSound() {
+            soundManuallySet = true;
+            setSoundEnabled(!soundEnabled);
+        }
+
+        // Per direct request: "allow the sound to turn on automatically once the map
+        // starts" - called from enterGameplay() below, the shared tail every real
+        // game-start entry point (Standard Game, hot-seat, Continue-from-autosave,
+        // Campaign) already runs through. Never overrides a player's own explicit
+        // choice (soundManuallySet) made via the sound toggle at any point before then,
+        // and does nothing if sound is already on.
+        function enableSoundAutomatically() {
+            if (soundManuallySet || soundEnabled) return;
+            setSoundEnabled(true);
         }
 
         function openInstructions() {
@@ -938,6 +954,21 @@
                     console.log('Audio play failed:', err);
                 });
             }
+        }
+
+        // Shared tail for every real "gameplay begins now" entry point (Standard
+        // Game's closeVideo(), hot-seat, Continue-from-autosave, and Campaign) -
+        // they all ran this exact sequence independently before; factored out
+        // alongside enableSoundAutomatically() (2026-09-03) so that new "once the map
+        // starts" behavior lives in exactly one place rather than four copies.
+        function enterGameplay() {
+            startMusic();
+            whenImagesReady(() => {
+                enableSoundAutomatically();
+                createSpaceElements();
+                updateUI();
+                gameLoop();
+            });
         }
 
         // Building-destroyed sound effect (2026-09-03, per direct request) - see
@@ -4029,7 +4060,6 @@
         }
 
         function startGame(countryIdx) {
-            stopIntroMusic(); // per direct request - only for the start screen
             gameState.countries[countryIdx].isPlayer = true;
             gameState.playerCountry = gameState.countries[countryIdx];
             gameState.selectedCountryIdx = countryIdx;
@@ -4076,19 +4106,13 @@
             gameState.playerCountry = gameState.countries.find(c => c.id === ids[0]);
             gameState.selectedCountryIdx = countryIndices[0];
 
-            stopIntroMusic(); // per direct request - only for the start screen
             document.getElementById('startScreen').style.display = 'none';
             document.getElementById('singleMapSetup').style.display = 'none';
             document.getElementById('videoScreen').style.display = 'none';
             gameState.gameStarted = true;
             camera.x = gameState.playerCountry.island.x;
             camera.y = gameState.playerCountry.island.y;
-            startMusic();
-            whenImagesReady(() => {
-                createSpaceElements();
-                updateUI();
-                gameLoop();
-            });
+            enterGameplay();
         }
 
         // Hands control to the next living human seat - called by the
@@ -4134,12 +4158,7 @@
             gameState.gameStarted = true;
             camera.x = gameState.playerCountry.island.x;
             camera.y = gameState.playerCountry.island.y;
-            startMusic();
-            whenImagesReady(() => {
-                createSpaceElements();
-                updateUI();
-                gameLoop();
-            });
+            enterGameplay();
         }
 
         function continueFromAutosave(autosave) {
@@ -4151,7 +4170,6 @@
                 return;
             }
 
-            stopIntroMusic(); // per direct request - only for the start screen
             document.getElementById('startScreen').style.display = 'none';
             document.getElementById('singleMapSetup').style.display = 'none';
             document.getElementById('videoScreen').style.display = 'none';
@@ -4162,12 +4180,7 @@
             gameState.gameStarted = true;
             gameState.paused = false;
             // camera.x/y/zoom already restored by applySaveData()
-            startMusic();
-            whenImagesReady(() => {
-                createSpaceElements();
-                updateUI();
-                gameLoop();
-            });
+            enterGameplay();
         }
 
         function toggleUI() {
@@ -5068,7 +5081,6 @@
         }
 
         function startCampaignStage(stageIndex) {
-            stopIntroMusic(); // per direct request - only for the start screen (harmless no-op on stage 2+, already stopped)
             const stage = gameState.campaignStages[stageIndex];
             gameState.campaignActive = true;
             gameState.campaignStageIndex = stageIndex;
@@ -5149,12 +5161,7 @@
             document.getElementById('campaignStageScreen').style.display = 'none';
             document.getElementById('gameOverScreen').style.display = 'none';
 
-            startMusic();
-            whenImagesReady(() => {
-                createSpaceElements();
-                updateUI();
-                gameLoop();
-            });
+            enterGameplay();
         }
 
         function showCampaignStageComplete() {
