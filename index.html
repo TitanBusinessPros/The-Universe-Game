@@ -578,6 +578,11 @@
             background-repeat: no-repeat;
             border-radius: 50%;
             animation: asteroid-float 15s linear infinite;
+            /* Per direct report: drifting across the screen, these were blocking
+               clicks on the canvas and UI buttons underneath them. Purely
+               decorative - never meant to be interactive - so let every click
+               pass straight through to whatever's actually beneath it. */
+            pointer-events: none;
         }
         .asteroid-1 { background-image: url('https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Asteroids/Asteroid-1.png'); }
         .asteroid-2 { background-image: url('https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Asteroids/Asteroid-2.png'); }
