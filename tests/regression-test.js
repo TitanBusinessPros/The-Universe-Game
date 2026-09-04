@@ -4262,6 +4262,13 @@ check('drawMinimap() never references blackHoles - "you can not see it on the mi
 // in Country.aiTurn()/initGame()/nextTurn().
 
 check('assignAttackTargets() gives every regular nation exactly one rival attacker, and makes it the rival target of exactly one nation, never itself', () => {
+    // 5 evenly-spaced nations in a line is a deliberately adversarial layout for
+    // the greedy nearest-first matching in assignAttackTargets() (2026-09-04 fix,
+    // see that function's comment): it produces two mutual nearest-pairs (0<->1,
+    // 2<->3) that consume every un-victimized nation except 4, leaving 4 with no
+    // valid target but itself - exactly the "leftover" edge case that function's
+    // splice-into-an-existing-pair logic exists to resolve. Keep this exact
+    // layout; a more "random" one could accidentally stop exercising that path.
     const problems = [];
     gameState.countries = [0, 1, 2, 3, 4].map(id => new Country(id, `Reg${id}`, '#fff', new Island(id * 100000, 0, id), false));
     assignAttackTargets();
@@ -4302,6 +4309,59 @@ check("assignAttackTargets() gives every regular nation exactly one alien attack
     if (Math.abs(counts[0] - counts[1]) > 1) {
         problems.push(`expected alien attack loads to differ by at most 1 when splitting evenly, got ${JSON.stringify(counts)}`);
     }
+    return problems;
+});
+
+// Direct report (2026-09-04): "I was on turn 12 and no enemy had visited or
+// attacked me... even had it on the hard setting." Confirmed by direct
+// simulation: once planets started scattering across the whole map (see
+// randomSpreadPosition()), a position-blind random rival pairing regularly
+// assigned a nation's sole rival 100,000+ units away - in 10 of 15 simulated
+// 12-turn Hard games, no assigned attacker ever got close enough to reach the
+// player. assignAttackTargets() now greedily claims the nearest available
+// (attacker, victim) pairs first instead of shuffling blindly - these two
+// checks confirm that proximity bias directly, for both the regular-nation
+// pairing and the alien round-robin.
+check('assignAttackTargets() greedily pairs regular nations with a nearby rival, not a distant one, when both are available', () => {
+    const problems = [];
+    // Two tight clusters (nations 0-1 and 2-3), far apart from each other. A
+    // position-blind shuffle would sometimes pair across clusters; nearest-first
+    // greedy matching never should, since same-cluster pairs are always closer.
+    const a = new Country(0, 'A', '#fff', new Island(0, 0, 0), false);
+    const b = new Country(1, 'B', '#fff', new Island(1000, 0, 1), false);
+    const c = new Country(2, 'C', '#fff', new Island(1000000, 0, 2), false);
+    const d = new Country(3, 'D', '#fff', new Island(1001000, 0, 3), false);
+    gameState.countries = [a, b, c, d];
+    assignAttackTargets();
+
+    if (a.attackTargetIds[0] !== 1 && b.attackTargetIds[0] !== 0) {
+        problems.push(`expected A and B (1000 apart) to pair with each other, got A->${a.attackTargetIds}, B->${b.attackTargetIds}`);
+    }
+    if (c.attackTargetIds[0] !== 3 && d.attackTargetIds[0] !== 2) {
+        problems.push(`expected C and D (1000 apart) to pair with each other, got C->${c.attackTargetIds}, D->${d.attackTargetIds}`);
+    }
+    gameState.countries.forEach(nation => {
+        nation.attackTargetIds.forEach(targetId => {
+            const target = gameState.countries.find(t => t.id === targetId);
+            const dist = Math.hypot(nation.island.x - target.island.x, nation.island.y - target.island.y);
+            if (dist > 5000) problems.push(`${nation.name}'s assigned rival (${target.name}) is ${dist.toFixed(0)} away - expected a same-cluster pairing (<=5000) over a cross-cluster one`);
+        });
+    });
+    return problems;
+});
+
+check('assignAttackTargets() gives each alien its nearest available victim, not an arbitrary one', () => {
+    const problems = [];
+    const x = new Country(0, 'X', '#fff', new Island(0, 0, 0), false);
+    const y = new Country(1, 'Y', '#fff', new Island(1000000, 0, 1), false);
+    const alienNearX = new Country(12, 'AlienNearX', '#0ff', new Island(100, 0, 12), false);
+    alienNearX.isCyborg = true;
+    const alienNearY = new Country(13, 'AlienNearY', '#0ff', new Island(999900, 0, 13), false);
+    alienNearY.isCyborg = true;
+    gameState.countries = [x, y, alienNearX, alienNearY];
+    assignAttackTargets();
+    if (!alienNearX.attackTargetIds.includes(0)) problems.push(`expected the alien right next to X to end up targeting X, got ${JSON.stringify(alienNearX.attackTargetIds)}`);
+    if (!alienNearY.attackTargetIds.includes(1)) problems.push(`expected the alien right next to Y to end up targeting Y, got ${JSON.stringify(alienNearY.attackTargetIds)}`);
     return problems;
 });
 
