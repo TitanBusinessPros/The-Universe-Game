@@ -58,6 +58,7 @@
     "makeStarLayer",
     "minimapBounds",
     "minimapToWorld",
+    "nearestMinimapLandmark",
     "newGame",
     "nextTurn",
     "openCampaignNationSelect",
