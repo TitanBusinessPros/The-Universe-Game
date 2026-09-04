@@ -4385,10 +4385,13 @@
             return best;
         }
 
-        // Per direct request (2026-09-04): "The planets were not spread out far
-        // enough from each other. I want them to be 3-5 times futhrur away from
-        // each other as they are now. I don't want planets close to one another."
-        // Middle of the requested 3-5x range. Deliberately NOT done by growing
+        // Per direct request (2026-09-04, follow-up): "I still think these
+        // planets are too close. I see all this open space at th top and bottom
+        // of the map... Lets spread them out 5-10 times futhrur away and leave
+        // no empty spaces on the map like the top and bottom." Compounds on top
+        // of the previous 4x (same "X times further away than they are now"
+        // phrasing, read the same way both times) - middle of the requested
+        // 5-10x range, so 4 * 7.5 = 30 total. Deliberately NOT done by growing
         // MAP_WIDTH/MAP_HEIGHT/GALAXY_SPACING_SCALE themselves - those also drive
         // Campaign mode's own layout (campaignNationPosition() reads MAP_WIDTH/
         // HEIGHT directly) and would have ballooned its spacing too as an
@@ -4400,12 +4403,20 @@
         // same multiplier, so the ratio - and therefore how comfortably
         // randomSpreadPosition() can actually satisfy the minimum - stays
         // unchanged from before this multiplier existed).
-        const PLANET_SPREAD_MULTIPLIER = 4;
+        const PLANET_SPREAD_MULTIPLIER = 30;
 
-        // How far apart planets must be from one another, at minimum - a fraction of
-        // the map's own size so it scales sanely regardless of screen resolution
-        // (MAP_WIDTH/MAP_HEIGHT are derived from canvas.width/height).
-        const PLANET_MIN_SEPARATION = Math.min(MAP_WIDTH, MAP_HEIGHT) * 0.12 * PLANET_SPREAD_MULTIPLIER;
+        // How far apart planets must be from one another, at minimum. A fraction
+        // of the map's LARGER dimension (not the smaller one, as this used to
+        // read) so it scales sanely regardless of screen resolution
+        // (MAP_WIDTH/MAP_HEIGHT are derived from canvas.width/height) - see the
+        // matching fix in initGame()'s spread box below for why: using the
+        // smaller dimension for both X and Y meant the spread box's aspect
+        // ratio always matched the screen's (usually wide), so there was always
+        // proportionally less room on the vertical axis - exactly the "open
+        // space at the top and bottom" reported above, regardless of how big
+        // PLANET_SPREAD_MULTIPLIER was. A true square box (both axes sized off
+        // the larger dimension) fixes that at the source.
+        const PLANET_MIN_SEPARATION = Math.max(MAP_WIDTH, MAP_HEIGHT) * 0.12 * PLANET_SPREAD_MULTIPLIER;
 
         // Distance from galaxy center to the farthest planet's island - used by
         // spawnGalaxyCore()/spawnGalaxyBounty() to place their landmark just outside
@@ -4439,13 +4450,18 @@
             // Planet-spread bounding box: the same center as everywhere else
             // (MAP_WIDTH/2, MAP_HEIGHT/2), scaled outward by PLANET_SPREAD_MULTIPLIER
             // - see that constant's comment for why this scales the box instead of
-            // MAP_WIDTH/MAP_HEIGHT themselves.
+            // MAP_WIDTH/MAP_HEIGHT themselves. A true SQUARE (both axes sized off
+            // MAP's larger dimension), not the screen's own aspect ratio - per
+            // direct report, sizing each axis off its own MAP_WIDTH/MAP_HEIGHT
+            // meant the box was always exactly as "wide-screen-shaped" as the
+            // canvas, so the vertical axis always had proportionally less room
+            // than horizontal no matter how big the multiplier got, reading as
+            // "open space at the top and bottom" regardless of overall scale.
             const centerX = MAP_WIDTH / 2;
             const centerY = MAP_HEIGHT / 2;
-            const spreadHalfWidth = MAP_WIDTH * 0.4 * PLANET_SPREAD_MULTIPLIER;
-            const spreadHalfHeight = MAP_HEIGHT * 0.4 * PLANET_SPREAD_MULTIPLIER;
-            const spreadMinX = centerX - spreadHalfWidth, spreadMaxX = centerX + spreadHalfWidth;
-            const spreadMinY = centerY - spreadHalfHeight, spreadMaxY = centerY + spreadHalfHeight;
+            const spreadHalfDim = Math.max(MAP_WIDTH, MAP_HEIGHT) * 0.4 * PLANET_SPREAD_MULTIPLIER;
+            const spreadMinX = centerX - spreadHalfDim, spreadMaxX = centerX + spreadHalfDim;
+            const spreadMinY = centerY - spreadHalfDim, spreadMaxY = centerY + spreadHalfDim;
             // Tracks every planet position placed below, regardless of faction, so
             // PLANET_MIN_SEPARATION applies galaxy-wide - "far from each other",
             // not just within one group. Seeded with the exact map center (not a
