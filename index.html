@@ -1555,6 +1555,96 @@
             };
         }
 
+        // Per direct request (2026-09-03): AI ships were massing at a human home
+        // base without attacking anything, because with nothing assigned to them
+        // the hunt-fallback in Country.aiTurn() picked each unit's long-range
+        // target independently and uniformly at random every turn (biased 70%
+        // toward a human via AI_HUNT_PLAYER_BIAS) - across a whole galaxy of
+        // nations rolling that same biased pick every turn, a large share of
+        // them kept re-picking the player, dogpiling their homeworld with far
+        // more ships than any one nation could actually follow through on
+        // attacking (see canAttackBuildings()'s restricted unit-type whitelist -
+        // most of the types that would pile up that way can't damage a building
+        // at all, by design, so they'd just sit there).
+        //
+        // This replaces that per-roll random pick with a fixed pairing, set up
+        // once per Standard Game/hot-seat match (Campaign mode keeps its old
+        // behavior untouched - see the campaignActive checks at each call site -
+        // its small, hand-placed objective rosters don't fit this model): every
+        // regular nation gets exactly one dedicated rival regular nation to
+        // hunt, and every regular nation also gets exactly one dedicated alien
+        // attacker, with the alien nations (usually far fewer in number)
+        // splitting attention across multiple regular nations as evenly as
+        // possible when outnumbered. reassignEliminatedAttackTargets() (called
+        // every turn from nextTurn()) keeps this valid as nations are
+        // eliminated over the course of a match.
+        function assignAttackTargets() {
+            const regularNations = gameState.countries.filter(c => !c.isCyborg && !c.isZoonester && !c.isRoufestreal);
+            const alienNations = gameState.countries.filter(c => c.isCyborg || c.isZoonester || c.isRoufestreal);
+
+            gameState.countries.forEach(c => { c.attackTargetIds = []; });
+
+            // Regular nations: shuffle, then pair each with the next nation in the
+            // shuffled order - every nation ends up attacking exactly one rival
+            // and being attacked by exactly one rival.
+            const shuffledRegular = [...regularNations].sort(() => Math.random() - 0.5);
+            if (shuffledRegular.length >= 2) {
+                shuffledRegular.forEach((nation, i) => {
+                    const rival = shuffledRegular[(i + 1) % shuffledRegular.length];
+                    nation.attackTargetIds.push(rival.id);
+                });
+            }
+
+            // Alien nations: every regular nation also gets exactly one dedicated
+            // alien attacker, distributed as evenly as possible across however
+            // many alien nations actually exist ("if there is not enough alien
+            // planets they equal out their attacks on the planets").
+            if (alienNations.length > 0) {
+                const shuffledVictims = [...regularNations].sort(() => Math.random() - 0.5);
+                shuffledVictims.forEach((victim, i) => {
+                    alienNations[i % alienNations.length].attackTargetIds.push(victim.id);
+                });
+            }
+        }
+
+        // Per direct request: "When a planet is defeated the computer will
+        // randomly pick another planet to target." Runs every turn (cheap - just
+        // id lookups) so a nation's assigned attacker(s) never keep aiming at a
+        // target that's already been eliminated.
+        function reassignEliminatedAttackTargets() {
+            const aliveIds = gameState.countries
+                .filter(c => c.island.buildings.some(b => !b.destroyed))
+                .map(c => c.id);
+            if (aliveIds.length === 0) return;
+            gameState.countries.forEach(country => {
+                if (!country.attackTargetIds || country.attackTargetIds.length === 0) return;
+                country.attackTargetIds = country.attackTargetIds.map(targetId => {
+                    const target = gameState.countries.find(c => c.id === targetId);
+                    const stillAlive = target && target.island.buildings.some(b => !b.destroyed);
+                    if (stillAlive) return targetId;
+                    const candidates = aliveIds.filter(id => id !== country.id);
+                    if (candidates.length === 0) return targetId; // nothing else alive - leave as-is, harmless
+                    return candidates[Math.floor(Math.random() * candidates.length)];
+                });
+            });
+        }
+
+        // Picks one live (buildings not all destroyed) country at random from
+        // country.attackTargetIds - the fixed rival/alien pairing set up by
+        // assignAttackTargets() and kept valid by reassignEliminatedAttackTargets().
+        // Returns null if country has no assignment yet, or every assigned target
+        // has since been eliminated and not yet replaced - callers should treat a
+        // null return as "don't issue a hunt order this roll", not an error.
+        function pickAssignedTarget(country) {
+            const liveTargetIds = (country.attackTargetIds || []).filter(id => {
+                const c = gameState.countries.find(cc => cc.id === id);
+                return c && c.island.buildings.some(b => !b.destroyed);
+            });
+            if (liveTargetIds.length === 0) return null;
+            const pickedId = liveTargetIds[Math.floor(Math.random() * liveTargetIds.length)];
+            return gameState.countries.find(c => c.id === pickedId) || null;
+        }
+
         function setDifficulty(name) {
             const preset = DIFFICULTY_PRESETS[name];
             if (!preset) return;
@@ -3325,6 +3415,11 @@
                 // { id, remaining } counting down in real time via updateResearch().
                 this.researchedTech = new Set();
                 this.activeResearch = null;
+                // Rival/alien attack-target assignment (2026-09-03, Standard Game/hot-seat
+                // only). Populated by assignAttackTargets(), kept valid across eliminations
+                // by reassignEliminatedAttackTargets(). See the big comment above
+                // assignAttackTargets() for why this exists.
+                this.attackTargetIds = [];
             }
 
             collectResources() {
@@ -3505,8 +3600,13 @@
                     // Highly aggressive movement (3x more likely than average)
                     this.units.forEach(unit => {
                         if (Math.random() < Math.min(1, 0.9 * AI_SPECIAL_AGGRESSION_MULT)) { // highly aggressive baseline, scaled by difficulty
-                            const targetCountry = gameState.countries[Math.floor(Math.random() * gameState.countries.length)];
-                            if (targetCountry.id !== this.id) {
+                            // Per direct request: outside Campaign mode, aim at this alien
+                            // nation's assigned victim(s) (see assignAttackTargets()) instead of
+                            // a fresh uniformly-random nation every roll.
+                            const targetCountry = gameState.campaignActive
+                                ? gameState.countries[Math.floor(Math.random() * gameState.countries.length)]
+                                : pickAssignedTarget(this);
+                            if (targetCountry && targetCountry.id !== this.id) {
                                 const approach = huntApproachPosition(targetCountry.island);
                                 unit.moveTo(approach.x, approach.y);
                             }
@@ -3632,8 +3732,13 @@
                     
                     this.units.forEach(unit => {
                         if (Math.random() < Math.min(1, 0.5 * AI_SPECIAL_AGGRESSION_MULT)) {
-                            const targetCountry = gameState.countries[Math.floor(Math.random() * gameState.countries.length)];
-                            if (targetCountry.id !== this.id) {
+                            // Per direct request: outside Campaign mode, aim at this alien
+                            // nation's assigned victim(s) (see assignAttackTargets()) instead of
+                            // a fresh uniformly-random nation every roll.
+                            const targetCountry = gameState.campaignActive
+                                ? gameState.countries[Math.floor(Math.random() * gameState.countries.length)]
+                                : pickAssignedTarget(this);
+                            if (targetCountry && targetCountry.id !== this.id) {
                                 const approach = huntApproachPosition(targetCountry.island);
                                 unit.moveTo(approach.x, approach.y);
                             }
@@ -3767,21 +3872,28 @@
                             if (nearestEnemyUnit) {
                                 unit.moveTo(nearestEnemyUnit.x, nearestEnemyUnit.y);
                             } else {
-                                // Nothing in sight - push toward a human player's planet most of
-                                // the time (so the AI actively hunts instead of drifting), otherwise
-                                // toward a random rival to keep the map lively. Picks among EVERY
-                                // surviving human (not just one hardcoded playerCountry) so hot-seat
-                                // games with several humans don't all get ignored but one.
-                                const survivingHumanRivals = (gameState.humanCountryIds || [])
-                                    .map(id => gameState.countries.find(c => c.id === id))
-                                    .filter(c => c && c.id !== this.id && c.island.buildings.some(b => !b.destroyed));
-                                const huntHuman = survivingHumanRivals.length > 0 &&
-                                    Math.random() < AI_HUNT_PLAYER_BIAS;
-                                const targetCountry = huntHuman
-                                    ? survivingHumanRivals[Math.floor(Math.random() * survivingHumanRivals.length)]
-                                    : gameState.countries[Math.floor(Math.random() * gameState.countries.length)];
+                                // Nothing in sight. Campaign mode keeps the old behavior (push
+                                // toward a human player's planet most of the time, otherwise a
+                                // random rival - its small, hand-placed rosters don't fit the
+                                // assigned-pairing model below). Everywhere else, per direct
+                                // request, head for this nation's assigned rival/alien
+                                // attacker(s) instead of a fresh random pick every roll - see
+                                // assignAttackTargets()/reassignEliminatedAttackTargets().
+                                let targetCountry;
+                                if (gameState.campaignActive) {
+                                    const survivingHumanRivals = (gameState.humanCountryIds || [])
+                                        .map(id => gameState.countries.find(c => c.id === id))
+                                        .filter(c => c && c.id !== this.id && c.island.buildings.some(b => !b.destroyed));
+                                    const huntHuman = survivingHumanRivals.length > 0 &&
+                                        Math.random() < AI_HUNT_PLAYER_BIAS;
+                                    targetCountry = huntHuman
+                                        ? survivingHumanRivals[Math.floor(Math.random() * survivingHumanRivals.length)]
+                                        : gameState.countries[Math.floor(Math.random() * gameState.countries.length)];
+                                } else {
+                                    targetCountry = pickAssignedTarget(this);
+                                }
 
-                                if (targetCountry.id !== this.id) {
+                                if (targetCountry && targetCountry.id !== this.id) {
                                     // Ships that can actually hit buildings aim at one deliberately;
                                     // everything else (scouts, interceptors) just takes any spot on
                                     // the ring since it's not going to be attacking a building anyway.
@@ -4287,6 +4399,9 @@
             spawnGalaxyCore(); // Standard Game only, per direct request - see its own comment
             spawnGalaxyBounty(); // ditto
             spawnBlackHole(); // ditto
+            // Standard Game/hot-seat only, same reasoning - Campaign mode builds its own
+            // countries from scratch in startCampaignStage() and never inherits this roster.
+            assignAttackTargets();
 
             const selectDiv = document.getElementById('countrySelect');
 
@@ -4782,6 +4897,10 @@
             gameState.turn++;
             gameState.turnTimeRemaining = TURN_TIME_SECONDS;
             homeUnderAttackPlayedThisTurn = false; // per direct request - resets the once-per-turn alert budget
+            // Keep every nation's assigned attacker(s) pointed at a living target before
+            // this turn's aiTurn() calls below read them. Campaign mode doesn't use this
+            // assignment system at all (see assignAttackTargets()'s comment).
+            if (!gameState.campaignActive) reassignEliminatedAttackTargets();
             gameState.countries.forEach(c => {
                 c.collectResources();
                 c.resetAttacks();
