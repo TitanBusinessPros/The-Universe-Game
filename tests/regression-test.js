@@ -127,7 +127,7 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, stopIntroMusic, INTRO_MUSIC_URL, playLaserAttackSound, LASER_SOUND_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage };',
     context,
     { filename: 'grab-refs.js' }
 );
@@ -137,11 +137,11 @@ const {
     UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS,
     GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT,
     spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE,
-    introMusic, stopIntroMusic, INTRO_MUSIC_URL,
+    introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound,
     playLaserAttackSound, LASER_SOUND_URL,
     DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas,
     canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS,
-    AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame,
+    AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo,
     buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete,
     saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats,
     saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera,
@@ -291,10 +291,12 @@ check('Country.aiTurn source no longer hardcodes gameState.playerCountry for rou
 
 // ---------- 6. Campaign stage start must trigger music ----------
 
-check('startCampaignStage() calls startMusic()', () => {
+check('startCampaignStage() calls startMusic() (directly, or via the shared enterGameplay())', () => {
     const fnMatch = script.match(/function startCampaignStage\s*\([^)]*\)\s*{([\s\S]*?)\n\s{0,8}}/);
     if (!fnMatch) return ['could not locate startCampaignStage() function body'];
-    if (!/startMusic\s*\(/.test(fnMatch[1])) return ['startCampaignStage() body does not call startMusic()'];
+    if (!/startMusic\s*\(/.test(fnMatch[1]) && !/enterGameplay\s*\(/.test(fnMatch[1])) {
+        return ['startCampaignStage() body does not call startMusic() (directly, or via enterGameplay())'];
+    }
     return [];
 });
 
@@ -3243,12 +3245,22 @@ check('whenImagesReady() calls back immediately once every queued image is done,
     return problems;
 });
 
-check('every game-start entry point is gated behind whenImagesReady() before calling gameLoop()', () => {
+check('every game-start entry point is gated behind whenImagesReady() (directly, or via the shared enterGameplay()) before calling gameLoop()', () => {
     const problems = [];
+    // 2026-09-03: the 4 entry points below no longer call whenImagesReady() directly -
+    // they all share one enterGameplay() tail (see its own comment) - so the gate is
+    // only real if THAT function still has it.
+    const enterGameplaySrc = vm.runInContext('enterGameplay.toString()', context);
+    if (!enterGameplaySrc.includes('whenImagesReady(')) {
+        problems.push('expected enterGameplay() itself to gate on whenImagesReady() - every entry point below relies on that');
+    }
+
     const startFns = ['startHotSeatGame', 'closeVideo', 'continueFromAutosave', 'startCampaignStage'];
     startFns.forEach(name => {
         const src = vm.runInContext(`${name}.toString()`, context);
-        if (!src.includes('whenImagesReady(')) problems.push(`${name}() calls gameLoop() without gating on whenImagesReady() first`);
+        if (!src.includes('whenImagesReady(') && !src.includes('enterGameplay(')) {
+            problems.push(`${name}() calls gameLoop() without gating on whenImagesReady() (directly, or via enterGameplay()) first`);
+        }
     });
     return problems;
 });
@@ -3752,70 +3764,125 @@ check("aiTurn()'s generic combat loop plays the laser sound when an AI attacks t
     return problems;
 });
 
-// ---------- 30. Start-screen intro music (2026-09-03) ----------
-//    Per direct request: "Humanity Does Not Disappear.mp3" starts as the game
-//    loads and is only for the start screen - stopIntroMusic() cuts it off
-//    the moment the player picks their country, loads a save, starts
-//    hot-seat, or starts a campaign, even if it hasn't finished on its own.
+// ---------- 30. Start-screen intro music (2026-09-03, corrected same day per a
+//    direct follow-up) ----------
+//    "Humanity Does Not Disappear.mp3" starts as the game loads (unchanged -
+//    see initAudio()) - but per the follow-up, it must NOT be force-stopped
+//    by picking a country, the briefing video ("the ad"), a loading screen,
+//    or bgMusic starting ("let the sound override the ad and the background
+//    song... the mp3 and the sound can play at the same time"). The earlier
+//    stopIntroMusic() mechanism (and these tests) is gone entirely - what's
+//    left is setSoundEnabled()/enableSoundAutomatically() (turns "the sound"
+//    on automatically once the map starts, unless the player already made an
+//    explicit choice via the toggle) and enterGameplay(), the shared tail
+//    every real game-start path now runs through instead of four separate
+//    copies of the same whenImagesReady(...) block.
+//
 //    jsdom's HTMLMediaElement doesn't really implement playback (play()/
-//    pause() are both "Not implemented" no-ops, .paused never reflects
-//    reality), so these check what's actually observable: currentTime is a
-//    real settable property, and whether each real game-flow function
-//    actually calls stopIntroMusic() (spied by reassigning it, same proven
-//    pattern as playBuildingDestroyedSound/playLaserAttackSound above).
+//    pause() are "Not implemented" no-ops), so these check what's actually
+//    observable: .muted/.currentTime are real settable properties, and
+//    whether the real functions call through to the right helpers (spied by
+//    reassigning them, same proven pattern as playBuildingDestroyedSound/
+//    playLaserAttackSound above).
 
-check('stopIntroMusic() resets introMusic back to the start', () => {
+check('toggleSound() marks the choice as manual and flips bgMusic and introMusic together', () => {
     const problems = [];
-    // introMusic starts null until initAudio() (called from initGame()) runs - the
-    // test harness deliberately suppresses index.html's own automatic initGame()
-    // call at script load (see script.replace('initGame();', ...) near the top of
-    // this file), so it has to be called explicitly here. And since introMusic goes
-    // from null to a real object only once that runs, read/write it live through
-    // vm.runInContext rather than relying on the __test destructure snapshotted
-    // before initGame() ever ran.
-    vm.runInContext('initGame();', context, { filename: 'intro-music-reset-test.js' });
-    vm.runInContext('introMusic.currentTime = 42;', context);
-    stopIntroMusic();
-    const after = vm.runInContext('introMusic.currentTime', context);
-    if (after !== 0) problems.push(`expected currentTime reset to 0, got ${after}`);
+    vm.runInContext('initGame();', context, { filename: 'toggle-sound-test.js' });
+    vm.runInContext('soundEnabled = false; soundManuallySet = false;', context);
+
+    toggleSound();
+    if (vm.runInContext('soundEnabled', context) !== true) problems.push('expected soundEnabled true after one toggle');
+    if (vm.runInContext('soundManuallySet', context) !== true) problems.push('expected soundManuallySet true after a real toggle click');
+    if (vm.runInContext('bgMusic.muted', context) !== false) problems.push('expected bgMusic unmuted');
+    if (vm.runInContext('introMusic.muted', context) !== false) problems.push('expected introMusic unmuted too - they can play at the same time, per direct request');
+
+    toggleSound();
+    if (vm.runInContext('soundEnabled', context) !== false) problems.push('expected soundEnabled false after a second toggle');
+    if (vm.runInContext('bgMusic.muted', context) !== true) problems.push('expected bgMusic muted again');
+    if (vm.runInContext('introMusic.muted', context) !== true) problems.push('expected introMusic muted again too');
     return problems;
 });
 
-function checkStopsIntroMusic(label, run) {
-    check(`${label} stops the intro music - it's only for the start screen`, () => {
+check('enableSoundAutomatically() turns sound on only if the player never touched the toggle themselves, and never overrides an explicit "off"', () => {
+    const problems = [];
+    vm.runInContext('initGame();', context, { filename: 'auto-sound-test.js' });
+
+    vm.runInContext('soundEnabled = false; soundManuallySet = false;', context);
+    enableSoundAutomatically();
+    if (vm.runInContext('soundEnabled', context) !== true) problems.push('expected auto-enable when the player never touched the toggle');
+
+    vm.runInContext('soundEnabled = false; soundManuallySet = true;', context);
+    enableSoundAutomatically();
+    if (vm.runInContext('soundEnabled', context) !== false) problems.push('expected an explicit "off" choice respected, not silently re-enabled');
+
+    vm.runInContext('soundEnabled = true; soundManuallySet = false;', context);
+    enableSoundAutomatically();
+    if (vm.runInContext('soundEnabled', context) !== true) problems.push('expected an already-on state to stay on (safe no-op)');
+    return problems;
+});
+
+check("enterGameplay() auto-enables sound once images are ready, and never touches the intro music's own position - it's allowed to keep playing", () => {
+    const problems = [];
+    vm.runInContext('initGame();', context, { filename: 'enter-gameplay-test.js' });
+    vm.runInContext('soundEnabled = false; soundManuallySet = false;', context);
+    vm.runInContext('introMusic.currentTime = 5;', context); // pretend it's partway through
+
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'EnterGameplayTest', '#ff0000', island, true);
+    gameState.countries = [country];
+    gameState.playerCountry = country;
+
+    // Force whenImagesReady()'s synchronous fast path - jsdom's requestAnimationFrame
+    // stub never actually fires a callback, so the real polling path would hang
+    // forever in THIS harness (a test-environment limitation - a real browser's rAF
+    // really does tick, which is what pollLoadingScreen()/LOADING_SCREEN_MAX_WAIT_MS
+    // rely on in an actual game). Set AFTER constructing the Island above, which
+    // queues its own art and would otherwise push totalImagesToLoad back out of reach.
+    vm.runInContext('imagesLoadedSoFar = totalImagesToLoad;', context);
+
+    enterGameplay();
+
+    if (vm.runInContext('soundEnabled', context) !== true) problems.push("expected enterGameplay() to auto-enable sound once the map starts");
+    if (vm.runInContext('introMusic.currentTime', context) !== 5) problems.push('expected the intro music left exactly where it was - never reset or stopped');
+    return problems;
+});
+
+function checkEntersGameplay(label, run) {
+    check(`${label} enters gameplay through the shared enterGameplay()`, () => {
         const problems = [];
-        vm.runInContext('this.__introMusicStopCount = 0; this.__origStopIntroMusic = stopIntroMusic; stopIntroMusic = () => { this.__introMusicStopCount++; };', context);
+        vm.runInContext('this.__enterGameplayCalls = 0; this.__origEnterGameplay = enterGameplay; enterGameplay = () => { this.__enterGameplayCalls++; };', context);
         try {
             run();
         } finally {
-            const count = vm.runInContext('this.__introMusicStopCount', context);
-            vm.runInContext('stopIntroMusic = this.__origStopIntroMusic;', context);
-            if (count < 1) problems.push(`expected stopIntroMusic() to be called at least once, got ${count}`);
+            const count = vm.runInContext('this.__enterGameplayCalls', context);
+            vm.runInContext('enterGameplay = this.__origEnterGameplay;', context);
+            if (count < 1) problems.push(`expected enterGameplay() to be called at least once, got ${count}`);
         }
         return problems;
     });
 }
 
-checkStopsIntroMusic('startGame()', () => {
-    vm.runInContext('initGame();', context, { filename: 'intro-music-startgame.js' });
+checkEntersGameplay('closeVideo() (after picking a country)', () => {
+    vm.runInContext('initGame();', context, { filename: 'enters-gameplay-closevideo.js' });
     startGame(0);
+    closeVideo();
 });
 
-checkStopsIntroMusic('startHotSeatGame()', () => {
+checkEntersGameplay('startHotSeatGame()', () => {
     gameState.countries = [0, 1, 2].map(id => new Country(id, `Nation${id}`, '#ffffff', new Island(id * 100000, 0, id), false));
     startHotSeatGame([1, 2]);
 });
 
-checkStopsIntroMusic('continueFromAutosave()', () => {
+checkEntersGameplay('continueFromAutosave()', () => {
     const island = new Island(0, 0, 0);
-    const country = new Country(0, 'IntroMusicContinueTest', '#ff0000', island, true);
+    const country = new Country(0, 'EnterGameplayContinueTest', '#ff0000', island, true);
     gameState.countries = [country];
     gameState.playerCountry = country;
     const saveData = buildSaveData();
     continueFromAutosave(saveData);
 });
 
-checkStopsIntroMusic('startCampaignStage()', () => {
+checkEntersGameplay('startCampaignStage()', () => {
     selectCampaignNation(0);
     startCampaignStage(0);
 });
