@@ -127,7 +127,7 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage, assignAttackTargets, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS };',
     context,
     { filename: 'grab-refs.js' }
 );
@@ -157,7 +157,8 @@ const {
     toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen,
     getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR,
     getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground,
-    whenImagesReady, spaceElements, loadMineImage, mineImage
+    whenImagesReady, spaceElements, loadMineImage, mineImage,
+    assignAttackTargets, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS
 } = context.__test;
 
 // ---------- Test data: the full combat unit roster ----------
@@ -422,7 +423,12 @@ check('checkGameOver() does not fire premature victory while 2+ humans are still
     return problems;
 });
 
-check('AI hunt-targeting picks among every surviving human, not just gameState.playerCountry', () => {
+check('AI hunt-targeting can pick a non-active human seat as its assigned rival, not just gameState.playerCountry', () => {
+    // Updated 2026-09-03 for the rival/alien assignment system - outside Campaign
+    // mode an AI nation only ever hunts its own assignTargetIds, no longer a
+    // human-biased random pick (see the section below), so this now checks that
+    // a human seat is a perfectly valid assigned target like any other nation,
+    // rather than some special-cased gameState.playerCountry reference.
     setDifficulty('hard'); // highest attack/movement chance, fastest to observe
     const islandA = new Island(0, 0, 0);
     const countryA = new Country(0, 'ActiveSeat', '#ff0000', islandA, true);
@@ -433,6 +439,8 @@ check('AI hunt-targeting picks among every surviving human, not just gameState.p
     gameState.countries = [countryA, countryB, countryAI];
     gameState.playerCountry = countryA; // the ACTIVE seat is A - B is still human, just not active right now
     gameState.humanCountryIds = [0, 1];
+    gameState.campaignActive = false;
+    countryAI.attackTargetIds = [1]; // assigned to hunt the non-active human, B
 
     const aiUnit = new Unit(-2900, -2900, 'stormbreaker', 2);
     countryAI.units.push(aiUnit);
@@ -4240,6 +4248,170 @@ check("getGalaxyBounds() never expands to include a Nerfflasma Hole - it must st
 check('drawMinimap() never references blackHoles - "you can not see it on the mini map", per direct request', () => {
     const src = vm.runInContext('drawMinimap.toString()', context);
     return src.includes('blackHoles') ? ['expected drawMinimap() to never reference blackHoles at all'] : [];
+});
+
+// ---------- Rival/alien attack-target assignment (2026-09-03) ----------
+// Direct request: "several ships have been at my homebase but have not
+// attacked my buildings... each planet has one rival planet to start that
+// attacks them only and each planet has one alien planet that targets them
+// and if there is not enough alien planets they equal out their attacks on
+// the planets. When a planet is defeated the computer will randomly pick
+// another planet to target." See assignAttackTargets()/
+// reassignEliminatedAttackTargets()/pickAssignedTarget() and their call sites
+// in Country.aiTurn()/initGame()/nextTurn().
+
+check('assignAttackTargets() gives every regular nation exactly one rival attacker, and makes it the rival target of exactly one nation, never itself', () => {
+    const problems = [];
+    gameState.countries = [0, 1, 2, 3, 4].map(id => new Country(id, `Reg${id}`, '#fff', new Island(id * 100000, 0, id), false));
+    assignAttackTargets();
+
+    gameState.countries.forEach(c => {
+        if (c.attackTargetIds.length !== 1) problems.push(`expected nation ${c.id} to have exactly 1 rival target, got ${JSON.stringify(c.attackTargetIds)}`);
+        if (c.attackTargetIds.includes(c.id)) problems.push(`nation ${c.id} was assigned itself as a rival target`);
+    });
+
+    const attackerCounts = {};
+    gameState.countries.forEach(c => c.attackTargetIds.forEach(id => { attackerCounts[id] = (attackerCounts[id] || 0) + 1; }));
+    gameState.countries.forEach(c => {
+        if (attackerCounts[c.id] !== 1) problems.push(`expected nation ${c.id} to be the rival target of exactly 1 nation, got ${attackerCounts[c.id] || 0}`);
+    });
+    return problems;
+});
+
+check("assignAttackTargets() gives every regular nation exactly one alien attacker, splitting evenly across alien nations when outnumbered ('equal out their attacks')", () => {
+    const problems = [];
+    const regulars = [0, 1, 2, 3, 4].map(id => new Country(id, `Reg${id}`, '#fff', new Island(id * 100000, 0, id), false));
+    const alien1 = new Country(12, 'Alien1', '#0ff', new Island(1000000, 0, 12), false);
+    alien1.isCyborg = true;
+    const alien2 = new Country(13, 'Alien2', '#0ff', new Island(2000000, 0, 13), false);
+    alien2.isCyborg = true;
+    gameState.countries = [...regulars, alien1, alien2];
+    assignAttackTargets();
+
+    const attackedByAlien = new Set();
+    [alien1, alien2].forEach(a => a.attackTargetIds.forEach(id => attackedByAlien.add(id)));
+    regulars.forEach(r => {
+        if (!attackedByAlien.has(r.id)) problems.push(`expected regular nation ${r.id} to have a dedicated alien attacker, it has none`);
+    });
+
+    const counts = [alien1.attackTargetIds.length, alien2.attackTargetIds.length];
+    if (counts[0] + counts[1] !== regulars.length) {
+        problems.push(`expected the aliens' combined target count to equal the number of regular nations (${regulars.length}), got ${counts[0] + counts[1]}`);
+    }
+    if (Math.abs(counts[0] - counts[1]) > 1) {
+        problems.push(`expected alien attack loads to differ by at most 1 when splitting evenly, got ${JSON.stringify(counts)}`);
+    }
+    return problems;
+});
+
+check('assignAttackTargets() is safe with no alien nations in the roster (regular nations still get their rival pairing)', () => {
+    const problems = [];
+    gameState.countries = [0, 1, 2].map(id => new Country(id, `Reg${id}`, '#fff', new Island(id * 100000, 0, id), false));
+    assignAttackTargets();
+    gameState.countries.forEach(c => {
+        if (c.attackTargetIds.length !== 1) problems.push(`expected nation ${c.id} to still get exactly 1 rival target with no aliens present, got ${JSON.stringify(c.attackTargetIds)}`);
+    });
+    return problems;
+});
+
+check('reassignEliminatedAttackTargets() replaces an eliminated target with a new living nation, never itself', () => {
+    const problems = [];
+    const a = new Country(0, 'A', '#fff', new Island(0, 0, 0), false);
+    const b = new Country(1, 'B', '#fff', new Island(100000, 0, 1), false);
+    const c = new Country(2, 'C', '#fff', new Island(200000, 0, 2), false);
+    gameState.countries = [a, b, c];
+    a.attackTargetIds = [1]; // targeting B
+    b.island.buildings.forEach(bld => { bld.destroyed = true; }); // B is eliminated
+
+    reassignEliminatedAttackTargets();
+
+    if (a.attackTargetIds.includes(1)) problems.push('expected the eliminated target (id 1) to have been dropped');
+    if (a.attackTargetIds.includes(0)) problems.push('expected reassignment to never target the nation itself');
+    if (a.attackTargetIds.length !== 1 || a.attackTargetIds[0] !== 2) {
+        problems.push(`expected reassignment to the only other living nation (id 2), got ${JSON.stringify(a.attackTargetIds)}`);
+    }
+    return problems;
+});
+
+check('reassignEliminatedAttackTargets() leaves a still-living target alone', () => {
+    const a = new Country(0, 'A', '#fff', new Island(0, 0, 0), false);
+    const b = new Country(1, 'B', '#fff', new Island(100000, 0, 1), false);
+    gameState.countries = [a, b];
+    a.attackTargetIds = [1];
+    reassignEliminatedAttackTargets();
+    return JSON.stringify(a.attackTargetIds) === JSON.stringify([1])
+        ? []
+        : [`expected a still-living target to be left untouched, got ${JSON.stringify(a.attackTargetIds)}`];
+});
+
+check('pickAssignedTarget() returns null when no target is assigned, or when the only assigned target is dead, and the live target otherwise', () => {
+    const problems = [];
+    const a = new Country(0, 'A', '#fff', new Island(0, 0, 0), false);
+    const b = new Country(1, 'B', '#fff', new Island(100000, 0, 1), false);
+    gameState.countries = [a, b];
+
+    a.attackTargetIds = [];
+    if (pickAssignedTarget(a) !== null) problems.push('expected null with no targets assigned at all');
+
+    a.attackTargetIds = [1];
+    b.island.buildings.forEach(bld => { bld.destroyed = true; });
+    if (pickAssignedTarget(a) !== null) problems.push('expected null when the only assigned target is already eliminated');
+
+    b.island.buildings.forEach(bld => { bld.destroyed = false; bld.hp = bld.maxHp; });
+    const picked = pickAssignedTarget(a);
+    if (!picked || picked.id !== 1) problems.push(`expected the live assigned target (id 1) back, got ${picked ? picked.id : picked}`);
+    return problems;
+});
+
+check("a regular nation's units hunt toward their assigned rival, not a random nation, when nothing enemy is in sight", () => {
+    const problems = [];
+    // Far enough apart that none is within AI_HUNT_RADIUS of another, so the
+    // fallback path under test (not the nearest-visible-enemy path) is the
+    // only one that can fire.
+    const islandA = new Island(0, 0, 0);
+    const islandB = new Island(1000000, 0, 1);
+    const islandC = new Island(-1000000, 0, 2);
+    const a = new Country(0, 'A', '#fff', islandA, false);
+    const b = new Country(1, 'B', '#fff', islandB, false);
+    const c = new Country(2, 'C', '#fff', islandC, false);
+    a.attackTargetIds = [1]; // A's ONLY assigned target is B - C must never be picked
+    const ship = new Unit(0, 0, 'stormbreaker', 0);
+    a.units = [ship];
+    gameState.countries = [a, b, c];
+    gameState.campaignActive = false;
+    gameState.humanCountryIds = [];
+
+    vm.runInContext('AI_MOVEMENT_CHANCE = 1;', context); // deterministic movement roll
+    for (let i = 0; i < 20; i++) {
+        ship.targetX = 0; ship.targetY = 0; ship.hasAttacked = false;
+        a.aiTurn();
+        const distToB = Math.hypot(ship.targetX - islandB.x, ship.targetY - islandB.y);
+        const distToC = Math.hypot(ship.targetX - islandC.x, ship.targetY - islandC.y);
+        if (distToC < 5000) problems.push(`expected the ship to never head toward the unassigned nation C, got target (${ship.targetX.toFixed(0)}, ${ship.targetY.toFixed(0)})`);
+        if (distToB > 5000) problems.push(`expected the ship to head toward its assigned rival B, got target (${ship.targetX.toFixed(0)}, ${ship.targetY.toFixed(0)})`);
+    }
+    vm.runInContext('AI_MOVEMENT_CHANCE = DIFFICULTY_PRESETS.normal.movement;', context);
+    return problems;
+});
+
+check('Country.aiTurn() source: the generic hunt-fallback, Cyborg, and Zoonester target-picking all use pickAssignedTarget() outside Campaign mode, and keep the old random pick in Campaign mode', () => {
+    const problems = [];
+    const occurrences = script.split('pickAssignedTarget(this)').length - 1;
+    if (occurrences !== 3) problems.push(`expected pickAssignedTarget(this) to appear 3 times in aiTurn() (generic + Cyborg + Zoonester fallbacks), found ${occurrences}`);
+    const campaignGuardOccurrences = script.split('gameState.campaignActive').length - 1;
+    if (campaignGuardOccurrences < 3) problems.push(`expected at least 3 gameState.campaignActive checks guarding the old behavior, found ${campaignGuardOccurrences}`);
+    return problems;
+});
+
+check('initGame() calls assignAttackTargets() once the Standard Game country roster is built', () => {
+    return script.includes('assignAttackTargets();') ? [] : ['expected initGame() to call assignAttackTargets()'];
+});
+
+check('nextTurn() calls reassignEliminatedAttackTargets() before AI nations act, guarded to Standard Game/hot-seat only', () => {
+    const problems = [];
+    if (!script.includes('reassignEliminatedAttackTargets();')) problems.push('expected nextTurn() to call reassignEliminatedAttackTargets()');
+    if (!/campaignActive\)\s*reassignEliminatedAttackTargets\(\);/.test(script)) problems.push('expected the call to be guarded by !gameState.campaignActive');
+    return problems;
 });
 
 report();

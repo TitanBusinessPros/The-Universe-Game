@@ -2,6 +2,7 @@
   "topLevel": [
     "__pumpImageQueue",
     "applySaveData",
+    "assignAttackTargets",
     "autoSaveGame",
     "awardGalaxyBounty",
     "beginCampaignFromBriefing",
@@ -62,6 +63,7 @@
     "openInstructions",
     "openSingleMapSetup",
     "openStatsScreen",
+    "pickAssignedTarget",
     "playBuildingDestroyedSound",
     "playEndgameSound",
     "playHomeUnderAttackSound",
@@ -70,6 +72,7 @@
     "pollLoadingScreen",
     "processAttackMoveOrders",
     "queueImageLoad",
+    "reassignEliminatedAttackTargets",
     "researchTech",
     "resumeCampaign",
     "saveCampaignProgress",
