@@ -127,7 +127,7 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage };',
     context,
     { filename: 'grab-refs.js' }
 );
@@ -138,7 +138,7 @@ const {
     GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT,
     spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE,
     introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound,
-    playLaserAttackSound, LASER_SOUND_URL,
+    playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver,
     DEPOSIT_INCOME_PER_HOUR, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas,
     canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS,
     AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo,
@@ -3885,6 +3885,199 @@ checkEntersGameplay('continueFromAutosave()', () => {
 checkEntersGameplay('startCampaignStage()', () => {
     selectCampaignNation(0);
     startCampaignStage(0);
+});
+
+// ---------- 31. Home-under-attack and Endgame sound effects (2026-09-03) ----------
+//    Per direct request: homeunderattack.mp3 plays once per turn (never more,
+//    "we don't want it to overlap multiple attacks") whenever the active
+//    player's own building takes damage - any hit, not just a destroying one -
+//    "no matter where you are on the map" (per a direct follow-up - never
+//    gated on camera/viewport, same as every other sound here). Endgame.mp3
+//    plays once, automatically, the moment the player actually wins - Standard
+//    Game's showGameOver(true, ...) or a Campaign finishing its final stage in
+//    showCampaignStageComplete() - never on a defeat or an ordinary per-stage
+//    clear. The intro music track was also swapped (INTRO_MUSIC_URL) - a
+//    one-line check confirms it, not the whole file.
+
+check('INTRO_MUSIC_URL points at "The Last Order Standing.mp3", not the original track', () => {
+    if (!/The%20Last%20Order%20Standing\.mp3$/.test(INTRO_MUSIC_URL)) {
+        return [`expected INTRO_MUSIC_URL to end with "The%20Last%20Order%20Standing.mp3", got ${INTRO_MUSIC_URL}`];
+    }
+    return [];
+});
+
+check('playHomeUnderAttackSound() plays at most once per turn, and respects soundEnabled', () => {
+    const problems = [];
+    vm.runInContext(`
+        (function(global) {
+            global.__audioCount = 0;
+            global.__lastAudioUrl = null;
+            const OrigAudio = global.Audio;
+            global.Audio = function(url) {
+                global.__audioCount++;
+                global.__lastAudioUrl = url;
+                return new OrigAudio(url);
+            };
+            global.__restoreAudio = function() { global.Audio = OrigAudio; };
+        })(this);
+    `, context);
+    const audioCount = () => vm.runInContext('this.__audioCount', context);
+
+    vm.runInContext('soundEnabled = true; homeUnderAttackPlayedThisTurn = false;', context);
+    try {
+        playHomeUnderAttackSound();
+        if (audioCount() !== 1) problems.push(`expected the first call this turn to play, count=${audioCount()}`);
+
+        playHomeUnderAttackSound();
+        if (audioCount() !== 1) problems.push(`expected a second call the SAME turn to be silently ignored, count=${audioCount()}`);
+
+        vm.runInContext('homeUnderAttackPlayedThisTurn = false;', context); // simulates nextTurn()'s reset
+        playHomeUnderAttackSound();
+        if (audioCount() !== 2) problems.push(`expected a call on a NEW turn to play again, count=${audioCount()}`);
+
+        vm.runInContext('homeUnderAttackPlayedThisTurn = false; soundEnabled = false;', context);
+        playHomeUnderAttackSound();
+        if (audioCount() !== 2) problems.push(`expected no sound while soundEnabled is false, count=${audioCount()}`);
+
+        if (vm.runInContext('this.__lastAudioUrl', context) !== HOME_UNDER_ATTACK_SOUND_URL) {
+            problems.push('expected the constructed Audio to use HOME_UNDER_ATTACK_SOUND_URL');
+        }
+    } finally {
+        vm.runInContext('this.__restoreAudio(); soundEnabled = false; homeUnderAttackPlayedThisTurn = false;', context);
+    }
+    return problems;
+});
+
+check("Building.takeDamage() alerts on ANY hit to the active player's own building (not just a destroying one), never for another country's", () => {
+    const problems = [];
+    vm.runInContext('this.__homeAlerts = 0; this.__origPlayHomeUnderAttackSound = playHomeUnderAttackSound; playHomeUnderAttackSound = () => { this.__homeAlerts++; };', context);
+    const alerts = () => vm.runInContext('this.__homeAlerts', context);
+
+    try {
+        const playerIsland = new Island(0, 0, 0);
+        const playerCountry = new Country(0, 'Player', '#ff0000', playerIsland, true);
+        const enemyIsland = new Island(1000000, 0, 1);
+        const enemyCountry = new Country(1, 'Enemy', '#00ff00', enemyIsland, false);
+        gameState.countries = [playerCountry, enemyCountry];
+        gameState.playerCountry = playerCountry;
+
+        // A non-destroying hit on the player's own building still alerts.
+        const ownBuilding = playerIsland.buildings[1];
+        ownBuilding.hp = 100; ownBuilding.destroyed = false;
+        ownBuilding.takeDamage(1);
+        if (alerts() !== 1) problems.push(`expected an alert for a non-destroying hit on the player's own building, count=${alerts()}`);
+
+        // An enemy's building takes damage - not the player's, no alert.
+        const enemyBuilding = enemyIsland.buildings[1];
+        enemyBuilding.hp = 100; enemyBuilding.destroyed = false;
+        enemyBuilding.takeDamage(1, 0); // player's own troops attacking, even
+        if (alerts() !== 1) problems.push(`expected no alert for damage to an enemy's building, count=${alerts()}`);
+    } finally {
+        vm.runInContext('playHomeUnderAttackSound = this.__origPlayHomeUnderAttackSound;', context);
+    }
+    return problems;
+});
+
+check('nextTurn() resets the once-per-turn home-under-attack alert budget', () => {
+    vm.runInContext('homeUnderAttackPlayedThisTurn = true;', context);
+    gameState.countries = [];
+    nextTurn();
+    const problems = [];
+    if (vm.runInContext('homeUnderAttackPlayedThisTurn', context) !== false) problems.push('expected nextTurn() to reset homeUnderAttackPlayedThisTurn to false');
+    return problems;
+});
+
+check('playEndgameSound() respects soundEnabled and uses ENDGAME_SOUND_URL', () => {
+    const problems = [];
+    vm.runInContext(`
+        (function(global) {
+            global.__audioCount = 0;
+            global.__lastAudioUrl = null;
+            const OrigAudio = global.Audio;
+            global.Audio = function(url) {
+                global.__audioCount++;
+                global.__lastAudioUrl = url;
+                return new OrigAudio(url);
+            };
+            global.__restoreAudio = function() { global.Audio = OrigAudio; };
+        })(this);
+    `, context);
+    const audioCount = () => vm.runInContext('this.__audioCount', context);
+
+    try {
+        vm.runInContext('soundEnabled = false;', context);
+        playEndgameSound();
+        if (audioCount() !== 0) problems.push(`expected no sound while soundEnabled is false, count=${audioCount()}`);
+
+        vm.runInContext('soundEnabled = true;', context);
+        playEndgameSound();
+        if (audioCount() !== 1) problems.push(`expected a sound once soundEnabled is true, count=${audioCount()}`);
+        if (vm.runInContext('this.__lastAudioUrl', context) !== ENDGAME_SOUND_URL) {
+            problems.push('expected the constructed Audio to use ENDGAME_SOUND_URL');
+        }
+    } finally {
+        vm.runInContext('this.__restoreAudio(); soundEnabled = false;', context);
+    }
+    return problems;
+});
+
+check('showGameOver(true, ...) plays the endgame sound; showGameOver(false, ...) never does', () => {
+    const problems = [];
+    vm.runInContext('this.__endgameCalls = 0; this.__origPlayEndgameSound = playEndgameSound; playEndgameSound = () => { this.__endgameCalls++; };', context);
+    const calls = () => vm.runInContext('this.__endgameCalls', context);
+
+    try {
+        const island = new Island(0, 0, 0);
+        const country = new Country(0, 'EndgameSoundTest', '#ff0000', island, true);
+        gameState.countries = [country];
+        gameState.playerCountry = country;
+        gameState.campaignActive = false;
+        gameState.humanCountryIds = [0];
+
+        showGameOver(false, 'Defeat message');
+        if (calls() !== 0) problems.push(`expected no endgame sound on defeat, count=${calls()}`);
+
+        showGameOver(true, 'Victory message');
+        if (calls() !== 1) problems.push(`expected the endgame sound exactly once on victory, count=${calls()}`);
+    } finally {
+        vm.runInContext('playEndgameSound = this.__origPlayEndgameSound;', context);
+    }
+    return problems;
+});
+
+check('showCampaignStageComplete() plays the endgame sound only when the whole campaign finishes, not an ordinary stage clear', () => {
+    const problems = [];
+    vm.runInContext('this.__endgameCalls = 0; this.__origPlayEndgameSound = playEndgameSound; playEndgameSound = () => { this.__endgameCalls++; };', context);
+    const calls = () => vm.runInContext('this.__endgameCalls', context);
+
+    try {
+        // An ordinary mid-campaign clear (stage 1 of 12) - not a win yet.
+        selectCampaignNation(0);
+        startCampaignStage(0);
+        gameState.humanCountryIds = [];
+        let stage = gameState.campaignStages[0];
+        stage.objectives.forEach(obj => {
+            const country = gameState.countries.find(c => c.id === obj.id);
+            country.island.buildings.forEach(b => { b.destroyed = true; });
+        });
+        checkGameOver();
+        if (calls() !== 0) problems.push(`expected no endgame sound for an ordinary stage clear, count=${calls()}`);
+
+        // The finale (stage 12) - this is the real win.
+        selectCampaignNation(4);
+        startCampaignStage(11);
+        gameState.humanCountryIds = [];
+        stage = gameState.campaignStages[11];
+        stage.objectives.forEach(obj => {
+            const country = gameState.countries.find(c => c.id === obj.id);
+            country.island.buildings.forEach(b => { b.destroyed = true; });
+        });
+        checkGameOver();
+        if (calls() !== 1) problems.push(`expected the endgame sound exactly once when the whole campaign completes, count=${calls()}`);
+    } finally {
+        vm.runInContext('playEndgameSound = this.__origPlayEndgameSound;', context);
+    }
+    return problems;
 });
 
 report();
