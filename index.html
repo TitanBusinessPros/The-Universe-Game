@@ -1254,21 +1254,42 @@
         const GALAXY_CORE_HEAL_PERCENT = 0.15;
 
         // Galaxy Bounty (2026-09-03, per direct request) - a second landmark, built
-        // from Galaxy-2.png, placed in the opposite corner of the map from the
-        // (healing) Galaxy Core above and twice its size. Contested, not shared: each
-        // turn, whichever country has the most of its own ships (GALAXY_BOUNTY_MIN_SHIPS
-        // or more, ground units don't count - they can't reach it) within
-        // GALAXY_BOUNTY_QUALIFY_RANGE is awarded GALAXY_BOUNTY_GOLD_PER_ROUND - see
-        // awardGalaxyBounty(), called from nextTurn() same as healNearGalaxyCores().
-        // Guarded by 7 alien warships (see spawnGalaxyBounty()) - double the (healing)
-        // Galaxy Core's 3, matching how much bigger/more valuable this one is.
-        const GALAXY_BOUNTY_IMAGE_URL = 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Galaxy-2.png';
+        // from new-galaxy-2.png (swapped in 2026-09-04, replacing the original
+        // Galaxy-2.png art - same landmark/mechanics, new image only), placed in
+        // the opposite corner of the map from the (healing) Galaxy Core above and
+        // twice its size. Contested, not shared: each turn, whichever country has
+        // the most of its own ships (GALAXY_BOUNTY_MIN_SHIPS or more, ground units
+        // don't count - they can't reach it) within GALAXY_BOUNTY_QUALIFY_RANGE is
+        // awarded GALAXY_BOUNTY_GOLD_PER_ROUND - see awardGalaxyBounty(), called
+        // from nextTurn() same as healNearGalaxyCores(). Guarded by 7 alien
+        // warships (see spawnGalaxyBounty()) - double the (healing) Galaxy Core's
+        // 3, matching how much bigger/more valuable this one is.
+        const GALAXY_BOUNTY_IMAGE_URL = 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/new-galaxy-2.png';
         const GALAXY_BOUNTY_SIZE = GALAXY_CORE_SIZE * 2;
         const GALAXY_BOUNTY_GOLD_PER_ROUND = 50;
         const GALAXY_BOUNTY_MIN_SHIPS = 5;
         // "Within 50 ship range" - same SHIP_LENGTH_REFERENCE/edge-measured convention as
         // GALAXY_CORE_HEAL_RANGE above, just 50 ship-lengths instead of 20.
         const GALAXY_BOUNTY_QUALIFY_RANGE = GALAXY_BOUNTY_SIZE + 50 * SHIP_LENGTH_REFERENCE;
+
+        // Hotsun (2026-09-04, per direct request) - a third landmark, built from
+        // Hotsun.png, placed at the exact center of the map (unlike the Core/Bounty,
+        // which sit out past every planet - see spawnGalaxyCore()/spawnGalaxyBounty()).
+        // 10x a standard planet's radius, same formula as GALAXY_CORE_SIZE. Damages,
+        // not heals: any ship within range loses 20% of its own max HP every turn
+        // (see damageNearHotsun(), called from nextTurn() same cadence as
+        // healNearGalaxyCores()) - every country's units, alien factions included,
+        // same "no special-casing needed" reasoning as the Core's heal. Standard
+        // Game only, same precedent as every other landmark this session.
+        const HOTSUN_IMAGE_URL = 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Hotsun.png';
+        const HOTSUN_SIZE = 250 * PLANET_SCALE * 10;
+        // "A distance of 2000 near this sun" - measured from Hotsun's own EDGE, not
+        // its center, same edge-measured convention as GALAXY_CORE_HEAL_RANGE/
+        // GALAXY_BOUNTY_QUALIFY_RANGE above (a literal center-measured 2000 would sit
+        // entirely INSIDE Hotsun's own ~2500-unit visual radius, meaning nothing
+        // could ever be "near" it without already overlapping it).
+        const HOTSUN_RADIATION_RANGE = HOTSUN_SIZE + 2000;
+        const HOTSUN_DAMAGE_PERCENT = 0.20;
 
         // Tech tree (2026-08-25 Supremacy-style redesign). Research happens in real time
         // (like mining) via a country's Research Lab building (Island.getResearchLab()),
@@ -2465,13 +2486,25 @@
                 this.sprite = new Image();
                 this.sprite.onerror = () => { this.sprite = null; };
                 queueImageLoad(this.sprite, imageUrl);
+                // Spins in place like a planet does (Island.rotationAngle/rotationSpeed) -
+                // per direct request ("make galaxy 1 and 2 spin like the planets").
+                // Applied to every kind sharing this class (heal/bounty/hotsun) since
+                // it's purely cosmetic - only the real sprite rotates below, not the
+                // fallback circle, same reasoning as ResourceDeposit's spin.
+                this.rotationAngle = Math.random() * Math.PI * 2;
+                this.rotationSpeed = (0.0003 + Math.random() * 0.0004) * (Math.random() < 0.5 ? 1 : -1);
             }
             draw() {
                 const screenX = (this.x - camera.x) * camera.zoom + canvas.width / 2;
                 const screenY = (this.y - camera.y) * camera.zoom + canvas.height / 2;
                 const half = this.size * camera.zoom;
                 if (this.sprite && this.sprite.complete && this.sprite.naturalWidth > 0) {
-                    ctx.drawImage(this.sprite, screenX - half, screenY - half, half * 2, half * 2);
+                    this.rotationAngle += this.rotationSpeed;
+                    ctx.save();
+                    ctx.translate(screenX, screenY);
+                    ctx.rotate(this.rotationAngle);
+                    ctx.drawImage(this.sprite, -half, -half, half * 2, half * 2);
+                    ctx.restore();
                 } else {
                     ctx.fillStyle = 'rgba(140, 80, 220, 0.4)';
                     ctx.beginPath();
@@ -4240,15 +4273,39 @@
         }
 
         // Called once from initGame() - Standard Game only, same reasoning as
-        // spawnGalaxyCore()/spawnGalaxyBounty(). Starts at the exact map center, which
-        // randomSpreadPosition() (see initGame()) keeps clear of every planet by
-        // seeding planetPositions with that exact point before placing any of them -
-        // then wanders on its own from there (see updateBlackHoles()), so its
-        // starting point only needs to not spawn it on top of something, not predict
-        // where it'll end up.
+        // spawnGalaxyCore()/spawnGalaxyBounty(). Placed at the exact map center
+        // (per direct request), unlike the Core/Bounty, which sit out past every
+        // planet - randomSpreadPosition() (see initGame()) already keeps every
+        // planet clear of dead-center (seeded into planetPositions before any of
+        // them are placed), so no extra clearance logic is needed here. No
+        // guards, unlike the Core/Bounty - not requested, and this landmark is a
+        // hazard to be avoided, not a prize to be contested/defended.
+        function spawnHotsun() {
+            const survivors = galaxyCores.filter(c => c.kind !== 'hotsun');
+            galaxyCores.length = 0;
+            galaxyCores.push(...survivors);
+            const sun = new GalaxyCore(MAP_WIDTH / 2, MAP_HEIGHT / 2, HOTSUN_IMAGE_URL, HOTSUN_SIZE);
+            sun.kind = 'hotsun';
+            galaxyCores.push(sun);
+        }
+
+        // Called once from initGame() - Standard Game only, same reasoning as
+        // spawnGalaxyCore()/spawnGalaxyBounty(). Used to start at the exact map
+        // center, which randomSpreadPosition() (see initGame()) keeps clear of
+        // every planet by seeding planetPositions with that exact point before
+        // placing any of them - then wanders on its own from there (see
+        // updateBlackHoles()), so its starting point only needs to not spawn it
+        // on top of something, not predict where it'll end up. Now offset a safe
+        // distance from dead-center at a random angle instead, since Hotsun
+        // (2026-09-04) permanently occupies the exact center itself.
         function spawnBlackHole() {
             blackHoles.length = 0;
-            blackHoles.push(new BlackHole(MAP_WIDTH / 2, MAP_HEIGHT / 2));
+            const angle = Math.random() * Math.PI * 2;
+            const safeDist = HOTSUN_SIZE + HOTSUN_RADIATION_RANGE + BLACK_HOLE_SIZE;
+            blackHoles.push(new BlackHole(
+                MAP_WIDTH / 2 + Math.cos(angle) * safeDist,
+                MAP_HEIGHT / 2 + Math.sin(angle) * safeDist
+            ));
         }
 
         // Per-frame behavior for every Nerfflasma Hole (2026-09-03) - called from
@@ -4591,7 +4648,8 @@
             spawnResourceDeposits();
             spawnGalaxyCore(); // Standard Game only, per direct request - see its own comment
             spawnGalaxyBounty(); // ditto
-            spawnBlackHole(); // ditto
+            spawnHotsun(); // ditto
+            spawnBlackHole(); // ditto - offset from dead-center now that Hotsun sits there
             // Standard Game/hot-seat only, same reasoning - Campaign mode builds its own
             // countries from scratch in startCampaignStage() and never inherits this roster.
             assignAttackTargets();
@@ -5092,6 +5150,25 @@
             });
         }
 
+        // Hotsun radiation (2026-09-04, per direct request) - runs once per turn
+        // from nextTurn(), same cadence/pattern as healNearGalaxyCores() (this is
+        // its exact inverse: damage instead of heal). Every unit of every
+        // country - alien factions included, same "no special-casing" reasoning
+        // as the Core's heal - within HOTSUN_RADIATION_RANGE loses
+        // HOTSUN_DAMAGE_PERCENT of its own max HP each turn it stays there;
+        // nextTurn()'s existing `hp <= 0` cleanup handles anything this kills,
+        // same as any other damage source.
+        function damageNearHotsun() {
+            const suns = galaxyCores.filter(c => c.kind === 'hotsun');
+            if (suns.length === 0) return;
+            gameState.countries.forEach(country => {
+                country.units.forEach(unit => {
+                    const inRange = suns.some(sun => Math.hypot(unit.x - sun.x, unit.y - sun.y) <= HOTSUN_RADIATION_RANGE);
+                    if (inRange) unit.hp -= unit.getMaxHP() * HOTSUN_DAMAGE_PERCENT;
+                });
+            });
+        }
+
         function nextTurn() {
             gameState.turn++;
             gameState.turnTimeRemaining = TURN_TIME_SECONDS;
@@ -5111,6 +5188,7 @@
             });
             healNearGalaxyCores();
             awardGalaxyBounty();
+            damageNearHotsun();
 
             // Lifetime stats: tally the player's own losses before they're pruned below,
             // and note any enemy nation that's now fully destroyed (eliminatedCounted keeps
