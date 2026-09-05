@@ -5282,7 +5282,7 @@ check("drawMinimap() clamps a player's own unit dot to the minimap's rectangle i
     let captured = null;
     const origArc = ctx.arc;
     ctx.arc = function (x, y, ...rest) {
-        if (x >= mmX && x <= mmX + MINIMAP_WIDTH + 0.01 && y >= mmY - 0.01 && y <= mmY + MINIMAP_HEIGHT + 0.01 && rest[0] < 2) {
+        if (x >= mmX && x <= mmX + MINIMAP_WIDTH + 0.01 && y >= mmY - 0.01 && y <= mmY + MINIMAP_HEIGHT + 0.01 && rest[0] < 5) {
             captured = { x, y }; // a small-radius arc inside the minimap box = a unit dot
         }
         return origArc.apply(this, [x, y, ...rest]);

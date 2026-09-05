@@ -6652,10 +6652,19 @@
                         y: Math.max(mmY + 2, Math.min(mmY + MINIMAP_HEIGHT - 2, pRaw.y))
                     };
                     const isSelected = gameState.selectedUnits.includes(unit);
+                    // Bumped from 1.3/2 - confirmed by direct pixel inspection that a
+                    // dot this small genuinely renders (this isn't a rendering bug),
+                    // but a ~2.6px-diameter speck in a 220x160 box is a real
+                    // usability problem on its own, easy to miss at a glance or on
+                    // any display with scaling - per repeated direct reports that
+                    // troops "don't show" on the minimap.
                     ctx.beginPath();
-                    ctx.arc(p.x, p.y, isSelected ? 2 : 1.3, 0, Math.PI * 2);
+                    ctx.arc(p.x, p.y, isSelected ? 4 : 2.8, 0, Math.PI * 2);
                     ctx.fillStyle = isSelected ? '#ffff00' : '#39ff6a';
                     ctx.fill();
+                    ctx.strokeStyle = '#000000';
+                    ctx.lineWidth = 0.75;
+                    ctx.stroke();
                 });
             }
 
