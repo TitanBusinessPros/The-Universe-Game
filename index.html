@@ -335,15 +335,26 @@
             color: #000;
         }
         #ui {
+            /* Found 2026-09-05: this panel used to start at top:60px, right:10px,
+               340px wide - a rectangle that fully contains the minimap's own
+               on-screen box (mmX=canvas.width-235..canvas.width-15, mmY=60..220,
+               see minimapBounds()). Since this is a real DOM element painted
+               above the canvas (not canvas content), opening this panel put a
+               95%-opaque black rectangle directly on top of the minimap no
+               matter what the fog-of-war/canvas code did underneath - this is
+               "minimap always black regardless of fog on/off" reported live.
+               Pushed below the minimap's bottom edge (60+160+15 margin) so the
+               two can never overlap; max-height trimmed to match so the panel
+               still fits on-screen. */
             position: fixed;
-            top: 60px;
+            top: 235px;
             right: 10px;
             background: rgba(0, 0, 0, 0.95);
             color: #00ff00;
             padding: 15px;
             border-radius: 8px;
             width: 340px;
-            max-height: 85vh;
+            max-height: calc(100vh - 250px);
             overflow-y: auto;
             display: none;
             border: 2px solid #00ff00;
@@ -652,7 +663,7 @@
              immediately obvious whether a fresh version actually loaded,
              without anyone needing to check dev tools or guess from behavior
              alone. Bump this string whenever a real change ships. -->
-        <div style="position: fixed; bottom: 6px; right: 10px; color: #2a5a2a; font-size: 11px; font-family: 'Courier New', monospace; z-index: 99999; pointer-events: none;">Build 2026-09-05-e</div>
+        <div style="position: fixed; bottom: 6px; right: 10px; color: #2a5a2a; font-size: 11px; font-family: 'Courier New', monospace; z-index: 99999; pointer-events: none;">Build 2026-09-05-f</div>
 
         <div id="startScreen">
             <div class="brandMark">
