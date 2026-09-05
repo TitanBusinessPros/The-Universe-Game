@@ -127,7 +127,7 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage, assignAttackTargets, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS, randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER, nearestMinimapLandmark, spawnHotsun, damageNearHotsun, HOTSUN_IMAGE_URL, HOTSUN_SIZE, HOTSUN_RADIATION_RANGE, HOTSUN_DAMAGE_PERCENT, PLANET_SCALE, updateFogOfWar, toggleFogOfWar, drawMinimap, isPointRevealed, revealRegion, drawFogOfWarOverlay, ctx };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage, assignAttackTargets, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS, randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER, STANDARD_GAME_SPEED_SCALE, nearestMinimapLandmark, spawnHotsun, damageNearHotsun, HOTSUN_IMAGE_URL, HOTSUN_SIZE, HOTSUN_RADIATION_RANGE, HOTSUN_DAMAGE_PERCENT, PLANET_SCALE, updateFogOfWar, toggleFogOfWar, drawMinimap, isPointRevealed, revealRegion, drawFogOfWarOverlay, ctx };',
     context,
     { filename: 'grab-refs.js' }
 );
@@ -160,6 +160,7 @@ const {
     whenImagesReady, spaceElements, loadMineImage, mineImage,
     assignAttackTargets, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS,
     randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER,
+    STANDARD_GAME_SPEED_SCALE,
     nearestMinimapLandmark, spawnHotsun, damageNearHotsun, HOTSUN_IMAGE_URL, HOTSUN_SIZE, HOTSUN_RADIATION_RANGE, HOTSUN_DAMAGE_PERCENT, PLANET_SCALE,
     updateFogOfWar, toggleFogOfWar, drawMinimap, isPointRevealed, revealRegion, drawFogOfWarOverlay, ctx
 } = context.__test;
@@ -2983,11 +2984,69 @@ check('Extended Sensors: +50% vision range, both for a scouting unit and homewor
     const island = new Island(0, 0, 0);
     const country = new Country(0, 'SensorTest', '#ff0000', island, true);
     const problems = [];
-    if (getEffectiveSightRange(country, false) !== UNIT_SIGHT_RANGE) problems.push('expected the plain UNIT_SIGHT_RANGE before research');
-    if (getEffectiveSightRange(country, true) !== RADAR_SIGHT_RANGE) problems.push('expected the plain RADAR_SIGHT_RANGE before research');
+    // Base values are read live rather than hardcoded against UNIT_SIGHT_RANGE/
+    // RADAR_SIGHT_RANGE directly - getEffectiveSightRange() scales those up for
+    // Standard Game (see its own comment), so this test only needs to verify the
+    // +50% research MULTIPLIER itself, independent of whatever the base is.
+    gameState.campaignActive = false;
+    const baseUnitSight = getEffectiveSightRange(country, false);
+    const baseRadarSight = getEffectiveSightRange(country, true);
     country.researchedTech.add('extended_sensors');
-    if (getEffectiveSightRange(country, false) !== Math.round(UNIT_SIGHT_RANGE * 1.5)) problems.push('expected +50% unit sight range after research');
-    if (getEffectiveSightRange(country, true) !== Math.round(RADAR_SIGHT_RANGE * 1.5)) problems.push('expected +50% radar sight range after research');
+    if (getEffectiveSightRange(country, false) !== Math.round(baseUnitSight * 1.5)) problems.push('expected +50% unit sight range after research');
+    if (getEffectiveSightRange(country, true) !== Math.round(baseRadarSight * 1.5)) problems.push('expected +50% radar sight range after research');
+    return problems;
+});
+
+check('getEffectiveSightRange() scales with PLANET_MIN_SEPARATION outside Campaign Mode, and keeps the original flat UNIT_SIGHT_RANGE/RADAR_SIGHT_RANGE inside it (root cause fix for "minimap looks black / ships never reveal anything" - see that function\'s own comment)', () => {
+    const country = new Country(0, 'RangeTest', '#ff0000', new Island(0, 0, 0), true);
+    const problems = [];
+
+    gameState.campaignActive = false;
+    const standardUnit = getEffectiveSightRange(country, false);
+    const standardRadar = getEffectiveSightRange(country, true);
+    if (standardUnit <= UNIT_SIGHT_RANGE) problems.push(`expected Standard Game sight range (${standardUnit}) to be well above the old flat UNIT_SIGHT_RANGE (${UNIT_SIGHT_RANGE})`);
+    if (standardRadar <= standardUnit) problems.push('expected radar sight range to still exceed plain unit sight range in Standard Game');
+    // Big enough that a revealed circle actually spans more than a single minimap
+    // pixel (~MINIMAP_WIDTH/220 world-units-per-pixel at typical galaxy extents) -
+    // otherwise fog-of-war reveals nothing visibly different on the minimap even
+    // once a unit is technically "in range".
+    if (standardUnit < PLANET_MIN_SEPARATION * 0.1) problems.push('Standard Game sight range is too small a fraction of PLANET_MIN_SEPARATION to ever look like meaningful minimap progress');
+
+    gameState.campaignActive = true;
+    if (getEffectiveSightRange(country, false) !== UNIT_SIGHT_RANGE) problems.push('expected Campaign Mode to keep the original flat UNIT_SIGHT_RANGE untouched');
+    if (getEffectiveSightRange(country, true) !== RADAR_SIGHT_RANGE) problems.push('expected Campaign Mode to keep the original flat RADAR_SIGHT_RANGE untouched');
+    gameState.campaignActive = false;
+
+    return problems;
+});
+
+check('Standard Game unit travel speed is scaled up by STANDARD_GAME_SPEED_SCALE (the other half of the same root-cause fix - a ship could technically be "in range" per the fix above and still take the better part of an hour to actually get there without this)', () => {
+    const problems = [];
+    gameState.countries = []; // no islands to collide with - isolate this to Unit.update()'s own math
+    vm.runInContext('frameDeltaTime = 1 / 60;', context);
+
+    gameState.campaignActive = false;
+    const standardShip = makeUnit('stormbreaker', 0);
+    standardShip.x = 0; standardShip.y = 0; standardShip.targetX = 1000000; standardShip.targetY = 0;
+    standardShip.update();
+    const standardDist = standardShip.x;
+
+    gameState.campaignActive = true;
+    const campaignShip = makeUnit('stormbreaker', 0);
+    campaignShip.x = 0; campaignShip.y = 0; campaignShip.targetX = 1000000; campaignShip.targetY = 0;
+    campaignShip.update();
+    const campaignDist = campaignShip.x;
+    gameState.campaignActive = false;
+
+    if (Math.abs(standardDist - campaignDist * STANDARD_GAME_SPEED_SCALE) > 0.01) {
+        problems.push(`expected Standard Game to cover exactly STANDARD_GAME_SPEED_SCALE (${STANDARD_GAME_SPEED_SCALE}x) as much distance per tick as Campaign Mode (campaign moved ${campaignDist}, standard moved ${standardDist})`);
+    }
+    // Concretely: crossing the minimum gap between two neighboring planets should
+    // take on the order of minutes of continuous travel, not most of an hour.
+    const secondsToCoverMinSeparation = PLANET_MIN_SEPARATION / (standardDist * 60); // standardDist is distance covered in one 1/60s tick
+    if (secondsToCoverMinSeparation > 900) {
+        problems.push(`expected a mid-speed ship to cross PLANET_MIN_SEPARATION in well under 15 real minutes of continuous travel, got ~${(secondsToCoverMinSeparation / 60).toFixed(1)} minutes`);
+    }
     return problems;
 });
 
