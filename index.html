@@ -3,6 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Per direct investigation (2026-09-05): this file changes often during
+         active development, and a browser tab left open across an update never
+         re-fetches it on its own - only a genuine fresh navigation does, and
+         even then, default caching can still serve a stale copy for a while.
+         These hint the browser (and any caching layer that respects them) to
+         always revalidate rather than reuse a stored copy, so a real reload
+         reliably picks up the latest deployed version instead of an old one. -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>After Earth</title>
     <style>
         * {
@@ -635,6 +645,14 @@
             <div id="loadingBarOuter"><div id="loadingBarInner"></div></div>
             <div id="loadingText">Loading assets... 0 / 0</div>
         </div>
+
+        <!-- Per direct investigation (2026-09-05): a plain, always-visible build
+             marker (outside every screen's own container, so it's never hidden
+             by a display:none on startScreen/the game view/etc.) - makes it
+             immediately obvious whether a fresh version actually loaded,
+             without anyone needing to check dev tools or guess from behavior
+             alone. Bump this string whenever a real change ships. -->
+        <div style="position: fixed; bottom: 6px; right: 10px; color: #2a5a2a; font-size: 11px; font-family: 'Courier New', monospace; z-index: 99999; pointer-events: none;">Build 2026-09-05-e</div>
 
         <div id="startScreen">
             <div class="brandMark">
