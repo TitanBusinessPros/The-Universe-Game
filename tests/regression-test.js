@@ -5324,6 +5324,46 @@ check('applySaveData() falls back to a country\'s existing exploredRegions (not 
     return problems;
 });
 
+check('#ui side panel CSS can never geometrically overlap the minimap\'s on-screen rectangle (a real DOM element painted over the canvas would black out the minimap regardless of any fog-of-war/canvas code)', () => {
+    const uiCssMatch = html.match(/#ui\s*\{([^}]*)\}/);
+    const problems = [];
+    if (!uiCssMatch) {
+        problems.push('could not find #ui CSS block at all');
+        return problems;
+    }
+    const uiCss = uiCssMatch[1].replace(/\/\*[\s\S]*?\*\//g, ''); // strip comments before reading declarations - a comment mentioning old px values would otherwise be matched instead of the real rule
+    const topMatch = uiCss.match(/top:\s*(\d+)px/);
+    const rightMatch = uiCss.match(/right:\s*(\d+)px/);
+    const widthMatch = uiCss.match(/width:\s*(\d+)px/);
+    if (!topMatch || !rightMatch || !widthMatch) {
+        problems.push(`expected #ui to declare numeric top/right/width in px, got: ${uiCss}`);
+        return problems;
+    }
+    const uiTop = Number(topMatch[1]);
+    const uiRight = Number(rightMatch[1]);
+    const uiWidth = Number(widthMatch[1]);
+    // Same coordinate space both boxes are anchored in: distance from the
+    // viewport's right edge, and from its top edge. Minimap box, per
+    // minimapBounds()/MINIMAP_* constants (both sides assumed <= canvas.width,
+    // which always holds for a fullscreen canvas):
+    //   right-edge distance: MINIMAP_MARGIN_RIGHT .. MINIMAP_MARGIN_RIGHT+MINIMAP_WIDTH
+    //   top-edge distance:   MINIMAP_MARGIN_TOP .. MINIMAP_MARGIN_TOP+MINIMAP_HEIGHT
+    const mmRightNear = MINIMAP_MARGIN_RIGHT;
+    const mmRightFar = MINIMAP_MARGIN_RIGHT + MINIMAP_WIDTH;
+    const mmTopNear = MINIMAP_MARGIN_TOP;
+    const mmTopFar = MINIMAP_MARGIN_TOP + MINIMAP_HEIGHT;
+    const uiRightNear = uiRight;
+    const uiRightFar = uiRight + uiWidth;
+    // Two ranges measured from the same edge overlap unless one is fully
+    // above/below (here: further from the edge than) the other.
+    const horizontallyOverlaps = uiRightNear < mmRightFar && mmRightNear < uiRightFar;
+    const verticallyOverlaps = uiTop < mmTopFar; // #ui's box extends downward from its top with no fixed bottom
+    if (horizontallyOverlaps && verticallyOverlaps) {
+        problems.push(`#ui (top:${uiTop}px, right:${uiRight}..${uiRight + uiWidth}px) overlaps the minimap (top:${mmTopNear}..${mmTopFar}px, right:${mmRightNear}..${mmRightFar}px) - opening the panel would black out the minimap`);
+    }
+    return problems;
+});
+
 report();
 process.exit(failures.length > 0 ? 1 : 0);
 
