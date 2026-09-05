@@ -5364,6 +5364,38 @@ check('#ui side panel CSS can never geometrically overlap the minimap\'s on-scre
     return problems;
 });
 
+check('#ui side panel CSS leaves enough room above #controls (the HOME/VIEW ALL buttons) that they can never overlap (both are fixed and share the same right edge; #controls is later in the DOM so it paints over #ui wherever they collide, hiding whatever of the panel is underneath)', () => {
+    const uiCssMatch = html.match(/#ui\s*\{([^}]*)\}/);
+    const controlsCssMatch = html.match(/#controls\s*\{([^}]*)\}/);
+    const problems = [];
+    if (!uiCssMatch || !controlsCssMatch) {
+        problems.push(`could not find ${!uiCssMatch ? '#ui' : '#controls'} CSS block`);
+        return problems;
+    }
+    const uiCss = uiCssMatch[1].replace(/\/\*[\s\S]*?\*\//g, '');
+    const controlsCss = controlsCssMatch[1].replace(/\/\*[\s\S]*?\*\//g, '');
+    const uiBottomMatch = uiCss.match(/bottom:\s*(\d+)px/);
+    const controlsBottomMatch = controlsCss.match(/bottom:\s*(\d+)px/);
+    if (!uiBottomMatch) {
+        problems.push('expected #ui to anchor a fixed `bottom` (not just a hand-picked max-height) so its actual height self-adjusts to any viewport instead of potentially reaching past #controls');
+        return problems;
+    }
+    if (!controlsBottomMatch) {
+        problems.push('expected #controls to declare a numeric bottom in px');
+        return problems;
+    }
+    const uiBottom = Number(uiBottomMatch[1]);
+    const controlsBottom = Number(controlsBottomMatch[1]);
+    // #controls is a compact two-button row (~50-56px tall including its own
+    // padding/border at default font size) - require enough clearance above
+    // it for that, not just a token 1px gap.
+    const MIN_CLEARANCE = 60;
+    if (uiBottom - controlsBottom < MIN_CLEARANCE) {
+        problems.push(`#ui stops ${uiBottom}px above the viewport bottom, #controls starts ${controlsBottom}px above it - only ${uiBottom - controlsBottom}px of clearance, expected at least ${MIN_CLEARANCE}px so #controls' own height doesn't reach up into #ui`);
+    }
+    return problems;
+});
+
 report();
 process.exit(failures.length > 0 ? 1 : 0);
 

@@ -344,17 +344,27 @@
                matter what the fog-of-war/canvas code did underneath - this is
                "minimap always black regardless of fog on/off" reported live.
                Pushed below the minimap's bottom edge (60+160+15 margin) so the
-               two can never overlap; max-height trimmed to match so the panel
-               still fits on-screen. */
+               two can never overlap.
+               Second bug, found the same day: the first fix replaced max-height
+               with a fixed calc(100vh - 250px), which pushed this panel's own
+               BOTTOM edge deeper into the screen than before (it used to stop
+               at top+85vh) - straight into #controls (the HOME/VIEW ALL
+               buttons, position:fixed, bottom:10px, right:10px - same right
+               edge as this panel), which paints after #ui in the DOM and so
+               rendered on top of it, covering this panel's own lower controls.
+               Anchoring with top+bottom instead of top+max-height fixes both
+               at once: the box's actual height is whatever space is left
+               between the two, on any viewport size, with no hand-picked
+               pixel constant to keep re-tuning. */
             position: fixed;
             top: 235px;
             right: 10px;
+            bottom: 90px;
             background: rgba(0, 0, 0, 0.95);
             color: #00ff00;
             padding: 15px;
             border-radius: 8px;
             width: 340px;
-            max-height: calc(100vh - 250px);
             overflow-y: auto;
             display: none;
             border: 2px solid #00ff00;
@@ -663,7 +673,7 @@
              immediately obvious whether a fresh version actually loaded,
              without anyone needing to check dev tools or guess from behavior
              alone. Bump this string whenever a real change ships. -->
-        <div style="position: fixed; bottom: 6px; right: 10px; color: #2a5a2a; font-size: 11px; font-family: 'Courier New', monospace; z-index: 99999; pointer-events: none;">Build 2026-09-05-f</div>
+        <div style="position: fixed; bottom: 6px; right: 10px; color: #2a5a2a; font-size: 11px; font-family: 'Courier New', monospace; z-index: 99999; pointer-events: none;">Build 2026-09-05-g</div>
 
         <div id="startScreen">
             <div class="brandMark">
