@@ -6567,6 +6567,18 @@
                 fogOverlayCtx.arc(screenX, screenY, r.radius * camera.zoom, 0, Math.PI * 2);
                 fogOverlayCtx.fill();
             });
+            // Per direct report ("The minimap is still not showing when my ships
+            // travel... only shows black still"): this overlay covers the WHOLE
+            // canvas in screen space, including the fixed corner the minimap
+            // widget itself sits in - since that corner is UI chrome, not world
+            // space, no revealed-region hole was ever punched there, so it stayed
+            // permanently blacked out underneath drawMinimap()'s own only-75%-
+            // opaque background, drawn afterward. Explicitly excluded here instead
+            // - the minimap has always had its own separate fog-of-war gating
+            // (the dot-visibility checks in drawMinimap() itself), so it doesn't
+            // need this world-space overlay covering it too.
+            const { mmX: fogMmX, mmY: fogMmY } = minimapBounds();
+            fogOverlayCtx.clearRect(fogMmX - 4, fogMmY - 4, MINIMAP_WIDTH + 8, MINIMAP_HEIGHT + 8);
 
             ctx.drawImage(fogOverlayCanvas, 0, 0);
         }

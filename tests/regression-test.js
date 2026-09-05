@@ -5250,6 +5250,18 @@ check('drawFogOfWarOverlay() source culls revealed regions far outside the curre
         : ['expected drawFogOfWarOverlay() to skip regions outside the current viewport bounds'];
 });
 
+check('drawFogOfWarOverlay() excludes the minimap\'s own screen rectangle from the fog blackout', () => {
+    // Direct follow-up report: "The minimap is still not showing when my ships
+    // travel and are located and only shows black still." This overlay covers
+    // the WHOLE screen, including the fixed corner the minimap widget sits in -
+    // since that's UI chrome, not world space, no revealed-region hole was ever
+    // punched there, so it stayed permanently blacked out underneath
+    // drawMinimap()'s own only-75%-opaque background drawn afterward.
+    return /clearRect\(fogMmX - 4, fogMmY - 4, MINIMAP_WIDTH \+ 8, MINIMAP_HEIGHT \+ 8\)/.test(script)
+        ? []
+        : ["expected drawFogOfWarOverlay() to clear the minimap's own rectangle out of its fog buffer"];
+});
+
 check("drawMinimap() clamps a player's own unit dot to the minimap's rectangle instead of letting it vanish when it wanders beyond the known galaxy bounds", () => {
     // Direct report: "I sent 4 aircraft in 4 different directions and it does
     // not show them on the mini map any longer" - worldToMinimap() scales off
