@@ -5481,6 +5481,12 @@
                     roufestrealTurnCounter: c.roufestrealTurnCounter,
                     researchedTech: Array.from(c.researchedTech),
                     activeResearch: c.activeResearch,
+                    // Fog of war (2026-09-04) - real bug found while investigating a
+                    // direct report that explored planets weren't staying revealed:
+                    // save/load never touched this field at all, so any save/load
+                    // (including the automatic "Continue" from autosave every turn)
+                    // silently wiped all fog-of-war progress back to nothing.
+                    exploredRegions: c.exploredRegions,
                     units: c.units.map(u => ({
                         x: u.x,
                         y: u.y,
@@ -5549,6 +5555,11 @@
                 country.roufestrealTurnCounter = savedCountry.roufestrealTurnCounter || 0;
                 country.researchedTech = new Set(savedCountry.researchedTech || []);
                 country.activeResearch = savedCountry.activeResearch || null;
+                // Fog of war (2026-09-04) - falls back to whatever this country
+                // already had (its fresh, empty exploredRegions from initGame(), in
+                // practice) for a save from before this field existed, rather than
+                // crashing on undefined.
+                country.exploredRegions = savedCountry.exploredRegions || country.exploredRegions;
 
                 savedCountry.buildings.forEach((savedBuilding, bIdx) => {
                     if (country.island.buildings[bIdx]) {
