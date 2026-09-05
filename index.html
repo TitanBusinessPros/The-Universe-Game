@@ -673,7 +673,7 @@
              immediately obvious whether a fresh version actually loaded,
              without anyone needing to check dev tools or guess from behavior
              alone. Bump this string whenever a real change ships. -->
-        <div style="position: fixed; bottom: 6px; right: 10px; color: #2a5a2a; font-size: 11px; font-family: 'Courier New', monospace; z-index: 99999; pointer-events: none;">Build 2026-09-05-g</div>
+        <div style="position: fixed; bottom: 6px; right: 10px; color: #2a5a2a; font-size: 11px; font-family: 'Courier New', monospace; z-index: 99999; pointer-events: none;">Build 2026-09-05-h</div>
 
         <div id="startScreen">
             <div class="brandMark">
@@ -1875,8 +1875,29 @@
         // Extended Sensors research (+50% vision range - see TECH_TREE). Pulled out
         // of Unit.draw()'s fog-of-war check into its own function so the actual
         // range math is testable without needing a real canvas draw pass.
+        //
+        // Found 2026-09-05, root cause of the long "minimap looks black / can't see
+        // my ships" thread: UNIT_SIGHT_RANGE/RADAR_SIGHT_RANGE (700/1400) were tuned
+        // back when Standard Game planets sat within the original small grid. Every
+        // later "spread the planets out further" request (PLANET_SPREAD_MULTIPLIER,
+        // now 30) grew the actual distance between planets into the hundreds of
+        // thousands of units without anyone touching these - so a scout sent toward
+        // a neighboring planet had to cover ~99.9% of the trip before ever getting
+        // within a sight range that small, and the resulting fog-of-war reveal
+        // circle was tinier than a single minimap pixel besides. None of the fixes
+        // in the previous several PRs could have shown anything different, because
+        // there was genuinely nothing to reveal yet - this wasn't a rendering bug.
+        // Scaled to a fraction of PLANET_MIN_SEPARATION for Standard Game/hot-seat
+        // instead, so vision grows along with however far apart the planets
+        // actually are. Campaign Mode keeps the original flat values untouched -
+        // its own layout is deliberately compact and was never part of this.
         function getEffectiveSightRange(country, hasRadar) {
-            const base = hasRadar ? RADAR_SIGHT_RANGE : UNIT_SIGHT_RANGE;
+            let base;
+            if (gameState.campaignActive) {
+                base = hasRadar ? RADAR_SIGHT_RANGE : UNIT_SIGHT_RANGE;
+            } else {
+                base = hasRadar ? PLANET_MIN_SEPARATION * 0.7 : PLANET_MIN_SEPARATION * 0.35;
+            }
             return (country && country.researchedTech.has('extended_sensors')) ? Math.round(base * 1.5) : base;
         }
 
@@ -3210,6 +3231,14 @@
                     this.facingAngle += angleDiff * 0.15;
 
                     let speed = UNIT_SPEEDS[this.type] || 2;
+
+                    // See STANDARD_GAME_SPEED_SCALE's own comment - Standard Game
+                    // planets sit far enough apart now that unscaled travel speed
+                    // made a cross-galaxy trip take the better part of an hour.
+                    // Campaign Mode's own compact layout keeps its original pacing.
+                    if (!gameState.campaignActive) {
+                        speed *= STANDARD_GAME_SPEED_SCALE;
+                    }
 
                     const countryBonus = COUNTRY_BONUSES[this.countryId];
                     if (countryBonus && countryBonus.speedMultiplier[this.type]) {
@@ -4587,6 +4616,23 @@
         // PLANET_SPREAD_MULTIPLIER was. A true square box (both axes sized off
         // the larger dimension) fixes that at the source.
         const PLANET_MIN_SEPARATION = Math.max(MAP_WIDTH, MAP_HEIGHT) * 0.12 * PLANET_SPREAD_MULTIPLIER;
+
+        // Found 2026-09-05, the other half of the sight-range fix above
+        // (getEffectiveSightRange()): UNIT_SPEEDS was never touched by any of the
+        // PLANET_SPREAD_MULTIPLIER increases either, so even once a ship gets close
+        // enough to reveal something, actually COVERING these distances at the
+        // original per-frame speeds takes an absurd amount of continuous real time -
+        // measured live: a mid-speed ship needed roughly an hour of uninterrupted
+        // travel to cross just the minimum gap between two neighboring planets, and
+        // its minimap dot moved a fraction of a single pixel per minute of play.
+        // Scales Standard Game/hot-seat travel speed only (Campaign Mode's own
+        // compact layout keeps its original pacing) so crossing the minimum gap
+        // takes on the order of minutes, not the better part of an hour - picked so
+        // a mid-speed ship (~2.5/frame) covers PLANET_MIN_SEPARATION in roughly 6-7
+        // real minutes of continuous travel. Pure travel speed only - weapon range,
+        // damage, and HP are untouched, so close-quarters combat math doesn't change,
+        // only how long it takes to get there.
+        const STANDARD_GAME_SPEED_SCALE = 10;
 
         // Distance from galaxy center to the farthest planet's island - used by
         // spawnGalaxyCore()/spawnGalaxyBounty() to place their landmark just outside
