@@ -2203,6 +2203,8 @@ check('buildSaveData() -> applySaveData() round-trips turn, resources, research,
     resourceDeposits.push(new ResourceDeposit(500, 500));
     resourceDeposits[0].resources = 3333;
 
+    country.exploredRegions = [{ x: 9999, y: 8888, radius: 700 }];
+
     const saveData = buildSaveData();
 
     // Now scramble everything the save is supposed to restore, so a
@@ -2217,6 +2219,7 @@ check('buildSaveData() -> applySaveData() round-trips turn, resources, research,
     country.island.buildings[0].hp = 999;
     country.units = [];
     resourceDeposits.length = 0;
+    country.exploredRegions = [];
 
     applySaveData(saveData);
 
@@ -2255,6 +2258,9 @@ check('buildSaveData() -> applySaveData() round-trips turn, resources, research,
 
     if (resourceDeposits.length !== 1 || resourceDeposits[0].resources !== 3333) {
         problems.push(`expected 1 resource deposit with 3333 resources restored, got ${JSON.stringify(resourceDeposits.map(d => d.resources))}`);
+    }
+    if (JSON.stringify(restored.exploredRegions) !== JSON.stringify([{ x: 9999, y: 8888, radius: 700 }])) {
+        problems.push(`expected fog-of-war exploredRegions restored, got ${JSON.stringify(restored.exploredRegions)}`);
     }
     // Regression (2026-08-29): applySaveData() reconstructed loaded deposits via
     // `new ResourceDeposit(d.x, d.y)` with no imageUrl - a resumed/continued game
@@ -5275,6 +5281,33 @@ check("drawMinimap() clamps a player's own unit dot to the minimap's rectangle i
     if (!captured) problems.push('expected the far-off scout\'s dot to still be drawn somewhere inside the minimap rectangle');
     else if (captured.x < mmX || captured.x > mmX + MINIMAP_WIDTH || captured.y < mmY || captured.y > mmY + MINIMAP_HEIGHT) {
         problems.push(`expected the clamped dot within the minimap rectangle, got (${captured.x}, ${captured.y})`);
+    }
+    return problems;
+});
+
+// Real gap found while investigating a direct report that explored planets
+// weren't staying revealed (2026-09-04): applySaveData()/buildSaveData()
+// never touched exploredRegions at all, so any save/load - including the
+// automatic "Continue" from autosave every turn - silently wiped all fog-of-
+// war progress back to nothing. Covered above in the main round-trip test;
+// this one specifically guards the backward-compatibility fallback for a
+// save from before this field existed.
+check('applySaveData() falls back to a country\'s existing exploredRegions (not a crash) when loading a save from before that field existed', () => {
+    const country = new Country(0, 'OldSaveTest', '#ff0000', new Island(0, 0, 0), true);
+    country.exploredRegions = [{ x: 1, y: 2, radius: 3 }]; // already has real fog progress
+    gameState.countries = [country];
+    gameState.playerCountry = country;
+
+    const oldSave = buildSaveData();
+    delete oldSave.countries[0].exploredRegions; // simulate a save predating this field
+
+    let threw = null;
+    try { applySaveData(oldSave); } catch (e) { threw = e.message; }
+
+    const problems = [];
+    if (threw) problems.push(`expected no crash loading a save missing exploredRegions, got: ${threw}`);
+    else if (JSON.stringify(country.exploredRegions) !== JSON.stringify([{ x: 1, y: 2, radius: 3 }])) {
+        problems.push(`expected the country's existing exploredRegions left untouched, got ${JSON.stringify(country.exploredRegions)}`);
     }
     return problems;
 });
