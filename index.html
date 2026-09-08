@@ -335,36 +335,21 @@
             color: #000;
         }
         #ui {
-            /* Found 2026-09-05: this panel used to start at top:60px, right:10px,
-               340px wide - a rectangle that fully contains the minimap's own
-               on-screen box (mmX=canvas.width-235..canvas.width-15, mmY=60..220,
-               see minimapBounds()). Since this is a real DOM element painted
-               above the canvas (not canvas content), opening this panel put a
-               95%-opaque black rectangle directly on top of the minimap no
-               matter what the fog-of-war/canvas code did underneath - this is
-               "minimap always black regardless of fog on/off" reported live.
-               Pushed below the minimap's bottom edge (60+160+15 margin) so the
-               two can never overlap.
-               Second bug, found the same day: the first fix replaced max-height
-               with a fixed calc(100vh - 250px), which pushed this panel's own
-               BOTTOM edge deeper into the screen than before (it used to stop
-               at top+85vh) - straight into #controls (the HOME/VIEW ALL
-               buttons, position:fixed, bottom:10px, right:10px - same right
-               edge as this panel), which paints after #ui in the DOM and so
-               rendered on top of it, covering this panel's own lower controls.
-               Anchoring with top+bottom instead of top+max-height fixes both
-               at once: the box's actual height is whatever space is left
-               between the two, on any viewport size, with no hand-picked
-               pixel constant to keep re-tuning. */
+            /* Reset 2026-09-07 per direct request: this panel is meant to open
+               on top of the minimap (right:10px, same side as the minimap) -
+               a 2026-09-05 change had pushed it down below the minimap's
+               bottom edge to avoid the two ever overlapping, but covering the
+               minimap while the menu is open is the intended behavior, not a
+               bug. Back to its original top:60px/max-height:85vh box. */
             position: fixed;
-            top: 235px;
+            top: 60px;
             right: 10px;
-            bottom: 90px;
             background: rgba(0, 0, 0, 0.95);
             color: #00ff00;
             padding: 15px;
             border-radius: 8px;
             width: 340px;
+            max-height: 85vh;
             overflow-y: auto;
             display: none;
             border: 2px solid #00ff00;
@@ -673,7 +658,7 @@
              immediately obvious whether a fresh version actually loaded,
              without anyone needing to check dev tools or guess from behavior
              alone. Bump this string whenever a real change ships. -->
-        <div style="position: fixed; bottom: 6px; right: 10px; color: #2a5a2a; font-size: 11px; font-family: 'Courier New', monospace; z-index: 99999; pointer-events: none;">Build 2026-09-05-h</div>
+        <div style="position: fixed; bottom: 6px; right: 10px; color: #2a5a2a; font-size: 11px; font-family: 'Courier New', monospace; z-index: 99999; pointer-events: none;">Build 2026-09-07-a</div>
 
         <div id="startScreen">
             <div class="brandMark">
@@ -3232,14 +3217,6 @@
 
                     let speed = UNIT_SPEEDS[this.type] || 2;
 
-                    // See STANDARD_GAME_SPEED_SCALE's own comment - Standard Game
-                    // planets sit far enough apart now that unscaled travel speed
-                    // made a cross-galaxy trip take the better part of an hour.
-                    // Campaign Mode's own compact layout keeps its original pacing.
-                    if (!gameState.campaignActive) {
-                        speed *= STANDARD_GAME_SPEED_SCALE;
-                    }
-
                     const countryBonus = COUNTRY_BONUSES[this.countryId];
                     if (countryBonus && countryBonus.speedMultiplier[this.type]) {
                         speed *= countryBonus.speedMultiplier[this.type];
@@ -4584,13 +4561,17 @@
             return best;
         }
 
-        // Per direct request (2026-09-04, follow-up): "I still think these
-        // planets are too close. I see all this open space at th top and bottom
-        // of the map... Lets spread them out 5-10 times futhrur away and leave
-        // no empty spaces on the map like the top and bottom." Compounds on top
-        // of the previous 4x (same "X times further away than they are now"
-        // phrasing, read the same way both times) - middle of the requested
-        // 5-10x range, so 4 * 7.5 = 30 total. Deliberately NOT done by growing
+        // Per direct request (2026-09-04): "The planets were not spread out far
+        // enough from each other. I want them to be 3-5 times futhrur away from
+        // each other as they are now. I don't want planets close to one another."
+        // Middle of the requested 3-5x range.
+        //
+        // Reset 2026-09-07: a later request briefly pushed this to 30 (a
+        // compounded 5-10x further on top of this), but that made the galaxy
+        // large enough that ships took the better part of an hour to cross it -
+        // reverted back to this original 4x per direct request, rather than
+        // trying to compensate with more speed/sight-range scaling elsewhere.
+        // Deliberately NOT done by growing
         // MAP_WIDTH/MAP_HEIGHT/GALAXY_SPACING_SCALE themselves - those also drive
         // Campaign mode's own layout (campaignNationPosition() reads MAP_WIDTH/
         // HEIGHT directly) and would have ballooned its spacing too as an
@@ -4602,7 +4583,7 @@
         // same multiplier, so the ratio - and therefore how comfortably
         // randomSpreadPosition() can actually satisfy the minimum - stays
         // unchanged from before this multiplier existed).
-        const PLANET_SPREAD_MULTIPLIER = 30;
+        const PLANET_SPREAD_MULTIPLIER = 4;
 
         // How far apart planets must be from one another, at minimum. A fraction
         // of the map's LARGER dimension (not the smaller one, as this used to
@@ -4616,23 +4597,6 @@
         // PLANET_SPREAD_MULTIPLIER was. A true square box (both axes sized off
         // the larger dimension) fixes that at the source.
         const PLANET_MIN_SEPARATION = Math.max(MAP_WIDTH, MAP_HEIGHT) * 0.12 * PLANET_SPREAD_MULTIPLIER;
-
-        // Found 2026-09-05, the other half of the sight-range fix above
-        // (getEffectiveSightRange()): UNIT_SPEEDS was never touched by any of the
-        // PLANET_SPREAD_MULTIPLIER increases either, so even once a ship gets close
-        // enough to reveal something, actually COVERING these distances at the
-        // original per-frame speeds takes an absurd amount of continuous real time -
-        // measured live: a mid-speed ship needed roughly an hour of uninterrupted
-        // travel to cross just the minimum gap between two neighboring planets, and
-        // its minimap dot moved a fraction of a single pixel per minute of play.
-        // Scales Standard Game/hot-seat travel speed only (Campaign Mode's own
-        // compact layout keeps its original pacing) so crossing the minimum gap
-        // takes on the order of minutes, not the better part of an hour - picked so
-        // a mid-speed ship (~2.5/frame) covers PLANET_MIN_SEPARATION in roughly 6-7
-        // real minutes of continuous travel. Pure travel speed only - weapon range,
-        // damage, and HP are untouched, so close-quarters combat math doesn't change,
-        // only how long it takes to get there.
-        const STANDARD_GAME_SPEED_SCALE = 10;
 
         // Distance from galaxy center to the farthest planet's island - used by
         // spawnGalaxyCore()/spawnGalaxyBounty() to place their landmark just outside

@@ -127,7 +127,7 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage, assignAttackTargets, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS, randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER, STANDARD_GAME_SPEED_SCALE, nearestMinimapLandmark, spawnHotsun, damageNearHotsun, HOTSUN_IMAGE_URL, HOTSUN_SIZE, HOTSUN_RADIATION_RANGE, HOTSUN_DAMAGE_PERCENT, PLANET_SCALE, updateFogOfWar, toggleFogOfWar, drawMinimap, isPointRevealed, revealRegion, drawFogOfWarOverlay, ctx };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage, assignAttackTargets, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS, randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER, nearestMinimapLandmark, spawnHotsun, damageNearHotsun, HOTSUN_IMAGE_URL, HOTSUN_SIZE, HOTSUN_RADIATION_RANGE, HOTSUN_DAMAGE_PERCENT, PLANET_SCALE, updateFogOfWar, toggleFogOfWar, drawMinimap, isPointRevealed, revealRegion, drawFogOfWarOverlay, ctx };',
     context,
     { filename: 'grab-refs.js' }
 );
@@ -160,7 +160,6 @@ const {
     whenImagesReady, spaceElements, loadMineImage, mineImage,
     assignAttackTargets, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS,
     randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER,
-    STANDARD_GAME_SPEED_SCALE,
     nearestMinimapLandmark, spawnHotsun, damageNearHotsun, HOTSUN_IMAGE_URL, HOTSUN_SIZE, HOTSUN_RADIATION_RANGE, HOTSUN_DAMAGE_PERCENT, PLANET_SCALE,
     updateFogOfWar, toggleFogOfWar, drawMinimap, isPointRevealed, revealRegion, drawFogOfWarOverlay, ctx
 } = context.__test;
@@ -3020,36 +3019,6 @@ check('getEffectiveSightRange() scales with PLANET_MIN_SEPARATION outside Campai
     return problems;
 });
 
-check('Standard Game unit travel speed is scaled up by STANDARD_GAME_SPEED_SCALE (the other half of the same root-cause fix - a ship could technically be "in range" per the fix above and still take the better part of an hour to actually get there without this)', () => {
-    const problems = [];
-    gameState.countries = []; // no islands to collide with - isolate this to Unit.update()'s own math
-    vm.runInContext('frameDeltaTime = 1 / 60;', context);
-
-    gameState.campaignActive = false;
-    const standardShip = makeUnit('stormbreaker', 0);
-    standardShip.x = 0; standardShip.y = 0; standardShip.targetX = 1000000; standardShip.targetY = 0;
-    standardShip.update();
-    const standardDist = standardShip.x;
-
-    gameState.campaignActive = true;
-    const campaignShip = makeUnit('stormbreaker', 0);
-    campaignShip.x = 0; campaignShip.y = 0; campaignShip.targetX = 1000000; campaignShip.targetY = 0;
-    campaignShip.update();
-    const campaignDist = campaignShip.x;
-    gameState.campaignActive = false;
-
-    if (Math.abs(standardDist - campaignDist * STANDARD_GAME_SPEED_SCALE) > 0.01) {
-        problems.push(`expected Standard Game to cover exactly STANDARD_GAME_SPEED_SCALE (${STANDARD_GAME_SPEED_SCALE}x) as much distance per tick as Campaign Mode (campaign moved ${campaignDist}, standard moved ${standardDist})`);
-    }
-    // Concretely: crossing the minimum gap between two neighboring planets should
-    // take on the order of minutes of continuous travel, not most of an hour.
-    const secondsToCoverMinSeparation = PLANET_MIN_SEPARATION / (standardDist * 60); // standardDist is distance covered in one 1/60s tick
-    if (secondsToCoverMinSeparation > 900) {
-        problems.push(`expected a mid-speed ship to cross PLANET_MIN_SEPARATION in well under 15 real minutes of continuous travel, got ~${(secondsToCoverMinSeparation / 60).toFixed(1)} minutes`);
-    }
-    return problems;
-});
-
 check('Fortified Defenses: +50% Defense Gun range and damage', () => {
     const homeIsland = new Island(0, 0, 0);
     const home = new Country(0, 'FortifiedTest', '#ff0000', homeIsland, true);
@@ -4769,18 +4738,19 @@ check('a real initGame() run keeps the Galaxy Core and Galaxy Bounty clear of ev
 // have to use the real, dynamic getGalaxyBounds() instead, since Standard
 // Game planets can land well outside that fixed box.
 
-check('PLANET_SPREAD_MULTIPLIER scales PLANET_MIN_SEPARATION off the map\'s LARGER dimension, and sits within the requested (compounded) 20-40x range', () => {
-    // Follow-up direct report (2026-09-04): "I still think these planets are
-    // too close... Lets spread them out 5-10 times futhrur away". Compounds on
-    // the previous 4x (same "X times further than they are now" phrasing, read
-    // the same way both times) - 4 * (5 to 10) = 20 to 40 total.
+check('PLANET_SPREAD_MULTIPLIER scales PLANET_MIN_SEPARATION off the map\'s LARGER dimension, and sits within the requested 3-5x range', () => {
+    // Original direct report (2026-09-04): "I want them to be 3-5 times futhrur
+    // away from each other as they are now." A later follow-up briefly
+    // compounded this to 30 (a further 5-10x on top), but that made the galaxy
+    // large enough that ships took the better part of an hour to cross it -
+    // reset back to this original 3-5x range per direct request (2026-09-07).
     const problems = [];
     const expected = Math.max(MAP_WIDTH, MAP_HEIGHT) * 0.12 * PLANET_SPREAD_MULTIPLIER;
     if (Math.abs(PLANET_MIN_SEPARATION - expected) > 1) {
         problems.push(`expected PLANET_MIN_SEPARATION to scale off the larger dimension by PLANET_SPREAD_MULTIPLIER, got ${PLANET_MIN_SEPARATION} vs expected ${expected}`);
     }
-    if (PLANET_SPREAD_MULTIPLIER < 20 || PLANET_SPREAD_MULTIPLIER > 40) {
-        problems.push(`expected PLANET_SPREAD_MULTIPLIER within the requested compounded 20-40x range, got ${PLANET_SPREAD_MULTIPLIER}`);
+    if (PLANET_SPREAD_MULTIPLIER < 3 || PLANET_SPREAD_MULTIPLIER > 5) {
+        problems.push(`expected PLANET_SPREAD_MULTIPLIER within the requested 3-5x range, got ${PLANET_SPREAD_MULTIPLIER}`);
     }
     return problems;
 });
@@ -5383,77 +5353,12 @@ check('applySaveData() falls back to a country\'s existing exploredRegions (not 
     return problems;
 });
 
-check('#ui side panel CSS can never geometrically overlap the minimap\'s on-screen rectangle (a real DOM element painted over the canvas would black out the minimap regardless of any fog-of-war/canvas code)', () => {
-    const uiCssMatch = html.match(/#ui\s*\{([^}]*)\}/);
-    const problems = [];
-    if (!uiCssMatch) {
-        problems.push('could not find #ui CSS block at all');
-        return problems;
-    }
-    const uiCss = uiCssMatch[1].replace(/\/\*[\s\S]*?\*\//g, ''); // strip comments before reading declarations - a comment mentioning old px values would otherwise be matched instead of the real rule
-    const topMatch = uiCss.match(/top:\s*(\d+)px/);
-    const rightMatch = uiCss.match(/right:\s*(\d+)px/);
-    const widthMatch = uiCss.match(/width:\s*(\d+)px/);
-    if (!topMatch || !rightMatch || !widthMatch) {
-        problems.push(`expected #ui to declare numeric top/right/width in px, got: ${uiCss}`);
-        return problems;
-    }
-    const uiTop = Number(topMatch[1]);
-    const uiRight = Number(rightMatch[1]);
-    const uiWidth = Number(widthMatch[1]);
-    // Same coordinate space both boxes are anchored in: distance from the
-    // viewport's right edge, and from its top edge. Minimap box, per
-    // minimapBounds()/MINIMAP_* constants (both sides assumed <= canvas.width,
-    // which always holds for a fullscreen canvas):
-    //   right-edge distance: MINIMAP_MARGIN_RIGHT .. MINIMAP_MARGIN_RIGHT+MINIMAP_WIDTH
-    //   top-edge distance:   MINIMAP_MARGIN_TOP .. MINIMAP_MARGIN_TOP+MINIMAP_HEIGHT
-    const mmRightNear = MINIMAP_MARGIN_RIGHT;
-    const mmRightFar = MINIMAP_MARGIN_RIGHT + MINIMAP_WIDTH;
-    const mmTopNear = MINIMAP_MARGIN_TOP;
-    const mmTopFar = MINIMAP_MARGIN_TOP + MINIMAP_HEIGHT;
-    const uiRightNear = uiRight;
-    const uiRightFar = uiRight + uiWidth;
-    // Two ranges measured from the same edge overlap unless one is fully
-    // above/below (here: further from the edge than) the other.
-    const horizontallyOverlaps = uiRightNear < mmRightFar && mmRightNear < uiRightFar;
-    const verticallyOverlaps = uiTop < mmTopFar; // #ui's box extends downward from its top with no fixed bottom
-    if (horizontallyOverlaps && verticallyOverlaps) {
-        problems.push(`#ui (top:${uiTop}px, right:${uiRight}..${uiRight + uiWidth}px) overlaps the minimap (top:${mmTopNear}..${mmTopFar}px, right:${mmRightNear}..${mmRightFar}px) - opening the panel would black out the minimap`);
-    }
-    return problems;
-});
-
-check('#ui side panel CSS leaves enough room above #controls (the HOME/VIEW ALL buttons) that they can never overlap (both are fixed and share the same right edge; #controls is later in the DOM so it paints over #ui wherever they collide, hiding whatever of the panel is underneath)', () => {
-    const uiCssMatch = html.match(/#ui\s*\{([^}]*)\}/);
-    const controlsCssMatch = html.match(/#controls\s*\{([^}]*)\}/);
-    const problems = [];
-    if (!uiCssMatch || !controlsCssMatch) {
-        problems.push(`could not find ${!uiCssMatch ? '#ui' : '#controls'} CSS block`);
-        return problems;
-    }
-    const uiCss = uiCssMatch[1].replace(/\/\*[\s\S]*?\*\//g, '');
-    const controlsCss = controlsCssMatch[1].replace(/\/\*[\s\S]*?\*\//g, '');
-    const uiBottomMatch = uiCss.match(/bottom:\s*(\d+)px/);
-    const controlsBottomMatch = controlsCss.match(/bottom:\s*(\d+)px/);
-    if (!uiBottomMatch) {
-        problems.push('expected #ui to anchor a fixed `bottom` (not just a hand-picked max-height) so its actual height self-adjusts to any viewport instead of potentially reaching past #controls');
-        return problems;
-    }
-    if (!controlsBottomMatch) {
-        problems.push('expected #controls to declare a numeric bottom in px');
-        return problems;
-    }
-    const uiBottom = Number(uiBottomMatch[1]);
-    const controlsBottom = Number(controlsBottomMatch[1]);
-    // #controls is a compact two-button row (~50-56px tall including its own
-    // padding/border at default font size) - require enough clearance above
-    // it for that, not just a token 1px gap.
-    const MIN_CLEARANCE = 60;
-    if (uiBottom - controlsBottom < MIN_CLEARANCE) {
-        problems.push(`#ui stops ${uiBottom}px above the viewport bottom, #controls starts ${controlsBottom}px above it - only ${uiBottom - controlsBottom}px of clearance, expected at least ${MIN_CLEARANCE}px so #controls' own height doesn't reach up into #ui`);
-    }
-    return problems;
-});
+// Removed 2026-09-07 per direct report: two 2026-09-05 tests here asserted
+// #ui (the build/unit menu panel) could never overlap the minimap, and must
+// anchor a fixed `bottom` clear of #controls. Both codified a "fix" for
+// behavior that was actually intended - the panel opening on top of the
+// minimap - so #ui was reverted to its original top:60px/max-height:85vh box
+// (see its own CSS comment) and these two checks no longer apply.
 
 report();
 process.exit(failures.length > 0 ? 1 : 0);
