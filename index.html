@@ -658,7 +658,7 @@
              immediately obvious whether a fresh version actually loaded,
              without anyone needing to check dev tools or guess from behavior
              alone. Bump this string whenever a real change ships. -->
-        <div style="position: fixed; bottom: 6px; right: 10px; color: #2a5a2a; font-size: 11px; font-family: 'Courier New', monospace; z-index: 99999; pointer-events: none;">Build 2026-09-08-f</div>
+        <div style="position: fixed; bottom: 6px; right: 10px; color: #2a5a2a; font-size: 11px; font-family: 'Courier New', monospace; z-index: 99999; pointer-events: none;">Build 2026-09-08-g</div>
 
         <div id="startScreen">
             <div class="brandMark">
@@ -3296,13 +3296,6 @@
 
                     let speed = UNIT_SPEEDS[this.type] || 2;
 
-                    // See STANDARD_GAME_SPEED_SCALE's own comment - pure travel speed
-                    // only, weapon range/damage/HP are untouched, so close-quarters
-                    // combat math doesn't change, only how long it takes to get there.
-                    if (!gameState.campaignActive) {
-                        speed *= STANDARD_GAME_SPEED_SCALE;
-                    }
-
                     const countryBonus = COUNTRY_BONUSES[this.countryId];
                     if (countryBonus && countryBonus.speedMultiplier[this.type]) {
                         speed *= countryBonus.speedMultiplier[this.type];
@@ -4700,33 +4693,6 @@
         // PLANET_SPREAD_MULTIPLIER was. A true square box (both axes sized off
         // the larger dimension) fixes that at the source.
         const PLANET_MIN_SEPARATION = Math.max(MAP_WIDTH, MAP_HEIGHT) * 0.12 * PLANET_SPREAD_MULTIPLIER;
-
-        // Direct report (2026-09-08): repeated "nobody has attacked me" reports at
-        // increasingly early turns even after two real fixes that day (the
-        // nearest-attacker guarantee, and weighting AI builds toward types that can
-        // actually damage a building - see BUILDING_ATTACKER_TYPES). Measured live
-        // against the real deployed site, 8 full games: units were reliably built
-        // and correctly aimed at the player from turn 1, but with real nearest-
-        // neighbor distances of ~80,000-150,000 and unscaled travel speeds (a
-        // mid-speed ship covers roughly 150 units/second), a straight-line trip
-        // took 9-17 minutes of continuous travel - matching what was actually
-        // measured: only 5 of 8 real games landed any home damage within 10 turns
-        // at all. Travel time, not build/attack roll frequency (already fixed), is
-        // the remaining bottleneck. Scales Standard Game/hot-seat travel speed
-        // only (Campaign Mode's own compact layout keeps its original pacing -
-        // see the campaignActive check where this is applied).
-        //
-        // 3x wasn't quite enough margin on its own - a follow-up 12-game sample at
-        // 3x still had one outlier landing first damage on turn 7, right at the
-        // exact turn the report was made on. Bumped to 4x and re-sampled 12 more
-        // real games: first home damage landed on turn 2-5 in 11 of them, one
-        // outlier on turn 7. Some spread is inherent to a randomized galaxy - a
-        // few games will always start with a genuinely farther-apart nearest
-        // neighbor than most - not something further speed tuning alone
-        // eliminates without becoming absurd. This is a real, measured
-        // improvement (median around turn 3-4, worst case seen turn 7), not a
-        // guarantee that turn 7 can never happen again.
-        const STANDARD_GAME_SPEED_SCALE = 4;
 
         // Distance from galaxy center to the farthest planet's island - used by
         // spawnGalaxyCore()/spawnGalaxyBounty() to place their landmark just outside
