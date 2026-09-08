@@ -51,6 +51,7 @@
     "huntApproachPosition",
     "initAudio",
     "initGame",
+    "isGroundUnitInCargo",
     "isOnMinimap",
     "isPointRevealed",
     "lightenRgb",
