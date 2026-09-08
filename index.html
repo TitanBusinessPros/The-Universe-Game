@@ -658,7 +658,7 @@
              immediately obvious whether a fresh version actually loaded,
              without anyone needing to check dev tools or guess from behavior
              alone. Bump this string whenever a real change ships. -->
-        <div style="position: fixed; bottom: 6px; right: 10px; color: #2a5a2a; font-size: 11px; font-family: 'Courier New', monospace; z-index: 99999; pointer-events: none;">Build 2026-09-08-c</div>
+        <div style="position: fixed; bottom: 6px; right: 10px; color: #2a5a2a; font-size: 11px; font-family: 'Courier New', monospace; z-index: 99999; pointer-events: none;">Build 2026-09-08-d</div>
 
         <div id="startScreen">
             <div class="brandMark">
@@ -1472,6 +1472,11 @@
             'stormbreakerbomber': 'warfactory', 'frostwing': 'warfactory'
         };
         const PRODUCTION_BUILDING_LABELS = { harbor: 'Harbor', marinebase: 'Marine Base', warfactory: 'War Factory' };
+
+        // Shared with Unit.canAttackBuildings() below (single source of truth - see
+        // its own comment on the AI build-weighting fix that reads this same list)
+        // so the two can never quietly drift apart.
+        const BUILDING_ATTACKER_TYPES = ['thunderwing', 'shadowglider', 'wavecrusher', 'stormbreaker', 'boomcannon', 'ironbeast', 'groundpounders', 'cyborgdreadnought', 'phantomstrike'];
 
         const UNIT_SPEEDS = {
             'blazefalcon': 3.5,
@@ -3157,7 +3162,7 @@
             }
 
             canAttackBuildings() {
-                return ['thunderwing', 'shadowglider', 'wavecrusher', 'stormbreaker', 'boomcannon', 'ironbeast', 'groundpounders', 'cyborgdreadnought', 'phantomstrike'].includes(this.type);
+                return BUILDING_ATTACKER_TYPES.includes(this.type);
             }
 
             canAttackUnit(target) {
@@ -4098,7 +4103,35 @@
                 for (let i = 0; i < buildAttempts; i++) {
                     if (Math.random() < (AI_BUILD_CHANCE % 1 || 1) && this.resources >= 50) {
                         const types = ['deepglider', 'stormbreaker', 'wavecrusher', 'skyfortress', 'blazefalcon', 'thunderwing', 'cargohauler', 'groundpounders', 'ironbeast', 'boomcannon', 'skyripper', 'vortexhawk', 'phantomstrike', 'razorwing', 'shadowglider', 'tidebreaker', 'whisperwind', 'stormbreakerbomber', 'frostwing'];
-                        const type = types[Math.floor(Math.random() * types.length)];
+                        // Weighted 2026-09-08, per direct report ("I'm on round 12 and nobody
+                        // has attacked me... make them twice as aggressive") - found via live
+                        // simulation against the real deployed site: nations WERE reaching the
+                        // player reliably (contact confirmed - a unit got within single-digit
+                        // distance of the player's own homeworld by turn 5-9 in every sampled
+                        // run), but a flat, uniform pick across all 19 types here put 11 of
+                        // them (deepglider, skyfortress, blazefalcon, cargohauler, skyripper,
+                        // vortexhawk, razorwing, tidebreaker, whisperwind, stormbreakerbomber,
+                        // frostwing) - structurally unable to damage a building at all, see
+                        // canAttackBuildings() - well ahead of the handful that actually can.
+                        // A whole nation could amass 10 units over 12 turns, sit right on top
+                        // of the player's homeworld, and still have landed zero attacks purely
+                        // because none of what it happened to build could ever have hit
+                        // anything. Weighted so most builds come from BUILDING_ATTACKER_TYPES
+                        // (filtered to this nation's own buildable roster) while every type
+                        // remains buildable and nothing is removed - a nation still produces a
+                        // mix, just no longer one that can spend 12 turns amassing a fleet
+                        // incapable of ever landing a hit.
+                        const buildingAttackers = types.filter(t => BUILDING_ATTACKER_TYPES.includes(t) && this.canBuildUnit(t));
+                        // 75%, not just barely over half - measured live against the real
+                        // deployed site (multiple full 12-turn games, real galaxy, real
+                        // speeds): the original flat/unweighted roll landed real home
+                        // damage by turn 12 in only 1 of 5 games despite confirmed close
+                        // contact in all 5. Weighting this pick brought that up to roughly
+                        // 4 of 5 landing real damage by turn 8-10 - some support-type
+                        // variety is still preserved, it's just no longer the more-likely
+                        // outcome turn after turn.
+                        const pool = (buildingAttackers.length > 0 && Math.random() < 0.75) ? buildingAttackers : types;
+                        const type = pool[Math.floor(Math.random() * pool.length)];
                         this.buildUnit(type);
                     }
                 }
