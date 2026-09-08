@@ -658,7 +658,7 @@
              immediately obvious whether a fresh version actually loaded,
              without anyone needing to check dev tools or guess from behavior
              alone. Bump this string whenever a real change ships. -->
-        <div style="position: fixed; bottom: 6px; right: 10px; color: #2a5a2a; font-size: 11px; font-family: 'Courier New', monospace; z-index: 99999; pointer-events: none;">Build 2026-09-07-a</div>
+        <div style="position: fixed; bottom: 6px; right: 10px; color: #2a5a2a; font-size: 11px; font-family: 'Courier New', monospace; z-index: 99999; pointer-events: none;">Build 2026-09-08-a</div>
 
         <div id="startScreen">
             <div class="brandMark">
@@ -2921,6 +2921,22 @@
             }
         }
 
+        // A ground unit currently loaded into some cargohauler's cargo isn't really
+        // "out in the world" right now - it's in cargo storage, along for the ride,
+        // with its own x/y left stale at wherever it was when it boarded. Unit.draw()
+        // has always known to hide it on the main map for exactly this reason,
+        // but drawMinimap() had its own separate unit-dot loop that never got the
+        // same check - a ground unit sent off via cargohauler kept a dot frozen at
+        // its old pickup spot on the minimap the whole trip, never appearing to
+        // have gone anywhere, per direct report ("troops no longer appear on the
+        // minimap when sent anywhere"). Shared here so both places stay in sync.
+        function isGroundUnitInCargo(unit) {
+            if (!unit.isGroundUnit()) return false;
+            return gameState.countries.some(country =>
+                country.units.some(u => u.type === 'cargohauler' && u.cargo.some(c => c.id === unit.id))
+            );
+        }
+
         class Unit {
             constructor(x, y, type, countryId) {
                 this.x = x;
@@ -3278,19 +3294,8 @@
 
             draw() {
                 if (this.isGroundUnit() && this.isInHarbor) return;
-                
-                if (this.isGroundUnit()) {
-                    let inCargo = false;
-                    gameState.countries.forEach(country => {
-                        country.units.forEach(unit => {
-                            if (unit.type === 'cargohauler' && unit.cargo.some(c => c.id === this.id)) {
-                                inCargo = true;
-                            }
-                        });
-                    });
-                    if (inCargo) return;
-                }
-                
+                if (isGroundUnitInCargo(this)) return;
+
                 if (this.countryId !== gameState.playerCountry.id) {
                     let isVisible = false;
 
@@ -6695,6 +6700,7 @@
                 ctx.fillStyle = '#39ff6a';
                 gameState.playerCountry.units.forEach(unit => {
                     if (unit.isGroundUnit() && unit.isInHarbor) return;
+                    if (isGroundUnitInCargo(unit)) return;
                     const pRaw = worldToMinimap(unit.x, unit.y);
                     const p = {
                         x: Math.max(mmX + 2, Math.min(mmX + MINIMAP_WIDTH - 2, pRaw.x)),
