@@ -46,6 +46,7 @@
     "getEffectiveSightRange",
     "getGalaxyBounds",
     "getLaserColor",
+    "guaranteeNearestAttackersForHumans",
     "hasRadarDetection",
     "healNearGalaxyCores",
     "huntApproachPosition",
