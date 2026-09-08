@@ -127,7 +127,7 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage, assignAttackTargets, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS, randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER, nearestMinimapLandmark, spawnHotsun, damageNearHotsun, HOTSUN_IMAGE_URL, HOTSUN_SIZE, HOTSUN_RADIATION_RANGE, HOTSUN_DAMAGE_PERCENT, PLANET_SCALE, updateFogOfWar, toggleFogOfWar, drawMinimap, isPointRevealed, revealRegion, drawFogOfWarOverlay, isGroundUnitInCargo, ctx };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage, assignAttackTargets, guaranteeNearestAttackersForHumans, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS, randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER, nearestMinimapLandmark, spawnHotsun, damageNearHotsun, HOTSUN_IMAGE_URL, HOTSUN_SIZE, HOTSUN_RADIATION_RANGE, HOTSUN_DAMAGE_PERCENT, PLANET_SCALE, updateFogOfWar, toggleFogOfWar, drawMinimap, isPointRevealed, revealRegion, drawFogOfWarOverlay, isGroundUnitInCargo, ctx };',
     context,
     { filename: 'grab-refs.js' }
 );
@@ -158,7 +158,7 @@ const {
     getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR,
     getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground,
     whenImagesReady, spaceElements, loadMineImage, mineImage,
-    assignAttackTargets, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS,
+    assignAttackTargets, guaranteeNearestAttackersForHumans, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS,
     randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER,
     nearestMinimapLandmark, spawnHotsun, damageNearHotsun, HOTSUN_IMAGE_URL, HOTSUN_SIZE, HOTSUN_RADIATION_RANGE, HOTSUN_DAMAGE_PERCENT, PLANET_SCALE,
     updateFogOfWar, toggleFogOfWar, drawMinimap, isPointRevealed, revealRegion, drawFogOfWarOverlay, isGroundUnitInCargo, ctx
@@ -4458,6 +4458,117 @@ check('assignAttackTargets() is safe with no alien nations in the roster (regula
     gameState.countries.forEach(c => {
         if (c.attackTargetIds.length !== 1) problems.push(`expected nation ${c.id} to still get exactly 1 rival target with no aliens present, got ${JSON.stringify(c.attackTargetIds)}`);
     });
+    return problems;
+});
+
+// Direct report (2026-09-08): "only the aliens are attacking me. I dont see
+// another nation and I am on stage 20... this might be due to the enemy
+// planet being too far away to make it there." See assignAttackTargets()'s
+// own comment on the human-guarantee step added below the general pairing.
+check("guaranteeNearestAttackersForHumans() gives a human player's actual nearest living regular nation attacks them, even when assignAttackTargets()'s general nearest-first bijection pairs that nation with someone else instead", () => {
+    const problems = [];
+    // Adversarial layout: player's own truly-nearest neighbor is A (10,000
+    // away), but A's mutual nearest is B (1,000 away, closer to A than the
+    // player is) - the general bijection's greedy pass claims A<->B first,
+    // leaving the player matched with some other, far leftover nation. Without
+    // the guarantee, A would never be told to attack the player at all.
+    const player = new Country(0, 'Player', '#fff', new Island(0, 0, 0), true);
+    const a = new Country(1, 'A', '#fff', new Island(10000, 0, 1), false);
+    const b = new Country(2, 'B', '#fff', new Island(11000, 0, 2), false);
+    const farAway = new Country(3, 'Far', '#fff', new Island(9000000, 0, 3), false);
+    gameState.countries = [player, a, b, farAway];
+    assignAttackTargets();
+    guaranteeNearestAttackersForHumans();
+
+    if (a.attackTargetIds.includes(1)) problems.push('test setup invalid - A should not be able to target itself');
+    if (!a.attackTargetIds.includes(0)) {
+        problems.push(`expected A (the player's real nearest neighbor) to be guaranteed to attack the player (id 0), got A -> ${JSON.stringify(a.attackTargetIds)}`);
+    }
+    return problems;
+});
+
+check("guaranteeNearestAttackersForHumans() gives a human player's actual nearest living alien nation attacks them too, and never double-adds a target the general pairing already assigned", () => {
+    const problems = [];
+    const player = new Country(0, 'Player', '#fff', new Island(0, 0, 0), true);
+    const rival = new Country(1, 'Rival', '#fff', new Island(5000, 0, 1), false);
+    const nearAlien = new Country(12, 'NearAlien', '#0ff', new Island(500, 0, 12), false);
+    nearAlien.isCyborg = true;
+    const farAlien = new Country(13, 'FarAlien', '#0ff', new Island(9000000, 0, 13), false);
+    farAlien.isCyborg = true;
+    gameState.countries = [player, rival, nearAlien, farAlien];
+    assignAttackTargets();
+    guaranteeNearestAttackersForHumans();
+
+    if (!nearAlien.attackTargetIds.includes(0)) {
+        problems.push(`expected the nearer alien to be guaranteed to attack the player, got ${JSON.stringify(nearAlien.attackTargetIds)}`);
+    }
+    // The round-robin above already gives every regular nation exactly one
+    // alien attacker - with only 2 regular nations and 2 aliens here, the
+    // player already gets one alien attacker from that pass alone. The
+    // guarantee must not have pushed a SECOND, duplicate copy of id 0 onto
+    // whichever alien already had it.
+    const totalPlayerEntries = [nearAlien, farAlien].reduce((n, c) => n + c.attackTargetIds.filter(id => id === 0).length, 0);
+    if (totalPlayerEntries !== 1) {
+        problems.push(`expected the player to appear exactly once total across both aliens' target lists, got ${totalPlayerEntries} (nearAlien: ${JSON.stringify(nearAlien.attackTargetIds)}, farAlien: ${JSON.stringify(farAlien.attackTargetIds)})`);
+    }
+    return problems;
+});
+
+check('guaranteeNearestAttackersForHumans() covers every human seat in hot-seat (isPlayer on more than one country), not just a single gameState.playerCountry', () => {
+    const problems = [];
+    const human1 = new Country(0, 'Human1', '#fff', new Island(0, 0, 0), true);
+    const human2 = new Country(1, 'Human2', '#fff', new Island(9000000, 0, 1), true);
+    const nearHuman1 = new Country(2, 'NearH1', '#fff', new Island(2000, 0, 2), false);
+    const nearHuman2 = new Country(3, 'NearH2', '#fff', new Island(9002000, 0, 3), false);
+    gameState.countries = [human1, human2, nearHuman1, nearHuman2];
+    assignAttackTargets();
+    guaranteeNearestAttackersForHumans();
+
+    if (!nearHuman1.attackTargetIds.includes(0)) problems.push(`expected the nation nearest Human1 to be guaranteed to attack them, got ${JSON.stringify(nearHuman1.attackTargetIds)}`);
+    if (!nearHuman2.attackTargetIds.includes(1)) problems.push(`expected the nation nearest Human2 to be guaranteed to attack them, got ${JSON.stringify(nearHuman2.attackTargetIds)}`);
+    return problems;
+});
+
+check('guaranteeNearestAttackersForHumans() is a no-op when no country is isPlayer yet (assignAttackTargets() itself runs at page load, before any nation is chosen - this must not silently do nothing forever, it must be called again once isPlayer is actually set)', () => {
+    const problems = [];
+    const a = new Country(0, 'A', '#fff', new Island(0, 0, 0), false);
+    const b = new Country(1, 'B', '#fff', new Island(1000, 0, 1), false);
+    gameState.countries = [a, b];
+    assignAttackTargets();
+    const before = JSON.stringify(gameState.countries.map(c => c.attackTargetIds));
+    guaranteeNearestAttackersForHumans();
+    const after = JSON.stringify(gameState.countries.map(c => c.attackTargetIds));
+    if (before !== after) problems.push(`expected no change with nobody marked isPlayer, got before=${before}, after=${after}`);
+    return problems;
+});
+
+check('startGame() and startHotSeatGame() both call guaranteeNearestAttackersForHumans() after marking isPlayer, so the guarantee actually applies during real play (assignAttackTargets() alone runs too early, at page load, before any nation is chosen)', () => {
+    const startGameSrc = vm.runInContext('startGame.toString()', context);
+    const hotSeatSrc = vm.runInContext('startHotSeatGame.toString()', context);
+    const problems = [];
+    if (!startGameSrc.includes('guaranteeNearestAttackersForHumans()')) problems.push('expected startGame() to call guaranteeNearestAttackersForHumans()');
+    if (!hotSeatSrc.includes('guaranteeNearestAttackersForHumans()')) problems.push('expected startHotSeatGame() to call guaranteeNearestAttackersForHumans()');
+    return problems;
+});
+
+check('reassignEliminatedAttackTargets() picks the NEAREST living candidate to fill a coverage gap, not an arbitrary/random one - keeps the human-nearest-attacker guarantee alive if that attacker later dies', () => {
+    const problems = [];
+    const victim = new Country(0, 'Victim', '#fff', new Island(0, 0, 0), true);
+    const near = new Country(1, 'Near', '#fff', new Island(1000, 0, 1), false);
+    const far = new Country(2, 'Far', '#fff', new Island(9000000, 0, 2), false);
+    const nearAlien = new Country(12, 'NearAlien', '#0ff', new Island(1500, 0, 12), false);
+    nearAlien.isCyborg = true;
+    const farAlien = new Country(13, 'FarAlien', '#0ff', new Island(9500000, 0, 13), false);
+    farAlien.isCyborg = true;
+    gameState.countries = [victim, near, far, nearAlien, farAlien];
+    // No one currently targets the victim at all - simulates its previous
+    // guaranteed-nearest attacker(s) having just died, forcing pass 2's gap-fill.
+    reassignEliminatedAttackTargets();
+
+    if (!near.attackTargetIds.includes(0)) problems.push(`expected the NEAR regular nation to fill the gap, got near -> ${JSON.stringify(near.attackTargetIds)}, far -> ${JSON.stringify(far.attackTargetIds)}`);
+    if (far.attackTargetIds.includes(0)) problems.push('expected the FAR regular nation to be left alone when a nearer candidate exists');
+    if (!nearAlien.attackTargetIds.includes(0)) problems.push(`expected the NEAR alien to fill the gap, got nearAlien -> ${JSON.stringify(nearAlien.attackTargetIds)}, farAlien -> ${JSON.stringify(farAlien.attackTargetIds)}`);
+    if (farAlien.attackTargetIds.includes(0)) problems.push('expected the FAR alien to be left alone when a nearer candidate exists');
     return problems;
 });
 

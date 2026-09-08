@@ -658,7 +658,7 @@
              immediately obvious whether a fresh version actually loaded,
              without anyone needing to check dev tools or guess from behavior
              alone. Bump this string whenever a real change ships. -->
-        <div style="position: fixed; bottom: 6px; right: 10px; color: #2a5a2a; font-size: 11px; font-family: 'Courier New', monospace; z-index: 99999; pointer-events: none;">Build 2026-09-08-a</div>
+        <div style="position: fixed; bottom: 6px; right: 10px; color: #2a5a2a; font-size: 11px; font-family: 'Courier New', monospace; z-index: 99999; pointer-events: none;">Build 2026-09-08-b</div>
 
         <div id="startScreen">
             <div class="brandMark">
@@ -1742,6 +1742,42 @@
             }
         }
 
+        // Direct report (2026-09-08): "only the aliens are attacking me. I dont
+        // see another nation... this might be due to the enemy planet being too
+        // far away to make it there." Root cause: assignAttackTargets()'s greedy
+        // pairing optimizes distances across the WHOLE roster, not specifically
+        // for any one nation - with a couple dozen regular nations in play, a
+        // human's own actual nearest neighbor can get claimed by an even closer
+        // pair elsewhere before the human's own pairing is ever considered,
+        // leaving the human's sole assigned rival far across the galaxy
+        // (functionally unreachable in a normal session) while the separately-
+        // tracked alien round-robin (which always resolves to a genuinely nearby
+        // alien) keeps reaching them fine - exactly the asymmetry reported.
+        //
+        // NOT folded into assignAttackTargets() itself: that runs once from
+        // initGame(), at page load, before any nation has been chosen (isPlayer
+        // is false on every country at that point) - a guarantee gated on
+        // isPlayer there would silently never fire. This runs instead from every
+        // real "a human is now playing this country" entry point (startGame(),
+        // startHotSeatGame()), once isPlayer is actually set, layered on top of
+        // (never replacing) whatever the general pairing already assigned.
+        function guaranteeNearestAttackersForHumans() {
+            const regularNations = gameState.countries.filter(c => !c.isCyborg && !c.isZoonester && !c.isRoufestreal);
+            const alienNations = gameState.countries.filter(c => c.isCyborg || c.isZoonester || c.isRoufestreal);
+            const livingRegularNow = regularNations.filter(c => c.island.buildings.some(b => !b.destroyed));
+            const livingAlienNow = alienNations.filter(c => c.island.buildings.some(b => !b.destroyed));
+            gameState.countries.filter(c => c.isPlayer).forEach(human => {
+                [livingRegularNow.filter(c => c.id !== human.id), livingAlienNow].forEach(pool => {
+                    if (pool.length === 0) return;
+                    const nearest = pool.reduce((best, c) =>
+                        Math.hypot(c.island.x - human.island.x, c.island.y - human.island.y) <
+                        Math.hypot(best.island.x - human.island.x, best.island.y - human.island.y) ? c : best
+                    );
+                    if (!nearest.attackTargetIds.includes(human.id)) nearest.attackTargetIds.push(human.id);
+                });
+            });
+        }
+
         // Per direct request: "When a planet is defeated the computer will
         // randomly pick another planet to target." Runs every turn (cheap - just
         // id lookups) so a nation's assigned attacker(s) never keep aiming at a
@@ -1782,21 +1818,31 @@
             // balance from assignAttackTargets() is a nice-to-have at game start,
             // not a hard invariant worth leaving anyone permanently unattacked to
             // preserve as nations die off.
+            //
+            // Nearest-first (2026-09-08), not a random pick, same reasoning as
+            // assignAttackTargets()'s own pairing: a human's guaranteed-nearest
+            // attacker (see that function) dying mid-match used to fall back to
+            // a uniformly random replacement here - possibly clear across the
+            // galaxy - quietly undoing that guarantee for the rest of the match.
             const livingRegular = gameState.countries.filter(c =>
                 aliveIds.includes(c.id) && !c.isCyborg && !c.isZoonester && !c.isRoufestreal);
             const livingAlien = gameState.countries.filter(c =>
                 aliveIds.includes(c.id) && (c.isCyborg || c.isZoonester || c.isRoufestreal));
+            const nearestOf = (pool, victim) => pool.reduce((best, c) =>
+                Math.hypot(c.island.x - victim.island.x, c.island.y - victim.island.y) <
+                Math.hypot(best.island.x - victim.island.x, best.island.y - victim.island.y) ? c : best
+            );
 
             livingRegular.forEach(victim => {
                 const hasLivingRegularAttacker = livingRegular.some(a => a.id !== victim.id && a.attackTargetIds.includes(victim.id));
                 if (!hasLivingRegularAttacker && livingRegular.length >= 2) {
                     const candidates = livingRegular.filter(a => a.id !== victim.id);
-                    const attacker = candidates[Math.floor(Math.random() * candidates.length)];
+                    const attacker = nearestOf(candidates, victim);
                     attacker.attackTargetIds.push(victim.id);
                 }
                 const hasLivingAlienAttacker = livingAlien.some(a => a.attackTargetIds.includes(victim.id));
                 if (!hasLivingAlienAttacker && livingAlien.length > 0) {
-                    const attacker = livingAlien[Math.floor(Math.random() * livingAlien.length)];
+                    const attacker = nearestOf(livingAlien, victim);
                     attacker.attackTargetIds.push(victim.id);
                 }
             });
@@ -4843,7 +4889,8 @@
             // without them needing a separate "am I in hot-seat mode" branch.
             gameState.humanCountryIds = [gameState.countries[countryIdx].id];
             gameState.activeHumanSeatIndex = 0;
-            
+            guaranteeNearestAttackersForHumans();
+
             // Hide country selection and show video
             document.getElementById('startScreen').style.display = 'none';
             document.getElementById('singleMapSetup').style.display = 'none';
@@ -4880,6 +4927,7 @@
             gameState.activeHumanSeatIndex = 0;
             gameState.playerCountry = gameState.countries.find(c => c.id === ids[0]);
             gameState.selectedCountryIdx = countryIndices[0];
+            guaranteeNearestAttackersForHumans();
 
             document.getElementById('startScreen').style.display = 'none';
             document.getElementById('singleMapSetup').style.display = 'none';
