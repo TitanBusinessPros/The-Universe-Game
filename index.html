@@ -658,7 +658,7 @@
              immediately obvious whether a fresh version actually loaded,
              without anyone needing to check dev tools or guess from behavior
              alone. Bump this string whenever a real change ships. -->
-        <div style="position: fixed; bottom: 6px; right: 10px; color: #2a5a2a; font-size: 11px; font-family: 'Courier New', monospace; z-index: 99999; pointer-events: none;">Build 2026-09-08-g</div>
+        <div style="position: fixed; bottom: 6px; right: 10px; color: #2a5a2a; font-size: 11px; font-family: 'Courier New', monospace; z-index: 99999; pointer-events: none;">Build 2026-09-08-h</div>
 
         <div id="startScreen">
             <div class="brandMark">
@@ -1477,6 +1477,10 @@
         // its own comment on the AI build-weighting fix that reads this same list)
         // so the two can never quietly drift apart.
         const BUILDING_ATTACKER_TYPES = ['thunderwing', 'shadowglider', 'wavecrusher', 'stormbreaker', 'boomcannon', 'ironbeast', 'groundpounders', 'cyborgdreadnought', 'phantomstrike'];
+
+        // Shared with Unit.isGroundUnit() below, same reasoning as BUILDING_ATTACKER_TYPES
+        // just above - a single source of truth so the two can never drift apart.
+        const GROUND_UNIT_TYPES = ['groundpounders', 'ironbeast', 'boomcannon'];
 
         const UNIT_SPEEDS = {
             'blazefalcon': 3.5,
@@ -3047,7 +3051,7 @@
             }
 
             isGroundUnit() {
-                return ['groundpounders', 'ironbeast', 'boomcannon'].includes(this.type);
+                return GROUND_UNIT_TYPES.includes(this.type);
             }
 
             // Was isNaval() - "naval" doesn't fit a space game. isVessel() covers the same
@@ -4098,6 +4102,39 @@
                 // "send it to the nearest live deposit" order here would fight the
                 // harbor-return trip once cargo fills up (this block doesn't know a ship
                 // is deliberately away from any deposit heading to unload).
+
+                // Direct report (2026-09-08): "I best have me some enemies by turn 7" -
+                // with travel speed staying untouched (explicitly off-limits per direct
+                // instruction - see STANDARD_GAME_SPEED_SCALE's removal the same day),
+                // the only remaining lever is how soon a nation guaranteed to hunt a
+                // human (see guaranteeNearestAttackersForHumans()) gets its FIRST
+                // attack-capable unit built and moving, instead of leaving that to the
+                // same per-turn AI_BUILD_CHANCE roll as everything else - at Normal's
+                // 1.6, that first roll can still fail several turns running before
+                // resources and luck line up. Bypasses the roll (not the resource cost)
+                // for exactly this one case: a nation with a human in attackTargetIds
+                // that doesn't yet have a single living BUILDING_ATTACKER_TYPES unit
+                // gets a guaranteed extra build attempt every turn until it has one, so
+                // the trip can start turn 1-2 instead of turn 3-5+. Doesn't change how
+                // fast that unit then travels at all.
+                if (!gameState.campaignActive && (this.attackTargetIds || []).some(id => {
+                    const t = gameState.countries.find(c => c.id === id);
+                    return t && t.isPlayer;
+                })) {
+                    // Ground troop types are excluded from the rush pool - they can't fly
+                    // there on their own (see isGroundUnit()/Harbor system), so building one
+                    // wouldn't get anything moving any sooner, just spend the resources.
+                    const hasAttacker = this.units.some(u => BUILDING_ATTACKER_TYPES.includes(u.type) && !u.isGroundUnit() && u.hp > 0);
+                    if (!hasAttacker && this.resources >= 50) {
+                        // cyborgdreadnought excluded too - it's alien-only, spawned directly by
+                        // aiTurn() elsewhere, never through buildUnit() (see UNIT_BUILDING_REQUIREMENTS'
+                        // own comment) - canBuildUnit() would say yes (no building-requirement
+                        // entry to check), but buildUnit() has no cost for it and silently no-ops.
+                        const rushTypes = BUILDING_ATTACKER_TYPES.filter(t =>
+                            t !== 'cyborgdreadnought' && !GROUND_UNIT_TYPES.includes(t) && this.canBuildUnit(t));
+                        if (rushTypes.length > 0) this.buildUnit(rushTypes[Math.floor(Math.random() * rushTypes.length)]);
+                    }
+                }
 
                 const buildAttempts = AI_BUILD_CHANCE > 1.0 ? Math.ceil(AI_BUILD_CHANCE) : 1;
                 for (let i = 0; i < buildAttempts; i++) {
