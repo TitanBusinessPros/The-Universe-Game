@@ -308,6 +308,45 @@ check("aiTurn()'s build-type pick is weighted toward BUILDING_ATTACKER_TYPES, no
     return problems;
 });
 
+// Direct report (2026-09-08): "I best have me some enemies by turn 7... or I
+// am going on another review bomb campaign" - arrived right after travel
+// speed was reverted to unscaled per a separate, explicit "don't touch my
+// speed" instruction. With speed off-limits, the only remaining lever is how
+// soon a nation already hunting a human actually gets its first
+// independently-mobile attacker built, instead of leaving that to the same
+// per-turn AI_BUILD_CHANCE roll as everything else.
+check("aiTurn() guarantees an independently-mobile BUILDING_ATTACKER_TYPES unit gets built for a nation already hunting a human, even when AI_BUILD_CHANCE's normal roll is set to all but never fire (build-TIMING fix, not a travel-speed change - travel speed is untouched, see its own removal)", () => {
+    const problems = [];
+    const human = new Country(0, 'RushTestHuman', '#fff', new Island(0, 0, 0), true);
+    const rival = new Country(1, 'RushTestRival', '#fff', new Island(100000, 0, 1), false);
+    rival.attackTargetIds = [0]; // already assigned to hunt the human
+    rival.resources = 1000000;
+    gameState.countries = [human, rival];
+
+    vm.runInContext('AI_BUILD_CHANCE = 0.0001;', context); // the normal roll should never fire here
+    rival.aiTurn();
+    vm.runInContext('AI_BUILD_CHANCE = DIFFICULTY_PRESETS.normal.build;', context);
+
+    const attacker = rival.units.find(u => BUILDING_ATTACKER_TYPES.includes(u.type) && !u.isGroundUnit());
+    if (!attacker) problems.push(`expected a guaranteed independently-mobile attacker despite AI_BUILD_CHANCE being effectively zero, got units: ${JSON.stringify(rival.units.map(u => u.type))}`);
+    if (rival.units.some(u => u.isGroundUnit())) problems.push('rush build should never pick a ground troop type - it cannot fly to the human on its own (needs separate Cargohauler transport)');
+    return problems;
+});
+
+check("aiTurn()'s guaranteed rush build does nothing for a nation with no human in attackTargetIds, or one that already has an independently-mobile attacker", () => {
+    const problems = [];
+    const rival = new Country(0, 'NoRushTest', '#fff', new Island(0, 0, 0), false);
+    const otherAi = new Country(1, 'OtherAi', '#fff', new Island(100000, 0, 1), false);
+    rival.attackTargetIds = [1]; // hunting another AI, not a human
+    rival.resources = 1000000;
+    gameState.countries = [rival, otherAi];
+    vm.runInContext('AI_BUILD_CHANCE = 0.0001; AI_MOVEMENT_CHANCE = 0; AI_ATTACK_CHANCE = 0;', context);
+    rival.aiTurn();
+    vm.runInContext('AI_BUILD_CHANCE = DIFFICULTY_PRESETS.normal.build; AI_MOVEMENT_CHANCE = DIFFICULTY_PRESETS.normal.movement; AI_ATTACK_CHANCE = DIFFICULTY_PRESETS.normal.attack;', context);
+    if (rival.units.length > 0) problems.push(`expected no guaranteed build for a nation with no human target, got units: ${JSON.stringify(rival.units.map(u => u.type))}`);
+    return problems;
+});
+
 // ---------- 4. Difficulty presets must stay strictly ordered ----------
 //    Easy must be easier than Normal must be easier than Hard on every shared
 //    numeric dial. A crossover here silently makes "Hard" easier than "Easy".
