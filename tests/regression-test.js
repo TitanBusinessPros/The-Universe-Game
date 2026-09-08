@@ -4960,19 +4960,22 @@ check('a real initGame() run keeps the Galaxy Core and Galaxy Bounty clear of ev
 // have to use the real, dynamic getGalaxyBounds() instead, since Standard
 // Game planets can land well outside that fixed box.
 
-check('PLANET_SPREAD_MULTIPLIER scales PLANET_MIN_SEPARATION off the map\'s LARGER dimension, and sits within the requested 3-5x range', () => {
+check('PLANET_SPREAD_MULTIPLIER scales PLANET_MIN_SEPARATION off the map\'s LARGER dimension, and sits within the current requested range', () => {
     // Original direct report (2026-09-04): "I want them to be 3-5 times futhrur
     // away from each other as they are now." A later follow-up briefly
     // compounded this to 30 (a further 5-10x on top), but that made the galaxy
     // large enough that ships took the better part of an hour to cross it -
-    // reset back to this original 3-5x range per direct request (2026-09-07).
+    // reset back to 4 per direct request (2026-09-07), then halved again to 2
+    // (2026-09-08: "Shrink the map size by half so it enemies will arrive
+    // faster") once travel speed was confirmed off-limits and a build-timing
+    // fix alone wasn't enough to reliably land contact by turn 7.
     const problems = [];
     const expected = Math.max(MAP_WIDTH, MAP_HEIGHT) * 0.12 * PLANET_SPREAD_MULTIPLIER;
     if (Math.abs(PLANET_MIN_SEPARATION - expected) > 1) {
         problems.push(`expected PLANET_MIN_SEPARATION to scale off the larger dimension by PLANET_SPREAD_MULTIPLIER, got ${PLANET_MIN_SEPARATION} vs expected ${expected}`);
     }
-    if (PLANET_SPREAD_MULTIPLIER < 3 || PLANET_SPREAD_MULTIPLIER > 5) {
-        problems.push(`expected PLANET_SPREAD_MULTIPLIER within the requested 3-5x range, got ${PLANET_SPREAD_MULTIPLIER}`);
+    if (PLANET_SPREAD_MULTIPLIER < 1.5 || PLANET_SPREAD_MULTIPLIER > 2.5) {
+        problems.push(`expected PLANET_SPREAD_MULTIPLIER within the current requested ~2x range, got ${PLANET_SPREAD_MULTIPLIER}`);
     }
     return problems;
 });

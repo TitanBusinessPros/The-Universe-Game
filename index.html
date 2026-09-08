@@ -658,7 +658,7 @@
              immediately obvious whether a fresh version actually loaded,
              without anyone needing to check dev tools or guess from behavior
              alone. Bump this string whenever a real change ships. -->
-        <div style="position: fixed; bottom: 6px; right: 10px; color: #2a5a2a; font-size: 11px; font-family: 'Courier New', monospace; z-index: 99999; pointer-events: none;">Build 2026-09-08-h</div>
+        <div style="position: fixed; bottom: 6px; right: 10px; color: #2a5a2a; font-size: 11px; font-family: 'Courier New', monospace; z-index: 99999; pointer-events: none;">Build 2026-09-08-i</div>
 
         <div id="startScreen">
             <div class="brandMark">
@@ -4704,6 +4704,17 @@
         // large enough that ships took the better part of an hour to cross it -
         // reverted back to this original 4x per direct request, rather than
         // trying to compensate with more speed/sight-range scaling elsewhere.
+        //
+        // Halved again 2026-09-08 ("Shrink the map size by half so it enemies
+        // will arrive faster"), direct follow-up after travel speed was
+        // confirmed off-limits (see UNIT_SPEEDS/Unit.update() - no Standard
+        // Game speed multiplier exists) and a build-timing fix alone wasn't
+        // enough to reliably land contact by turn 7 at this multiplier's real
+        // distances. This is the one remaining lever that doesn't touch speed:
+        // half the multiplier roughly halves PLANET_MIN_SEPARATION and typical
+        // nearest-neighbor distance, which at a fixed travel speed roughly
+        // halves travel TIME too.
+        //
         // Deliberately NOT done by growing
         // MAP_WIDTH/MAP_HEIGHT/GALAXY_SPACING_SCALE themselves - those also drive
         // Campaign mode's own layout (campaignNationPosition() reads MAP_WIDTH/
@@ -4715,8 +4726,8 @@
         // that spacing, and the spread area below scales by the square of this
         // same multiplier, so the ratio - and therefore how comfortably
         // randomSpreadPosition() can actually satisfy the minimum - stays
-        // unchanged from before this multiplier existed).
-        const PLANET_SPREAD_MULTIPLIER = 4;
+        // unchanged regardless of this multiplier's value).
+        const PLANET_SPREAD_MULTIPLIER = 2;
 
         // How far apart planets must be from one another, at minimum. A fraction
         // of the map's LARGER dimension (not the smaller one, as this used to
