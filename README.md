@@ -49,6 +49,23 @@ file.
 - **Pause** — single-player Standard Game and Campaign only. Not available in
   hot-seat, since mining/research share one real-time clock across every
   human seat; pausing would freeze it for everyone, not just you.
+- **AI targeting** (Standard Game/hot-seat; Campaign Mode has its own
+  hand-placed rival/objective system instead) — `assignAttackTargets()` pairs
+  every regular nation with a nearby rival and a nearby alien attacker via a
+  greedy nearest-first match, then `guaranteeNearestAttackersForHumans()`
+  layers on top to make sure every human player's own actual nearest regular
+  nation and nearest alien are always among their attackers, even if the
+  general pairing gave someone else priority. A nation already hunting a
+  human also gets a guaranteed (non-probabilistic) first build of an
+  independently-mobile attack-capable unit (`BUILDING_ATTACKER_TYPES`), and
+  the AI's regular build roll is weighted 75% toward that same list — most of
+  the 19 buildable unit types can't actually damage a building at all, so an
+  unweighted roll could produce a fleet that reaches the player and never
+  lands a hit. `reassignEliminatedAttackTargets()` keeps all of this valid
+  every turn as nations die off, always preferring the nearest living
+  replacement over a random one. Ship travel speed itself is intentionally
+  left unscaled in Standard Game — if reachability ever feels off again, the
+  fix is elsewhere in this system (or `PLANET_SPREAD_MULTIPLIER`), not speed.
 - Vessel-class ships (`isVessel()`) are the ones that fly through open space
   and collide with planets, as opposed to ground units or aircraft — named
   "vessel" rather than "naval" on purpose, since this is a space game.
