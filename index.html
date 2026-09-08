@@ -658,7 +658,7 @@
              immediately obvious whether a fresh version actually loaded,
              without anyone needing to check dev tools or guess from behavior
              alone. Bump this string whenever a real change ships. -->
-        <div style="position: fixed; bottom: 6px; right: 10px; color: #2a5a2a; font-size: 11px; font-family: 'Courier New', monospace; z-index: 99999; pointer-events: none;">Build 2026-09-08-b</div>
+        <div style="position: fixed; bottom: 6px; right: 10px; color: #2a5a2a; font-size: 11px; font-family: 'Courier New', monospace; z-index: 99999; pointer-events: none;">Build 2026-09-08-c</div>
 
         <div id="startScreen">
             <div class="brandMark">
@@ -1545,14 +1545,26 @@
         // AI turn logic already supports cleanly - values above 1.0 just mean a guaranteed
         // attempt plus a chance at a second one that turn (see buildAttempts/movementAttempts/
         // attackAttempts below), rather than needing a separate code path.
+        //
+        // build/movement/attack/buildingAttack doubled again, across all three difficulties
+        // (2026-09-08, direct report): "I am on move 11 and nobody has attacked me... make
+        // them twice as aggressive." Root cause distinct from the same-day nearest-attacker
+        // fix (see guaranteeNearestAttackersForHumans()) - that guarantees WHO a nation is
+        // assigned to attack, not how quickly it actually acts on it. Even the nation
+        // guaranteed to be your nearest neighbor still has to roll AI_BUILD_CHANCE to
+        // produce a unit, then AI_MOVEMENT_CHANCE to actually send it hunting, once per
+        // 90-second turn - at Normal's old 0.8/0.95, several turns could pass with nothing
+        // built or moved at all before a single unit was even dispatched, on top of however
+        // long that unit then took to travel the distance. specialMult (aliens - already
+        // reaching the player reliably, per the report) deliberately left untouched.
         const DIFFICULTY_PRESETS = {
             // Previously Easy and Hard were identical on build/movement/attack (both 1.0/1.0/1.0),
             // and Normal was actually *less* aggressive than Easy on all three - so picking "Easy"
             // didn't make regular-nation AI any easier at all, only the aliens. Now every dial
             // increases strictly from easy -> normal -> hard.
-            easy:   { build: 0.6, movement: 0.7,  attack: 0.6, buildingAttack: 0.5, specialMult: 0.8 },
-            normal: { build: 0.8, movement: 0.95, attack: 0.9, buildingAttack: 0.7, specialMult: 1.0 },
-            hard:   { build: 1.0, movement: 1.0,  attack: 1.0, buildingAttack: 0.9, specialMult: 1.4 }
+            easy:   { build: 1.2, movement: 1.4, attack: 1.2, buildingAttack: 1.0, specialMult: 0.8 },
+            normal: { build: 1.6, movement: 1.9, attack: 1.8, buildingAttack: 1.4, specialMult: 1.0 },
+            hard:   { build: 2.0, movement: 2.0, attack: 2.0, buildingAttack: 1.8, specialMult: 1.4 }
         };
         let currentDifficulty = 'normal';
         let AI_BUILD_CHANCE = DIFFICULTY_PRESETS.normal.build;
