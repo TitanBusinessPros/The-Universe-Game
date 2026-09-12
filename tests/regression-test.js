@@ -2370,23 +2370,34 @@ check('showMapDetails()/closeMapDetails() toggle between the map grid and the de
     return problems;
 });
 
-check('each map card describes its specials as visible text, not just a hover-only tooltip', () => {
+check('each map\'s specials describe themselves as visible text in the Full Details view, not just a hover-only tooltip - and stay off the compact card', () => {
     // Direct report: "It does not describe what each map has like i asked" -
     // the first version only put the specials' labels/descriptions in a
     // `title` attribute (hover tooltip - invisible without a mouse, and
     // easy to miss even with one). Every special's label and description
-    // must appear in the card's own rendered text.
+    // must appear in the Full Details view's own rendered text.
+    //
+    // Direct follow-up report: "Under each map where it says Hotsun.
+    // Starting from hot sun and all the way down's information is to be in
+    // the details button... You are making this section to congested" -
+    // specials (and roamingThreats, see the check below) were moved off the
+    // compact card entirely and now live only behind "Full Details".
+    showMapDetails(MAP_CONFIGS[0].id);
+    const detailsText = document.getElementById('mapDetailsContent').textContent;
+    const problems = [];
+    MAP_CONFIGS[0].specials.forEach(s => {
+        if (!detailsText.includes(s.label)) problems.push(`Full Details text is missing the "${s.label}" special's name`);
+        if (!detailsText.includes(s.desc)) problems.push(`Full Details text is missing the "${s.label}" special's description`);
+    });
+    if (document.getElementById('mapDetailsContent').querySelector('[title]')) problems.push('special descriptions should be visible text, not hidden behind a title/hover tooltip');
+
     const grid = document.getElementById('mapGrid');
     grid.innerHTML = '';
     populateMapGrid();
-    const problems = [];
     const firstCard = grid.querySelector('.mapCard');
-    const cardText = firstCard.textContent;
     MAP_CONFIGS[0].specials.forEach(s => {
-        if (!cardText.includes(s.label)) problems.push(`card text is missing the "${s.label}" special's name`);
-        if (!cardText.includes(s.desc)) problems.push(`card text is missing the "${s.label}" special's description`);
+        if (firstCard.textContent.includes(s.desc)) problems.push(`card text should not include the "${s.label}" special's description - that content belongs only in Full Details now`);
     });
-    if (firstCard.querySelector('[title]')) problems.push('special descriptions should be visible text, not hidden behind a title/hover tooltip');
     return problems;
 });
 
@@ -2395,7 +2406,13 @@ check('each map card describes its specials as visible text, not just a hover-on
 // roamingThreats field (see Map 2's raider packs) but neither the card grid
 // nor the Full Details view ever actually rendered it - the data existed,
 // the UI just never read it. This is the real fix, checked both places.
-check('a map\'s roamingThreats (e.g. Sector 2\'s raider packs) render on both the card grid and the Full Details view', () => {
+//
+// Later direct report: "Under each map where it says Hotsun. Starting from
+// hot sun and all the way down's information is to be in the details
+// button... You are making this section to congested" - roamingThreats (and
+// specials, see the check above) were pulled back OFF the compact card and
+// now render only in the Full Details view.
+check('a map\'s roamingThreats (e.g. Sector 2\'s raider packs) render in the Full Details view, and stay off the compact card', () => {
     const problems = [];
     const sector2 = MAP_CONFIGS[1];
     if (!sector2.roamingThreats || sector2.roamingThreats.length === 0) return ['test assumption broken: Sector 2 should have roamingThreats to check against'];
@@ -2405,12 +2422,7 @@ check('a map\'s roamingThreats (e.g. Sector 2\'s raider packs) render on both th
     populateMapGrid();
     const sector2Card = Array.from(grid.querySelectorAll('.mapCard')).find(c => c.querySelector('h3').textContent === 'Sector 2');
     sector2.roamingThreats.forEach(r => {
-        if (!sector2Card.textContent.includes(r.label)) problems.push(`Sector 2's card is missing the "${r.label}" roaming threat`);
-    });
-    // A sector with none (e.g. Sector 1) shouldn't render an empty section.
-    const sector1Card = Array.from(grid.querySelectorAll('.mapCard')).find(c => c.querySelector('h3').textContent === 'Sector 1');
-    MAP_CONFIGS[1].roamingThreats.forEach(r => {
-        if (sector1Card.textContent.includes(r.label)) problems.push(`Sector 1 has no roaming threats - it should not show Sector 2's ("${r.label}")`);
+        if (sector2Card.textContent.includes(r.desc)) problems.push(`Sector 2's card should not show the "${r.label}" roaming threat's description - that belongs only in Full Details now`);
     });
 
     showMapDetails(1); // Sector 2
