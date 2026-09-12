@@ -85,6 +85,7 @@
     "playUIClickSound",
     "pollLoadingScreen",
     "populateMapGrid",
+    "preloadBriefingVideo",
     "processAttackMoveOrders",
     "queueImageLoad",
     "randomSpreadPosition",
