@@ -127,7 +127,7 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage, assignAttackTargets, guaranteeNearestAttackersForHumans, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS, randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER, nearestMinimapLandmark, spawnHotsun, damageNearHotsun, HOTSUN_IMAGE_URL, HOTSUN_SIZE, HOTSUN_RADIATION_RANGE, HOTSUN_DAMAGE_PERCENT, PLANET_SCALE, updateFogOfWar, toggleFogOfWar, drawMinimap, isPointRevealed, revealRegion, drawFogOfWarOverlay, isGroundUnitInCargo, BUILDING_ATTACKER_TYPES, ctx, MAP_CONFIGS, openMapSelect, closeMapSelect, chooseMap, populateMapGrid, showMapDetails, closeMapDetails, applyMapBackground, spaceBackgroundImage, SPACE_BACKGROUND_URL, MAP_IMAGE_URLS, RAIDER_PACK_TYPES, RAIDER_PACK_SIZE, RAIDER_PACK_BASE_ID, spawnAlienRaiderPacks, clearAlienRaiderPacks, ALIEN_ONLY_UNIT_TYPES, MAP_PLANET_LAYOUTS, MAP_LAYOUT_LABELS, sampleLayoutCandidate, spreadPositionForLayout, repositionPlanetsForMap };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage, assignAttackTargets, guaranteeNearestAttackersForHumans, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS, randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER, nearestMinimapLandmark, spawnHotsun, damageNearHotsun, HOTSUN_IMAGE_URL, HOTSUN_SIZE, HOTSUN_RADIATION_RANGE, HOTSUN_DAMAGE_PERCENT, PLANET_SCALE, updateFogOfWar, toggleFogOfWar, drawMinimap, isPointRevealed, revealRegion, drawFogOfWarOverlay, isGroundUnitInCargo, BUILDING_ATTACKER_TYPES, ctx, MAP_CONFIGS, openMapSelect, closeMapSelect, chooseMap, populateMapGrid, showMapDetails, closeMapDetails, applyMapBackground, spaceBackgroundImage, SPACE_BACKGROUND_URL, MAP_IMAGE_URLS, RAIDER_PACK_TYPES, RAIDER_PACK_SIZE, RAIDER_PACK_BASE_ID, spawnAlienRaiderPacks, clearAlienRaiderPacks, ALIEN_ONLY_UNIT_TYPES, MAP_PLANET_LAYOUTS, MAP_LAYOUT_LABELS, sampleLayoutCandidate, spreadPositionForLayout, repositionPlanetsForMap, GALAXY_LANDMARK_MAX_SCREEN_FRACTION };',
     context,
     { filename: 'grab-refs.js' }
 );
@@ -165,7 +165,8 @@ const {
     MAP_CONFIGS, openMapSelect, closeMapSelect, chooseMap, populateMapGrid, showMapDetails, closeMapDetails,
     applyMapBackground, spaceBackgroundImage, SPACE_BACKGROUND_URL, MAP_IMAGE_URLS,
     RAIDER_PACK_TYPES, RAIDER_PACK_SIZE, RAIDER_PACK_BASE_ID, spawnAlienRaiderPacks, clearAlienRaiderPacks, ALIEN_ONLY_UNIT_TYPES,
-    MAP_PLANET_LAYOUTS, MAP_LAYOUT_LABELS, sampleLayoutCandidate, spreadPositionForLayout, repositionPlanetsForMap
+    MAP_PLANET_LAYOUTS, MAP_LAYOUT_LABELS, sampleLayoutCandidate, spreadPositionForLayout, repositionPlanetsForMap,
+    GALAXY_LANDMARK_MAX_SCREEN_FRACTION
 } = context.__test;
 
 // ---------- Test data: the full combat unit roster ----------
@@ -5988,6 +5989,55 @@ check('GalaxyCore instances spin in place like planets once their sprite is load
     const before = core.rotationAngle;
     core.draw();
     if (core.rotationAngle === before) problems.push("expected draw() to advance rotationAngle once the sprite is loaded (the spin itself)");
+    return problems;
+});
+
+// ---------- Landmark/unit screen-visibility (2026-09-12) ----------
+// Direct report: "My radar ships on map 2 turned into a red sun looking
+// object until I sent a ship close to them and then they turned back into my
+// radar ships that were there." Reproduced live: Hotsun's real size (10x a
+// planet's) means at a normal zoom, sitting right on top of it, its sprite is
+// far bigger than the whole viewport - and separately, Sector 2's own
+// background art (a wide, intensely red nebula) is sized to the galaxy's own
+// extent, so it too fills the entire screen at a normal zoom. Either way, a
+// tiny ~30-unit ship icon drawn on top has almost no contrast to be seen at a
+// glance. Two independent fixes, tested here: capping how much screen space
+// a landmark's sprite can ever cover, and a dark contrast backing plate
+// behind every unit regardless of what's behind it.
+
+check("GalaxyCore.draw() caps how much of the screen it can cover, even sitting right on top of it - a landmark can never completely swallow the viewport", () => {
+    const problems = [];
+    const core = new GalaxyCore(0, 0, undefined, 999999999); // absurdly large size, sprite never "completes" in this headless test env
+    camera.x = 0; camera.y = 0; camera.zoom = 1;
+    let capturedRadius = null;
+    const origArc = ctx.arc;
+    ctx.arc = function (x, y, r, ...rest) { capturedRadius = r; return origArc.apply(this, [x, y, r, ...rest]); };
+    core.draw();
+    ctx.arc = origArc;
+    if (capturedRadius === null) return ['expected GalaxyCore.draw() to call ctx.arc() in its fallback (no-sprite) render path'];
+    const maxExpected = Math.min(canvas.width, canvas.height) * GALAXY_LANDMARK_MAX_SCREEN_FRACTION;
+    if (capturedRadius > maxExpected + 1) problems.push(`expected the drawn radius capped at ~${maxExpected.toFixed(0)}px regardless of the landmark's real size, got ${capturedRadius.toFixed(0)}px`);
+    return problems;
+});
+
+check('Unit.draw() draws a dark contrast backing plate behind every unit, before its sprite/glow - keeps ships visible against bright or busy background art', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'ContrastTest', '#fff', island, true);
+    gameState.countries = [country];
+    gameState.playerCountry = country;
+    const unit = makeUnit('radar', 0);
+    unit.x = 0; unit.y = 0;
+    camera.x = 0; camera.y = 0; camera.zoom = 1;
+
+    const fillStylesAtArcTime = [];
+    const origArc = ctx.arc;
+    ctx.arc = function (...args) { fillStylesAtArcTime.push(ctx.fillStyle); return origArc.apply(this, args); };
+    unit.draw();
+    ctx.arc = origArc;
+
+    const hasBlackBacking = fillStylesAtArcTime.some(fs => typeof fs === 'string' && /rgba\(\s*0,\s*0,\s*0,/.test(fs));
+    if (!hasBlackBacking) problems.push(`expected at least one dark (black rgba) backing arc drawn behind the unit, got fillStyles at each arc() call: ${JSON.stringify(fillStylesAtArcTime)}`);
     return problems;
 });
 
