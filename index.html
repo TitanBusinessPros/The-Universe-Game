@@ -199,7 +199,7 @@
         }
         .mapGrid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
             gap: 14px;
             margin: 20px 0;
         }
@@ -210,7 +210,7 @@
             padding: 16px 14px;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            align-items: stretch;
             text-align: center;
             cursor: pointer;
             transition: border-color 0.2s, transform 0.2s, background 0.2s;
@@ -233,10 +233,27 @@
             text-align: left;
             width: 100%;
         }
-        .mapCard .mapSpecials {
+        .mapCard .mapSpecialsList {
             margin-top: 10px;
-            font-size: 17px;
-            letter-spacing: 4px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(0,255,0,0.2);
+            text-align: left;
+        }
+        .mapSpecialRow {
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            font-size: 10.5px;
+            color: #99ffcc;
+            line-height: 1.5;
+            margin-bottom: 6px;
+        }
+        .mapSpecialRow:last-child {
+            margin-bottom: 0;
+        }
+        .mapSpecialIcon {
+            font-size: 14px;
+            flex-shrink: 0;
         }
         #gameOverScreen {
             position: absolute;
@@ -5125,7 +5142,9 @@
                         🌍 ${map.nationCount} nation countries<br>
                         👽 ${map.alienPlanetCount} alien planets
                     </div>
-                    <div class="mapSpecials" title="${map.specials.map(s => s.label + ': ' + s.desc).join(' | ')}">${map.specials.map(s => s.icon).join(' ')}</div>
+                    <div class="mapSpecialsList">
+                        ${map.specials.map(s => `<div class="mapSpecialRow"><span class="mapSpecialIcon">${s.icon}</span><span><strong>${s.label}</strong> - ${s.desc}</span></div>`).join('')}
+                    </div>
                 `;
                 card.onclick = () => chooseMap(map.id);
                 grid.appendChild(card);

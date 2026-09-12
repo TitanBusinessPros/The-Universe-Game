@@ -2113,6 +2113,26 @@ check('populateMapGrid() renders one clickable card per MAP_CONFIGS entry into #
     return [];
 });
 
+check('each map card describes its specials as visible text, not just a hover-only tooltip', () => {
+    // Direct report: "It does not describe what each map has like i asked" -
+    // the first version only put the specials' labels/descriptions in a
+    // `title` attribute (hover tooltip - invisible without a mouse, and
+    // easy to miss even with one). Every special's label and description
+    // must appear in the card's own rendered text.
+    const grid = document.getElementById('mapGrid');
+    grid.innerHTML = '';
+    populateMapGrid();
+    const problems = [];
+    const firstCard = grid.querySelector('.mapCard');
+    const cardText = firstCard.textContent;
+    MAP_CONFIGS[0].specials.forEach(s => {
+        if (!cardText.includes(s.label)) problems.push(`card text is missing the "${s.label}" special's name`);
+        if (!cardText.includes(s.desc)) problems.push(`card text is missing the "${s.label}" special's description`);
+    });
+    if (firstCard.querySelector('[title]')) problems.push('special descriptions should be visible text, not hidden behind a title/hover tooltip');
+    return problems;
+});
+
 check('picking a country opens the map screen instead of jumping straight into startGame()', () => {
     gameState.countries = [];
     gameState.playerCountry = null;
