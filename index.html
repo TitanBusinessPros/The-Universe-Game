@@ -1288,10 +1288,35 @@
         spaceBackgroundImage.onload = () => { spaceBackgroundLoaded = true; };
         const BG_PARALLAX = 0.03;
 
+        // A sector's own map art (see applyMapBackground()), kept entirely
+        // separate from spaceBackgroundImage above rather than reassigning
+        // that shared object's .src. Real bug found live: spaceBackgroundImage
+        // is queued for its DEFAULT image at page load via queueImageLoad()'s
+        // concurrency-limited queue (see __pumpImageQueue()) - if that queued
+        // load hadn't been dispatched yet by the time a map was picked,
+        // __pumpImageQueue() would eventually reach it and overwrite .src back
+        // to the default moments later, silently reverting the chosen map's
+        // background. A second, independent Image - loaded directly, outside
+        // that queue - can't be clobbered by it.
+        let mapBackgroundImage = null;
+        let mapBackgroundLoaded = false;
+
         function drawSpaceBackground() {
             const t = Date.now() / 1000;
 
-            if (spaceBackgroundLoaded) {
+            if (mapBackgroundLoaded && mapBackgroundImage) {
+                // Direct report: tiling a sector's own map photo produced an
+                // obvious repeating grid with visible seams ("multiple maps in
+                // one map with visible overlapping squares") - Background-1.png
+                // below is a seamless pattern purpose-built to tile; a real
+                // photo isn't. Draw it exactly ONCE instead, scaled to fully
+                // cover the canvas (same idea as CSS object-fit: cover) - one
+                // image, no seams, no repeats, ever.
+                const scale = Math.max(canvas.width / mapBackgroundImage.naturalWidth, canvas.height / mapBackgroundImage.naturalHeight);
+                const drawW = mapBackgroundImage.naturalWidth * scale;
+                const drawH = mapBackgroundImage.naturalHeight * scale;
+                ctx.drawImage(mapBackgroundImage, (canvas.width - drawW) / 2, (canvas.height - drawH) / 2, drawW, drawH);
+            } else if (spaceBackgroundLoaded) {
                 // Clamped to a sane minimum - this crashed the whole tab in CI, where a
                 // test mocks every image (including this one) with a 1x1 placeholder
                 // PNG: with no clamp, tw/th=1 makes cols/rows ~canvas-width-in-PIXELS,
@@ -2703,10 +2728,23 @@
         // chooseMap() at all (Campaign, hot-seat), fall back to the default
         // SPACE_BACKGROUND_URL - pass null/undefined for those.
         function applyMapBackground(mapId) {
-            const url = (mapId !== null && mapId !== undefined && MAP_IMAGE_URLS[mapId + 1]) || SPACE_BACKGROUND_URL;
-            if (spaceBackgroundImage.src === url) return; // already showing this one
-            spaceBackgroundLoaded = false;
-            spaceBackgroundImage.src = url;
+            const url = mapId !== null && mapId !== undefined ? MAP_IMAGE_URLS[mapId + 1] : null;
+            if (!url) {
+                // No art for this sector (1, 10) or no map picked at all
+                // (Campaign/hot-seat) - fall back to the default tiled
+                // background. Never touches spaceBackgroundImage itself (see
+                // its own comment) - just stops pointing at a sector image.
+                mapBackgroundImage = null;
+                mapBackgroundLoaded = false;
+                return;
+            }
+            if (mapBackgroundImage && mapBackgroundImage.src === url) return; // already showing this one
+            mapBackgroundLoaded = false;
+            const img = new Image();
+            img.onload = () => { mapBackgroundLoaded = true; };
+            img.onerror = () => { mapBackgroundImage = null; mapBackgroundLoaded = false; }; // fall back to default
+            img.src = url;
+            mapBackgroundImage = img;
         }
 
         let gameState = {

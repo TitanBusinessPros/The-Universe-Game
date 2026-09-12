@@ -2225,6 +2225,15 @@ check('picking a country opens the map screen instead of jumping straight into s
     return problems;
 });
 
+// mapBackgroundImage/mapBackgroundLoaded are `let` bindings that get
+// REASSIGNED (a new Image() each time a sector changes) - a destructured
+// const captured once at grab-refs time would go stale the moment that
+// happens, same reasoning as frameDeltaTime elsewhere in this file. Read
+// live instead.
+function currentMapBackgroundSrc() {
+    return vm.runInContext('mapBackgroundImage && mapBackgroundImage.src', context);
+}
+
 check('chooseMap() records the pick, closes the map screen, and finishes starting the game for the pending country', () => {
     gameState.countries = [];
     gameState.playerCountry = null;
@@ -2235,24 +2244,39 @@ check('chooseMap() records the pick, closes the map screen, and finishes startin
     if (gameState.selectedMapId !== 5) problems.push(`expected gameState.selectedMapId to be 5, got ${gameState.selectedMapId}`);
     if (document.getElementById('mapSelectScreen').style.display !== 'none') problems.push('chooseMap() should close the map screen');
     if (!gameState.playerCountry || gameState.playerCountry.id !== 2) problems.push('chooseMap() should start the game for the country picked before the map screen opened');
-    if (spaceBackgroundImage.src !== MAP_IMAGE_URLS[6]) problems.push(`chooseMap(5) (Sector 6) should swap the actual in-game background to map-6.jpg, got ${spaceBackgroundImage.src}`);
+    if (currentMapBackgroundSrc() !== MAP_IMAGE_URLS[6]) problems.push(`chooseMap(5) (Sector 6) should swap the actual in-game background to map-6.jpg, got ${currentMapBackgroundSrc()}`);
     return problems;
 });
 
 // Direct report: "what good does it do to put the map in the details but not
 // actually make that map the map for that stage" - picking a sector used to
 // only decorate the map-select screen's own cards, never actually changing
-// what you see while playing. These check the real fix: the shared tiled
-// space background (see drawSpaceBackground()) actually swaps to match.
+// what you see while playing. These check the real fix: a dedicated
+// mapBackgroundImage (see its own comment) actually gets set to match.
 check('applyMapBackground() swaps the real in-game background image to the chosen sector\'s art, and falls back to the default for sectors without art yet', () => {
     const problems = [];
     applyMapBackground(1); // Sector 2 - has art
-    if (spaceBackgroundImage.src !== MAP_IMAGE_URLS[2]) problems.push(`Sector 2 should use map-2.jpg, got ${spaceBackgroundImage.src}`);
+    if (currentMapBackgroundSrc() !== MAP_IMAGE_URLS[2]) problems.push(`Sector 2 should use map-2.jpg, got ${currentMapBackgroundSrc()}`);
     applyMapBackground(0); // Sector 1 - no art yet
-    if (spaceBackgroundImage.src !== SPACE_BACKGROUND_URL) problems.push(`Sector 1 has no art yet - should fall back to the default background, got ${spaceBackgroundImage.src}`);
+    if (currentMapBackgroundSrc()) problems.push(`Sector 1 has no art yet - should fall back to the default background, got ${currentMapBackgroundSrc()}`);
+    applyMapBackground(1);
     applyMapBackground(null); // no map selected at all (Campaign/hot-seat)
-    if (spaceBackgroundImage.src !== SPACE_BACKGROUND_URL) problems.push(`null (no map selected) should use the default background, got ${spaceBackgroundImage.src}`);
+    if (currentMapBackgroundSrc()) problems.push(`null (no map selected) should use the default background, got ${currentMapBackgroundSrc()}`);
     return problems;
+});
+
+// Real bug found live (not just a hypothetical): spaceBackgroundImage is
+// queued for the DEFAULT background at page load via queueImageLoad()'s
+// concurrency-limited queue - reassigning that SAME shared object's .src for
+// a chosen map meant the queue could dispatch its already-pending default
+// load moments later and silently revert it. Proving the fix architecturally:
+// applyMapBackground() must never touch spaceBackgroundImage at all.
+check('applyMapBackground() never touches spaceBackgroundImage - the default background image is immune to the map-select race that used to revert it', () => {
+    const before = spaceBackgroundImage.src;
+    applyMapBackground(1);
+    applyMapBackground(4);
+    applyMapBackground(null);
+    return spaceBackgroundImage.src === before ? [] : [`spaceBackgroundImage.src changed from ${before} to ${spaceBackgroundImage.src} - applyMapBackground() should only ever touch the separate mapBackgroundImage`];
 });
 
 check('startHotSeatGame() resets the background to default so it can\'t inherit a leftover Standard Game map selection', () => {
@@ -2262,7 +2286,7 @@ check('startHotSeatGame() resets the background to default so it can\'t inherit 
     applyMapBackground(3); // simulate a prior Standard Game having picked Sector 4
     startHotSeatGame([0, 1]);
     if (gameState.selectedMapId !== null) return [`expected selectedMapId to be reset to null, got ${gameState.selectedMapId}`];
-    if (spaceBackgroundImage.src !== SPACE_BACKGROUND_URL) return [`expected the default background to be restored, got ${spaceBackgroundImage.src}`];
+    if (currentMapBackgroundSrc()) return [`expected the default background to be restored, got ${currentMapBackgroundSrc()}`];
     return [];
 });
 
@@ -2278,7 +2302,7 @@ check('buildSaveData()/applySaveData() round-trip the chosen map so Continue/Loa
     applyMapBackground(null); // simulate a fresh page load with the default background showing
     applySaveData(saveData);
     if (gameState.selectedMapId !== 6) return [`expected applySaveData() to restore selectedMapId 6, got ${gameState.selectedMapId}`];
-    if (spaceBackgroundImage.src !== MAP_IMAGE_URLS[7]) return [`expected applySaveData() to restore Sector 7's background, got ${spaceBackgroundImage.src}`];
+    if (currentMapBackgroundSrc() !== MAP_IMAGE_URLS[7]) return [`expected applySaveData() to restore Sector 7's background, got ${currentMapBackgroundSrc()}`];
     return [];
 });
 
@@ -3845,7 +3869,7 @@ check('startCampaignStage() also resets the map-select background - a Standard G
     startCampaignStage(0);
     const problems = [];
     if (gameState.selectedMapId !== null) problems.push(`expected selectedMapId reset to null, got ${gameState.selectedMapId}`);
-    if (spaceBackgroundImage.src !== SPACE_BACKGROUND_URL) problems.push(`expected the default background restored, got ${spaceBackgroundImage.src}`);
+    if (currentMapBackgroundSrc()) problems.push(`expected the default background restored, got ${currentMapBackgroundSrc()}`);
     return problems;
 });
 
