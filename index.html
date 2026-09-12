@@ -6131,7 +6131,25 @@
 
             checkGameOver();
             updateUI();
-            if (!gameState.paused) autoSaveGame();
+            // Campaign Mode never autosaves here - direct report: "why in the hell
+            // can i control enemy alien ships". buildSaveData()/applySaveData()
+            // round-trip gameState.countries positionally (gameState.countries[idx]),
+            // which only lines up with each country's real .id for the full,
+            // fixed Standard Game roster. startCampaignStage() builds a small,
+            // stage-specific roster where the player is always pushed to array
+            // index 0 regardless of their real nation id, and objectives (rival
+            // nations, ALIEN planets) land at whatever index they're pushed to -
+            // nothing like the Standard roster's id-aligned order. Hitting
+            // "Continue (Turn N)" later reapplied that mismatched, positionally-
+            // saved data onto a freshly-rebuilt FULL Standard roster, silently
+            // handing whichever country ended up as gameState.playerCountry
+            // another country's (sometimes an alien's) saved units. Campaign
+            // already has its own correct, stage-granularity save via
+            // saveCampaignProgress()/resumeCampaign() (both rebuild the roster
+            // through startCampaignStage(), immune to this), so mid-stage
+            // progress simply isn't autosaved - no different from any other
+            // roguelike-style stage structure.
+            if (!gameState.paused && !gameState.campaignActive) autoSaveGame();
         }
 
         function checkGameOver() {
@@ -6381,6 +6399,23 @@
             // so this reproduces that layout exactly, same as a fresh
             // chooseMap() call would have.
             if (gameState.selectedMapId === 1) spawnAlienRaiderPacks(); else clearAlienRaiderPacks();
+
+            // Defensive guard against exactly the corrupted-autosave bug fixed
+            // in nextTurn() (see its own comment - direct report: "why in the
+            // hell can i control enemy alien ships") - a save whose per-country
+            // list is a different length than the CURRENT (always the full
+            // Standard Game/hot-seat roster, raider packs now accounted for
+            // above) can only be a leftover Campaign Mode autosave from before
+            // that fix, saved from a small stage-specific roster. Applying it
+            // below would silently reassign saved units (sometimes an alien's)
+            // onto whichever country the positional mismatch lands on, up to
+            // and including gameState.playerCountry itself. Thrown here so the
+            // existing try/catch around every caller (continueFromAutosave()/
+            // loadGame()) already reports it as a corrupted save and clears it,
+            // instead of applying it.
+            if (!Array.isArray(saveData.countries) || saveData.countries.length !== gameState.countries.length) {
+                throw new Error(`save has ${saveData.countries ? saveData.countries.length : 0} countries, expected ${gameState.countries.length} - looks like a leftover Campaign Mode autosave, not a Standard Game one`);
+            }
 
             if (saveData.camera) {
                 camera.x = saveData.camera.x;
