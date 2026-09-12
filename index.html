@@ -5301,12 +5301,17 @@
 
         // Fixed corner direction (unit vector) the Galaxy Core/Bounty are placed
         // along - preserves the original layout's "opposite corners of the map"
-        // feel (the Core toward +X/-Y, the Bounty toward the exact opposite corner)
-        // now that both scale their distance off farthestPlanetRadius() instead of
-        // a fixed offset. See spawnGalaxyCore()/spawnGalaxyBounty().
+        // feel (the Core toward -X/-Y i.e. top-left, the Bounty toward the exact
+        // opposite corner i.e. bottom-right) now that both scale their distance
+        // off farthestPlanetRadius() instead of a fixed offset. See
+        // spawnGalaxyCore()/spawnGalaxyBounty(). Direct report (2026-09-12): the
+        // two landmarks were in the top-right/bottom-left corners instead -
+        // flipped the X sign here to move them to top-left/bottom-right as asked.
+        // (+Y is down on screen - see the screenY = (worldY - camera.y) * zoom +
+        // canvas.height/2 projection used throughout rendering.)
         const GALAXY_LANDMARK_CORNER_DIR = (() => {
             const len = Math.hypot(90000, -70000);
-            return { x: 90000 / len, y: -70000 / len };
+            return { x: -90000 / len, y: -70000 / len };
         })();
 
         function initGame() {
