@@ -5808,6 +5808,10 @@ check("updateBlackHoles() bounces off the real galaxy bounds (getGalaxyBounds())
 
 check('nearestMinimapLandmark() snaps to a nearby country/core exactly, and returns null when nothing is close enough', () => {
     const problems = [];
+    // Not what this test is about - isolate it from whatever fogOfWarEnabled
+    // a previous check left behind (shared mutable state across this whole
+    // file) rather than relying on incidental ordering.
+    vm.runInContext('fogOfWarEnabled = false;', context);
     gameState.countries = [
         new Country(0, 'A', '#fff', new Island(0, 0, 0), false),
         new Country(1, 'B', '#fff', new Island(500000, 0, 1), false),
@@ -5827,6 +5831,8 @@ check('nearestMinimapLandmark() snaps to a nearby country/core exactly, and retu
 
 check('nearestMinimapLandmark() also snaps to a Galaxy Core/Bounty dot, not just countries', () => {
     const problems = [];
+    // Not what this test is about - see the previous check's own comment.
+    vm.runInContext('fogOfWarEnabled = false;', context);
     gameState.countries = [new Country(0, 'A', '#fff', new Island(500000, 500000, 0), false)];
     galaxyCores.length = 0;
     const core = new GalaxyCore(0, 0);
@@ -5844,6 +5850,9 @@ check("a plain minimap click with nothing selected navigates the camera to the e
     // tests game logic directly; see tests/browser/interaction-test.js for
     // real DOM event coverage.
     const problems = [];
+    // Not what this test is about - see the earlier nearestMinimapLandmark()
+    // checks' own comment on isolating from shared fogOfWarEnabled state.
+    vm.runInContext('fogOfWarEnabled = false;', context);
     gameState.countries = [
         new Country(0, 'A', '#fff', new Island(1234, 5678, 0), false),
         new Country(1, 'B', '#fff', new Island(-800000, 800000, 1), false),
@@ -6206,6 +6215,71 @@ check('toggleFogOfWar() flips the live setting', () => {
     const problems = [];
     if (afterFirst !== false) problems.push(`expected fogOfWarEnabled to flip to false, got ${afterFirst}`);
     if (afterSecond !== true) problems.push(`expected a second toggle to flip it back to true, got ${afterSecond}`);
+    return problems;
+});
+
+// ---------- Fog of war moved to a pre-game choice (2026-09-12) ----------
+// Direct report: "I don't like it in the game it's self and think it is
+// confusing" - the live in-game toggle (a button in the INFO tab) is gone;
+// the choice is now made once on the map-select screen, before a sector is
+// picked (see chooseMap()'s own comment on why it no longer needs to read
+// anything itself - the button already keeps fogOfWarEnabled live-updated).
+
+check('the old in-game fog-of-war button is gone, replaced by one on the map-select screen', () => {
+    const problems = [];
+    if (html.includes('id="fogOfWarToggle"')) problems.push('expected the old in-game #fogOfWarToggle button removed from the INFO tab');
+    if (!html.includes('id="fogOfWarPreGameToggle"')) problems.push('expected a #fogOfWarPreGameToggle button to exist');
+    const mapSelectMatch = html.match(/<div id="mapSelectScreen"[\s\S]*?<div id="mapGrid"/);
+    if (!mapSelectMatch || !mapSelectMatch[0].includes('id="fogOfWarPreGameToggle"')) {
+        problems.push('expected the fog-of-war toggle button to live inside #mapSelectScreen, before the map grid');
+    }
+    return problems;
+});
+
+check("toggleFogOfWar() updates the map-select screen's own button label", () => {
+    const problems = [];
+    vm.runInContext('fogOfWarEnabled = true;', context);
+    const btn = document.getElementById('fogOfWarPreGameToggle');
+    if (!btn) return ['expected a #fogOfWarPreGameToggle element in the DOM'];
+    toggleFogOfWar();
+    if (vm.runInContext('fogOfWarEnabled', context) !== false) problems.push('expected fogOfWarEnabled to flip to false');
+    if (btn.textContent !== '🌍 FOG OF WAR OFF') problems.push(`expected the button's label to read OFF, got "${btn.textContent}"`);
+    toggleFogOfWar(); // restore for later checks
+    if (btn.textContent !== '🌫️ FOG OF WAR ON') problems.push(`expected the button's label to read ON again, got "${btn.textContent}"`);
+    return problems;
+});
+
+check("openMapSelect() syncs the fog-of-war button's label to the current setting, not always the default", () => {
+    const problems = [];
+    vm.runInContext('fogOfWarEnabled = false;', context);
+    openMapSelect(0);
+    const btn = document.getElementById('fogOfWarPreGameToggle');
+    if (!btn || btn.textContent !== '🌍 FOG OF WAR OFF') problems.push(`expected the button to reflect fogOfWarEnabled=false on open, got "${btn && btn.textContent}"`);
+    vm.runInContext('fogOfWarEnabled = true;', context); // restore for later checks
+    openMapSelect(0);
+    return problems;
+});
+
+check("buildSaveData()/applySaveData() round-trip fogOfWarEnabled, and an old save missing it defaults to on", () => {
+    const problems = [];
+    gameState.countries = [];
+    vm.runInContext('initGame();', context, { filename: 'fog-save-setup.js' });
+    startGame(0);
+    vm.runInContext('fogOfWarEnabled = false;', context);
+    const saveData = buildSaveData();
+    if (saveData.fogOfWarEnabled !== false) problems.push(`expected buildSaveData() to record fogOfWarEnabled false, got ${saveData.fogOfWarEnabled}`);
+
+    vm.runInContext('fogOfWarEnabled = true;', context); // simulate a fresh page load's own default
+    applySaveData(saveData);
+    if (vm.runInContext('fogOfWarEnabled', context) !== false) problems.push('expected applySaveData() to restore fogOfWarEnabled false');
+
+    const oldSave = Object.assign({}, saveData);
+    delete oldSave.fogOfWarEnabled; // a save from before this field existed
+    vm.runInContext('fogOfWarEnabled = false;', context);
+    applySaveData(oldSave);
+    if (vm.runInContext('fogOfWarEnabled', context) !== true) problems.push('expected a save missing fogOfWarEnabled to default to true, not leave whatever was already set');
+
+    vm.runInContext('fogOfWarEnabled = true;', context); // restore for later checks
     return problems;
 });
 
