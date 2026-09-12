@@ -2113,6 +2113,42 @@ check('populateMapGrid() renders one clickable card per MAP_CONFIGS entry into #
     return [];
 });
 
+check('MAP_CONFIGS assigns each sector\'s numbered background image by sector number, not array position', () => {
+    // Direct request: "map-2 goes on stage two and so on" - only sectors 2-9
+    // have art so far; 1 and 10 should render without a thumbnail rather than
+    // silently reusing a neighbor's image.
+    const problems = [];
+    MAP_CONFIGS.forEach(map => {
+        const sectorNum = map.id + 1;
+        if (sectorNum >= 2 && sectorNum <= 9) {
+            if (!map.imageUrl || !map.imageUrl.endsWith(`map-${sectorNum}.jpg`)) {
+                problems.push(`${map.name} (sector ${sectorNum}) should use map-${sectorNum}.jpg, got ${map.imageUrl}`);
+            }
+        } else if (map.imageUrl) {
+            problems.push(`${map.name} (sector ${sectorNum}) has no art yet but got imageUrl ${map.imageUrl}`);
+        }
+    });
+    return problems;
+});
+
+check('populateMapGrid()/showMapDetails() render a sector\'s image when it has one, and omit it when it doesn\'t', () => {
+    const problems = [];
+    const grid = document.getElementById('mapGrid');
+    grid.innerHTML = '';
+    populateMapGrid();
+    const cards = grid.querySelectorAll('.mapCard');
+    const sector2Card = Array.from(cards).find(c => c.querySelector('h3').textContent === 'Sector 2');
+    if (!sector2Card || !sector2Card.querySelector('.mapCardThumb')) problems.push('Sector 2 card is missing its thumbnail image');
+    const sector1Card = Array.from(cards).find(c => c.querySelector('h3').textContent === 'Sector 1');
+    if (!sector1Card || sector1Card.querySelector('.mapCardThumb')) problems.push('Sector 1 has no art yet - its card should not render a thumbnail');
+
+    showMapDetails(1); // Sector 2
+    if (!document.getElementById('mapDetailsContent').querySelector('.mapDetailBanner')) problems.push('Sector 2 details view is missing its banner image');
+    showMapDetails(0); // Sector 1
+    if (document.getElementById('mapDetailsContent').querySelector('.mapDetailBanner')) problems.push('Sector 1 has no art yet - its details view should not render a banner');
+    return problems;
+});
+
 check('MAP_CONFIGS specials/alienTypes text stays in sync with the real constants (no hand-typed numbers that can drift)', () => {
     const problems = [];
     const hotsun = MAP_CONFIGS[0].specials.find(s => s.label === 'Hotsun');

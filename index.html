@@ -255,6 +255,22 @@
             font-size: 14px;
             flex-shrink: 0;
         }
+        .mapCardThumb {
+            width: 100%;
+            height: 110px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(0,255,0,0.25);
+        }
+        .mapDetailBanner {
+            width: 100%;
+            max-height: 220px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 18px;
+            border: 1px solid rgba(0,255,0,0.3);
+        }
         .mapDetailsLink {
             margin-top: 12px;
             background: none;
@@ -2654,9 +2670,26 @@
                 },
             ],
         };
+        // Sector background art (2026-09-12, per direct request): one unique
+        // starfield/nebula image per numbered sector - "map-2 goes on stage
+        // two and so on". Only sectors 2-9 have art so far; 1 and 10 render
+        // without a thumbnail until art exists for them too - keyed by
+        // sector number (not array index) so this can't silently shift if
+        // MAP_CONFIGS' length or order ever changes.
+        const MAP_IMAGE_URLS = {
+            2: 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Maps/map-2.jpg',
+            3: 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Maps/map-3.jpg',
+            4: 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Maps/map-4.jpg',
+            5: 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Maps/map-5.jpg',
+            6: 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Maps/map-6.jpg',
+            7: 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Maps/map-7.jpg',
+            8: 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Maps/map-8.jpg',
+            9: 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Maps/map-9.jpg',
+        };
         const MAP_CONFIGS = Array.from({ length: 10 }, (_, i) => ({
             id: i,
             name: `Sector ${i + 1}`,
+            imageUrl: MAP_IMAGE_URLS[i + 1] || null,
             ...CURRENT_MAP_STATS,
         }));
 
@@ -5214,6 +5247,7 @@
                 const card = document.createElement('div');
                 card.className = 'mapCard';
                 card.innerHTML = `
+                    ${map.imageUrl ? `<img class="mapCardThumb" src="${map.imageUrl}" alt="${map.name}">` : ''}
                     <h3>${map.name}</h3>
                     <div class="mapStats">
                         🌍 ${map.nationCount} nation countries<br>
@@ -5254,6 +5288,7 @@
             if (!map) return;
             document.getElementById('mapDetailsTitle').textContent = `🔍 ${map.name} - FULL DETAILS 🔍`;
             document.getElementById('mapDetailsContent').innerHTML = `
+                ${map.imageUrl ? `<img class="mapDetailBanner" src="${map.imageUrl}" alt="${map.name}">` : ''}
                 <div class="mapDetailSection">
                     <h2>🌍 Nation Countries (${map.nationCount})</h2>
                     <div class="mapDetailRow"><span>Ordinary rival nations - build economy, research, and a fleet just like you do, and fight each other and you.</span></div>
