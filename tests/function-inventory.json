@@ -1,6 +1,7 @@
 {
   "topLevel": [
     "__pumpImageQueue",
+    "applyMapBackground",
     "applySaveData",
     "assignAttackTargets",
     "autoSaveGame",
