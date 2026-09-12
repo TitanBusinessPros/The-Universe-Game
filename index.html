@@ -2693,6 +2693,22 @@
             ...CURRENT_MAP_STATS,
         }));
 
+        // Direct report: picking a sector on the map-select screen was only
+        // ever decorating that screen's own cards - it never actually changed
+        // what you see while PLAYING that sector. This is the actual fix:
+        // swaps the shared tiled space background (see drawSpaceBackground())
+        // to the chosen sector's own image, so map-2 really is the backdrop
+        // for Sector 2's game, not just its menu thumbnail. Sectors without
+        // their own art yet (1, 10), and any mode that never goes through
+        // chooseMap() at all (Campaign, hot-seat), fall back to the default
+        // SPACE_BACKGROUND_URL - pass null/undefined for those.
+        function applyMapBackground(mapId) {
+            const url = (mapId !== null && mapId !== undefined && MAP_IMAGE_URLS[mapId + 1]) || SPACE_BACKGROUND_URL;
+            if (spaceBackgroundImage.src === url) return; // already showing this one
+            spaceBackgroundLoaded = false;
+            spaceBackgroundImage.src = url;
+        }
+
         let gameState = {
             countries: [],
             playerCountry: null,
@@ -5314,6 +5330,7 @@
         // there (gameState.selectedMapId) once real per-map differences exist.
         function chooseMap(mapId) {
             gameState.selectedMapId = mapId;
+            applyMapBackground(mapId);
             document.getElementById('mapSelectScreen').style.display = 'none';
             startGame(pendingCountryIdx);
         }
@@ -5365,6 +5382,11 @@
             gameState.activeHumanSeatIndex = 0;
             gameState.playerCountry = gameState.countries.find(c => c.id === ids[0]);
             gameState.selectedCountryIdx = countryIndices[0];
+            // Hot-seat never goes through chooseMap() - don't let a leftover
+            // Standard Game map selection from earlier this page session leak
+            // its background art in here.
+            gameState.selectedMapId = null;
+            applyMapBackground(null);
             guaranteeNearestAttackersForHumans();
 
             document.getElementById('startScreen').style.display = 'none';
@@ -6010,6 +6032,10 @@
                 turn: gameState.turn,
                 difficulty: currentDifficulty,
                 playerCountryId: gameState.playerCountry.id,
+                // Which map-select sector this Standard Game was started from (see
+                // chooseMap()) - purely cosmetic (which background art is showing),
+                // null for anything that never went through that screen.
+                selectedMapId: typeof gameState.selectedMapId === 'number' ? gameState.selectedMapId : null,
                 camera: { x: camera.x, y: camera.y, zoom: camera.zoom },
                 spaceMines: spaceMines.map(m => ({ x: m.x, y: m.y, countryId: m.countryId, hp: m.hp })),
                 resourceDeposits: resourceDeposits.map(d => ({ x: d.x, y: d.y, resources: d.resources })),
@@ -6057,6 +6083,10 @@
             gameState.turn = saveData.turn;
             gameState.turnTimeRemaining = TURN_TIME_SECONDS;
             setDifficulty(saveData.difficulty || 'normal');
+            // A save from before map-select existed has no selectedMapId at all -
+            // falls back to the default background, same as null.
+            gameState.selectedMapId = typeof saveData.selectedMapId === 'number' ? saveData.selectedMapId : null;
+            applyMapBackground(gameState.selectedMapId);
 
             if (saveData.camera) {
                 camera.x = saveData.camera.x;
@@ -6401,6 +6431,11 @@
             // stage would inherit and render/heal from a Standard Game leftover.
             galaxyCores.length = 0;
             blackHoles.length = 0; // ditto - Standard Game only, same reasoning
+            // Map selection is a Standard Game concept too - Campaign never goes
+            // through chooseMap(), so don't let a leftover selection from an
+            // earlier Standard Game this page session leak its background art in.
+            gameState.selectedMapId = null;
+            applyMapBackground(null);
 
             const outpostTotal = stage.objectives.filter(o => o.kind === 'outpost').length;
 
