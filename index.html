@@ -1629,11 +1629,20 @@
         // Shared with Unit.canAttackBuildings() below (single source of truth - see
         // its own comment on the AI build-weighting fix that reads this same list)
         // so the two can never quietly drift apart.
-        const BUILDING_ATTACKER_TYPES = ['thunderwing', 'shadowglider', 'wavecrusher', 'stormbreaker', 'boomcannon', 'ironbeast', 'groundpounders', 'cyborgdreadnought', 'phantomstrike'];
+        const BUILDING_ATTACKER_TYPES = ['thunderwing', 'shadowglider', 'wavecrusher', 'stormbreaker', 'boomcannon', 'ironbeast', 'groundpounders', 'cyborgdreadnought', 'phantomstrike', 'vrekthul', 'zhanqorr', 'krallosith'];
 
         // Shared with Unit.isGroundUnit() below, same reasoning as BUILDING_ATTACKER_TYPES
         // just above - a single source of truth so the two can never drift apart.
         const GROUND_UNIT_TYPES = ['groundpounders', 'ironbeast', 'boomcannon'];
+
+        // Every unit type an alien faction spawns directly from its own
+        // aiTurn() branch, never through buildUnit()/canBuildUnit() - a
+        // regular nation's build rolls must never pick one of these just
+        // because it happens to also appear in BUILDING_ATTACKER_TYPES (see
+        // that rush-build filter's own comment: canBuildUnit() would say yes,
+        // since there's no UNIT_BUILDING_REQUIREMENTS entry to gate it, but
+        // buildUnit() has no cost entry for these and silently no-ops).
+        const ALIEN_ONLY_UNIT_TYPES = ['cyborgdreadnought', 'zoonparasite', 'roufestreal', 'vrekthul', 'zhanqorr', 'krallosith'];
 
         const UNIT_SPEEDS = {
             'blazefalcon': 3.5,
@@ -1659,6 +1668,10 @@
             'boomcannon': 0.8,
         'zoonparasite': 5.0,
         'roufestreal': 2.0,
+        // Map 2's roaming raider packs (2026-09-12) - see RAIDER_PACK_TYPES.
+        'vrekthul': 1.3,
+        'zhanqorr': 1.1,
+        'krallosith': 0.9,
         // Was missing entirely - every other buildable unit has a tuned entry
         // here, but 'miningship' fell through to the generic default (2) in
         // Unit.update() instead. It happened to still move, just untuned and
@@ -1825,7 +1838,7 @@
         // attacker able to reach the player within 12 turns, confirmed by
         // direct simulation.
         function assignAttackTargets() {
-            const regularNations = gameState.countries.filter(c => !c.isCyborg && !c.isZoonester && !c.isRoufestreal);
+            const regularNations = gameState.countries.filter(c => !c.isCyborg && !c.isZoonester && !c.isRoufestreal && !c.isRaiderPack);
             const alienNations = gameState.countries.filter(c => c.isCyborg || c.isZoonester || c.isRoufestreal);
 
             gameState.countries.forEach(c => { c.attackTargetIds = []; });
@@ -1936,7 +1949,7 @@
         // startHotSeatGame()), once isPlayer is actually set, layered on top of
         // (never replacing) whatever the general pairing already assigned.
         function guaranteeNearestAttackersForHumans() {
-            const regularNations = gameState.countries.filter(c => !c.isCyborg && !c.isZoonester && !c.isRoufestreal);
+            const regularNations = gameState.countries.filter(c => !c.isCyborg && !c.isZoonester && !c.isRoufestreal && !c.isRaiderPack);
             const alienNations = gameState.countries.filter(c => c.isCyborg || c.isZoonester || c.isRoufestreal);
             const livingRegularNow = regularNations.filter(c => c.island.buildings.some(b => !b.destroyed));
             const livingAlienNow = alienNations.filter(c => c.island.buildings.some(b => !b.destroyed));
@@ -1999,7 +2012,7 @@
             // a uniformly random replacement here - possibly clear across the
             // galaxy - quietly undoing that guarantee for the rest of the match.
             const livingRegular = gameState.countries.filter(c =>
-                aliveIds.includes(c.id) && !c.isCyborg && !c.isZoonester && !c.isRoufestreal);
+                aliveIds.includes(c.id) && !c.isCyborg && !c.isZoonester && !c.isRoufestreal && !c.isRaiderPack);
             const livingAlien = gameState.countries.filter(c =>
                 aliveIds.includes(c.id) && (c.isCyborg || c.isZoonester || c.isRoufestreal));
             const nearestOf = (pool, victim) => pool.reduce((best, c) =>
@@ -2279,6 +2292,10 @@
             'stormbreakerbomber': 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Ships/Stormbreakerbomber.png',
             'frostwing': 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Ships/Frostwing.png',
             'roufestreal': 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Ships/Roufestreal.png',
+            // Map 2's roaming raider packs (2026-09-12) - see RAIDER_PACK_TYPES.
+            'vrekthul': 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Map2Enemies/vrekthul.png',
+            'zhanqorr': 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Map2Enemies/zhanqorr.png',
+            'krallosith': 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Map2Enemies/krallosith.png',
             'struct0': 'https://raw.githubusercontent.com/TitanBusinessPros/SGA-1/main/Building-2.png',
             'struct1': 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Structures/Building-3.png',
             'struct2': 'https://raw.githubusercontent.com/TitanBusinessPros/SGA-1/main/Building-4.png',
@@ -2439,6 +2456,11 @@
             'boomcannon': '255,136,68',
             'roufestreal': '160,0,160',
             'zoonparasite': '157,0,255',
+            // Map 2's roaming raider packs (2026-09-12, per direct request -
+            // "they all shoot a different color laser") - see RAIDER_PACK_TYPES.
+            'vrekthul': '255,0,120',
+            'zhanqorr': '120,255,0',
+            'krallosith': '0,140,255',
         };
         const DEFAULT_LASER_COLOR = '50,255,50'; // matches the old default green exactly - anything not listed above doesn't regress
 
@@ -2711,11 +2733,49 @@
             8: 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Maps/map-8.jpg',
             9: 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Maps/map-9.jpg',
         };
+        // Map 2's own hostile faction (2026-09-12, per direct request): three
+        // packs of RAIDER_PACK_SIZE ships each, patrolling independently of one
+        // another and of the existing Cyborg/Zoonester/Roufestreal aliens -
+        // "Alien nations and aliens do not attack each other anywhere on this
+        // game" applies to these too, so they only ever hunt Earth nations
+        // (see Country.aiTurn()'s isRaiderPack branch for the actual rule).
+        // Made-up names, per direct request ("not any names listed anywhere
+        // in the real word") - not real words in any language, not reused
+        // from anywhere else in this game.
+        const RAIDER_PACK_SIZE = 5;
+        const RAIDER_PACK_TYPES = [
+            {
+                type: 'vrekthul', label: 'Vrekthul Raider', laserColor: '255,0,120',
+                hp: 300, attack: 190, range: 480, speed: 1.3,
+            },
+            {
+                type: 'zhanqorr', label: 'Zhanqorr Widow', laserColor: '120,255,0',
+                hp: 300, attack: 220, range: 520, speed: 1.1,
+            },
+            {
+                type: 'krallosith', label: 'Krallosith Warhulk', laserColor: '0,140,255',
+                hp: 300, attack: 250, range: 550, speed: 0.9,
+            },
+        ];
+        // Sentinel ids, well clear of any real country id (0-26) - reserved 3
+        // slots, one per pack. Negative so there's no risk of ever colliding
+        // with a real country as the roster grows.
+        const RAIDER_PACK_BASE_ID = -101;
+
         const MAP_CONFIGS = Array.from({ length: 10 }, (_, i) => ({
             id: i,
             name: `Sector ${i + 1}`,
             imageUrl: MAP_IMAGE_URLS[i + 1] || null,
             ...CURRENT_MAP_STATS,
+        }));
+        // Sector 2 (id 1) is the first sector with something genuinely
+        // different underneath it, not just a placeholder - see
+        // RAIDER_PACK_TYPES above. Layered on top of the shared placeholder
+        // stats (still 20 nations, still the same 4 landmarks) as its own
+        // "Roaming Threats" section, not a replacement.
+        MAP_CONFIGS[1].roamingThreats = RAIDER_PACK_TYPES.map(p => ({
+            icon: '☠️', label: p.label, count: RAIDER_PACK_SIZE,
+            desc: `${p.hp} HP each. Patrols the galaxy in a pack of ${RAIDER_PACK_SIZE}, hunting only Earth nations - never the Cyborg/Zoonester/Roufestreal aliens, never another raider pack. Once a pack reaches a planet, it lays siege until that planet is destroyed or the whole pack is.`,
         }));
 
         // Direct report: picking a sector on the map-select screen was only
@@ -2745,6 +2805,68 @@
             img.onerror = () => { mapBackgroundImage = null; mapBackgroundLoaded = false; }; // fall back to default
             img.src = url;
             mapBackgroundImage = img;
+        }
+
+        // Removes any previously-spawned raider packs (switching away from
+        // Sector 2, or to a fresh game) - filtered out of gameState.countries
+        // like any other cleared roster, not just emptied in place, since
+        // other code holds no separate reference to this array the way it
+        // might for galaxyCores/blackHoles.
+        function clearAlienRaiderPacks() {
+            gameState.countries = gameState.countries.filter(c => !c.isRaiderPack);
+        }
+
+        // Map 2 only (see chooseMap()) - three packs of RAIDER_PACK_SIZE ships,
+        // each modeled as its own lightweight "country" (see isRaiderPack
+        // throughout: assignAttackTargets()/guaranteeNearestAttackersForHumans()/
+        // reassignEliminatedAttackTargets() all exclude it from the normal
+        // nation/alien assignment system; Country.aiTurn()'s own isRaiderPack
+        // branch is where the actual patrol/siege/target-filtering logic
+        // lives) rather than a bespoke parallel system. This is deliberate:
+        // every existing piece of machinery that already scans
+        // gameState.countries broadly - per-frame movement in gameLoop(),
+        // aiTurn()'s attack loops for every OTHER country, Defense Gun
+        // auto-fire, and the player's own click-to-attack hit-testing - picks
+        // these up completely for free, with no extra plumbing, the same way
+        // it already handles any real nation. The only things that need to
+        // know these AREN'T a real planet are: an empty buildings array (so
+        // checkGameOver()'s victory check and the elimination counter in
+        // nextTurn() both naturally ignore them - see those functions' own
+        // isRaiderPack guards) and a stub island object that draws nothing
+        // and is skipped on the minimap.
+        function spawnAlienRaiderPacks() {
+            clearAlienRaiderPacks();
+            const bounds = getGalaxyBounds();
+            RAIDER_PACK_TYPES.forEach((def, packIdx) => {
+                const id = RAIDER_PACK_BASE_ID - packIdx;
+                const stubIsland = {
+                    x: bounds.minX + Math.random() * (bounds.maxX - bounds.minX),
+                    y: bounds.minY + Math.random() * (bounds.maxY - bounds.minY),
+                    size: 0,
+                    buildings: [],
+                    draw() {},
+                    getHarbor() { return null; },
+                    getDefenseGun() { return null; },
+                    getResearchLab() { return null; },
+                    getProductionBuilding() { return null; },
+                    collidesWith() { return false; },
+                };
+                const country = new Country(id, def.label + ' Pack', getColorForRaiderPack(def), stubIsland, false);
+                country.isRaiderPack = true;
+                country.raiderPatrolTargetId = null; // see aiTurn()'s isRaiderPack branch
+                for (let i = 0; i < RAIDER_PACK_SIZE; i++) {
+                    const angle = (i / RAIDER_PACK_SIZE) * Math.PI * 2;
+                    const unit = new Unit(stubIsland.x + Math.cos(angle) * 150, stubIsland.y + Math.sin(angle) * 150, def.type, id);
+                    country.units.push(unit);
+                }
+                gameState.countries.push(country);
+            });
+        }
+        // Small helper only to keep the color in one obvious place (matches
+        // each pack's own getColor()/LASER_COLORS entry) rather than a fourth
+        // copy of the same hex values.
+        function getColorForRaiderPack(def) {
+            return { 'vrekthul': '#ff0078', 'zhanqorr': '#78ff00', 'krallosith': '#0090ff' }[def.type] || '#888888';
         }
 
         let gameState = {
@@ -3350,7 +3472,7 @@
             // restriction was removed 2026-08-28 at the user's request, so vessels move
             // exactly like aircraft now: no collision with planets, ever.
             isVessel() {
-                return ['deepglider', 'stormbreaker', 'wavecrusher', 'skyfortress', 'cargohauler', 'tidebreaker', 'whisperwind', 'cyborgdreadnought', 'zoonparasite', 'roufestreal', 'miningship'].includes(this.type);
+                return ['deepglider', 'stormbreaker', 'wavecrusher', 'skyfortress', 'cargohauler', 'tidebreaker', 'whisperwind', 'cyborgdreadnought', 'zoonparasite', 'roufestreal', 'miningship', 'vrekthul', 'zhanqorr', 'krallosith'].includes(this.type);
             }
 
             isMiningShip() {
@@ -3382,7 +3504,9 @@
                     'groundpounders': 40, 'ironbeast': 100, 'boomcannon': 70,
                 'zoonparasite': 200,
                 'roufestreal': 100,
-                'miningship': 40 // deliberately fragile - "no defense" per the mining economy redesign
+                'miningship': 40, // deliberately fragile - "no defense" per the mining economy redesign
+                // Map 2's roaming raider packs (2026-09-12, per direct request) - 300 HP each, explicitly specified.
+                'vrekthul': 300, 'zhanqorr': 300, 'krallosith': 300
                 };
                 const baseHP = hpMap[this.type] || 100;
 
@@ -3430,7 +3554,9 @@
                     'groundpounders': 15, 'ironbeast': 45, 'boomcannon': 60,
                 'zoonparasite': 0,
                 'roufestreal': 0,
-                'miningship': 0 // no weapons - "no defense" per the mining economy redesign
+                'miningship': 0, // no weapons - "no defense" per the mining economy redesign
+                // Map 2's roaming raider packs (2026-09-12) - see RAIDER_PACK_TYPES.
+                'vrekthul': 190, 'zhanqorr': 220, 'krallosith': 250
                 };
                 const basePower = powerMap[this.type] || 20;
 
@@ -3478,7 +3604,9 @@
                     'groundpounders': 60, 'ironbeast': 90, 'boomcannon': 180,
                 'zoonparasite': 500,
                 'roufestreal': 150,
-                'miningship': 0
+                'miningship': 0,
+                // Map 2's roaming raider packs (2026-09-12) - see RAIDER_PACK_TYPES.
+                'vrekthul': 480, 'zhanqorr': 520, 'krallosith': 550
                 };
                 const baseRange = rangeMap[this.type] || 100;
                 
@@ -3500,7 +3628,9 @@
                     'roufestreal': 12,
                     'groundpounders': 5, 'ironbeast': 7, 'boomcannon': 6,
                 'zoonparasite': 8,
-                'miningship': 9
+                'miningship': 9,
+                // Map 2's roaming raider packs (2026-09-12) - see RAIDER_PACK_TYPES.
+                'vrekthul': 14, 'zhanqorr': 15, 'krallosith': 18
                 };
                 return (sizeMap[this.type] || 5) * UNIT_SCALE;
             }
@@ -3525,7 +3655,9 @@
                     'ironbeast': '#666666',
                     'boomcannon': '#ff8844',
                 'zoonparasite': '#9d00ff',
-                'miningship': '#ffd700'
+                'miningship': '#ffd700',
+                // Map 2's roaming raider packs (2026-09-12) - matches each type's LASER_COLORS entry.
+                'vrekthul': '#ff0078', 'zhanqorr': '#78ff00', 'krallosith': '#0090ff'
                 };
                 return colorMap[this.type] || '#ffffff';
             }
@@ -4161,6 +4293,92 @@
             }
 
             aiTurn() {
+                // Map 2's roaming raider packs (2026-09-12, per direct request) -
+                // see RAIDER_PACK_TYPES/spawnAlienRaiderPacks(). No economy, no
+                // building, no respawning - just this fixed pack of ships,
+                // hunting Earth nations only ("Alien nations and aliens do not
+                // attack each other anywhere on this game" - isValidRaiderTarget
+                // below excludes Cyborg/Zoonester/Roufestreal and every other
+                // raider pack, leaving only the 20 regular nations).
+                if (this.isRaiderPack) {
+                    const activeUnits = this.units.filter(u => u.hp > 0);
+                    if (activeUnits.length === 0) return; // wiped out - nothing left, ever (no respawning)
+
+                    const isValidRaiderTarget = (c) => c && !c.isCyborg && !c.isZoonester && !c.isRoufestreal && !c.isRaiderPack
+                        && c.island.buildings.some(b => !b.destroyed);
+
+                    // "Once they show up to a planet they don't leave until they
+                    // destroy it or get destroyed" - keep whatever target is
+                    // already locked as long as it's still standing; only pick a
+                    // new one once it's gone (or nothing was locked yet).
+                    let target = gameState.countries.find(c => c.id === this.raiderPatrolTargetId);
+                    if (!isValidRaiderTarget(target)) {
+                        const anchor = activeUnits[0];
+                        let nearest = null, nearestDist = Infinity;
+                        gameState.countries.forEach(c => {
+                            if (!isValidRaiderTarget(c)) return;
+                            const d = Math.hypot(c.island.x - anchor.x, c.island.y - anchor.y);
+                            if (d < nearestDist) { nearestDist = d; nearest = c; }
+                        });
+                        target = nearest;
+                        this.raiderPatrolTargetId = nearest ? nearest.id : null;
+                    }
+
+                    // Movement: head for the locked target - re-affirmed every
+                    // turn (harmless once already there), same pattern as every
+                    // other alien faction's movement branch.
+                    if (target) {
+                        activeUnits.forEach(unit => {
+                            if (unit.hasAttacked) return;
+                            const approach = unit.canAttackBuildings()
+                                ? buildingApproachPosition(target.island)
+                                : huntApproachPosition(target.island);
+                            unit.moveTo(approach.x, approach.y);
+                        });
+                    }
+
+                    // Attack: "attack all ships they encounter" - opportunistic
+                    // combat against ANY Earth nation in range, not just the
+                    // locked target, same shared closestUnit-then-building-
+                    // fallback pattern the regular attack loop below uses.
+                    activeUnits.forEach(attacker => {
+                        if (attacker.hasAttacked) return;
+                        gameState.countries.some(country => {
+                            if (!isValidRaiderTarget(country)) return false;
+                            let closestUnit = null, closestDist = Infinity;
+                            country.units.forEach(u => {
+                                if (u.isGroundUnit() && u.isInHarbor) return;
+                                const d = Math.hypot(u.x - attacker.x, u.y - attacker.y);
+                                if (d < attacker.getRange() && d < closestDist) { closestUnit = u; closestDist = d; }
+                            });
+                            if (closestUnit) {
+                                if (country.isPlayer) fireLaserEffect(attacker.type, attacker.x, attacker.y, closestUnit.x, closestUnit.y);
+                                playLaserAttackSound(attacker.countryId, closestUnit.countryId);
+                                closestUnit.hp -= attacker.getAttackPower();
+                                attacker.hasAttacked = true;
+                                return true;
+                            }
+                            if (attacker.canAttackBuildings()) {
+                                let nearestBuilding = null, nearestBuildingDist = Infinity;
+                                country.island.buildings.forEach(b => {
+                                    if (b.destroyed) return;
+                                    const bd = Math.hypot((country.island.x + b.x) - attacker.x, (country.island.y + b.y) - attacker.y);
+                                    if (bd < nearestBuildingDist) { nearestBuildingDist = bd; nearestBuilding = b; }
+                                });
+                                if (nearestBuilding && nearestBuildingDist < attacker.getRange()) {
+                                    nearestBuilding.takeDamage(attacker.getAttackPower(), attacker.countryId);
+                                    attacker.hasAttacked = true;
+                                    return true;
+                                }
+                            }
+                            return false;
+                        });
+                    });
+
+                    this.units = this.units.filter(u => u.hp > 0);
+                    return;
+                }
+
                 // Zoonester AI - produces 1 parasite every 7 turns, highly aggressive
                 if (this.isZoonester) {
                     this.zoonesterTurnCounter++;
@@ -4442,12 +4660,12 @@
                     // wouldn't get anything moving any sooner, just spend the resources.
                     const hasAttacker = this.units.some(u => BUILDING_ATTACKER_TYPES.includes(u.type) && !u.isGroundUnit() && u.hp > 0);
                     if (!hasAttacker && this.resources >= 50) {
-                        // cyborgdreadnought excluded too - it's alien-only, spawned directly by
-                        // aiTurn() elsewhere, never through buildUnit() (see UNIT_BUILDING_REQUIREMENTS'
-                        // own comment) - canBuildUnit() would say yes (no building-requirement
-                        // entry to check), but buildUnit() has no cost for it and silently no-ops.
+                        // Alien-only types excluded too (see ALIEN_ONLY_UNIT_TYPES'
+                        // own comment) - canBuildUnit() would say yes (no building-
+                        // requirement entry to check), but buildUnit() has no cost
+                        // entry for them and silently no-ops.
                         const rushTypes = BUILDING_ATTACKER_TYPES.filter(t =>
-                            t !== 'cyborgdreadnought' && !GROUND_UNIT_TYPES.includes(t) && this.canBuildUnit(t));
+                            !ALIEN_ONLY_UNIT_TYPES.includes(t) && !GROUND_UNIT_TYPES.includes(t) && this.canBuildUnit(t));
                         if (rushTypes.length > 0) this.buildUnit(rushTypes[Math.floor(Math.random() * rushTypes.length)]);
                     }
                 }
@@ -5369,6 +5587,11 @@
         function chooseMap(mapId) {
             gameState.selectedMapId = mapId;
             applyMapBackground(mapId);
+            // Sector 2 only - see RAIDER_PACK_TYPES. Explicitly cleared for
+            // every other sector too, in case a prior game this same page
+            // session left packs behind (chooseMap() is the one place a
+            // Standard Game roster is finalized before play starts).
+            if (mapId === 1) spawnAlienRaiderPacks(); else clearAlienRaiderPacks();
             document.getElementById('mapSelectScreen').style.display = 'none';
             startGame(pendingCountryIdx);
         }
@@ -5422,9 +5645,10 @@
             gameState.selectedCountryIdx = countryIndices[0];
             // Hot-seat never goes through chooseMap() - don't let a leftover
             // Standard Game map selection from earlier this page session leak
-            // its background art in here.
+            // its background art (or Sector 2's raider packs) in here.
             gameState.selectedMapId = null;
             applyMapBackground(null);
+            clearAlienRaiderPacks();
             guaranteeNearestAttackersForHumans();
 
             document.getElementById('startScreen').style.display = 'none';
@@ -5872,7 +6096,12 @@
                 if (diedCount > 0) lifetimeStats.unitsLost += diedCount;
             }
             gameState.countries.forEach(c => {
-                if (!c.isPlayer && !c.eliminatedCounted && c.island.buildings.every(b => b.destroyed)) {
+                // isRaiderPack guard: an empty buildings array makes .every()
+                // vacuously true from the moment it spawns, which would
+                // otherwise count Sector 2's raider packs as "eliminated" (for
+                // free, permanently) the instant they exist rather than when
+                // their ships are actually destroyed.
+                if (!c.isPlayer && !c.isRaiderPack && !c.eliminatedCounted && c.island.buildings.every(b => b.destroyed)) {
                     c.eliminatedCounted = true;
                     lifetimeStats.nationsEliminated++;
                 }
@@ -6083,6 +6312,10 @@
                     cyborgTurnCounter: c.cyborgTurnCounter,
                     zoonesterTurnCounter: c.zoonesterTurnCounter,
                     roufestrealTurnCounter: c.roufestrealTurnCounter,
+                    // Sector 2's raider packs only (see isRaiderPack) - which
+                    // planet a pack has already locked onto besieging, so a
+                    // reload doesn't make it forget mid-siege and reconsider.
+                    raiderPatrolTargetId: c.raiderPatrolTargetId,
                     researchedTech: Array.from(c.researchedTech),
                     activeResearch: c.activeResearch,
                     // Fog of war (2026-09-04) - real bug found while investigating a
@@ -6125,6 +6358,14 @@
             // falls back to the default background, same as null.
             gameState.selectedMapId = typeof saveData.selectedMapId === 'number' ? saveData.selectedMapId : null;
             applyMapBackground(gameState.selectedMapId);
+            // Sector 2's raider packs, if this save has any, need to exist at
+            // the same gameState.countries indices they occupied when this was
+            // saved BEFORE the per-country restore loop below runs (it maps
+            // saveData.countries[idx] -> gameState.countries[idx] positionally) -
+            // spawnAlienRaiderPacks() always appends in the same fixed order,
+            // so this reproduces that layout exactly, same as a fresh
+            // chooseMap() call would have.
+            if (gameState.selectedMapId === 1) spawnAlienRaiderPacks(); else clearAlienRaiderPacks();
 
             if (saveData.camera) {
                 camera.x = saveData.camera.x;
@@ -6161,6 +6402,7 @@
                 country.cyborgTurnCounter = savedCountry.cyborgTurnCounter || 0;
                 country.zoonesterTurnCounter = savedCountry.zoonesterTurnCounter || 0;
                 country.roufestrealTurnCounter = savedCountry.roufestrealTurnCounter || 0;
+                if (country.isRaiderPack) country.raiderPatrolTargetId = typeof savedCountry.raiderPatrolTargetId === 'number' ? savedCountry.raiderPatrolTargetId : null;
                 country.researchedTech = new Set(savedCountry.researchedTech || []);
                 country.activeResearch = savedCountry.activeResearch || null;
                 // Fog of war (2026-09-04) - falls back to whatever this country
@@ -6177,7 +6419,13 @@
                 });
 
                 country.units = savedCountry.units.map(savedUnit => {
-                    const unit = new Unit(savedUnit.x, savedUnit.y, savedUnit.type, idx);
+                    // country.id, not idx (array position) - identical for the
+                    // normal 27-country roster (ids are assigned in the same
+                    // order as array position), but the two diverge for Sector
+                    // 2's raider packs (sentinel negative ids - see
+                    // RAIDER_PACK_BASE_ID), where using idx here would silently
+                    // reassign every reloaded unit to the wrong owner.
+                    const unit = new Unit(savedUnit.x, savedUnit.y, savedUnit.type, country.id);
                     unit.hp = savedUnit.hp;
                     unit.hasAttacked = savedUnit.hasAttacked;
                     unit.isInHarbor = savedUnit.isInHarbor;
@@ -6189,7 +6437,7 @@
 
                     if (savedUnit.cargo) {
                         unit.cargo = savedUnit.cargo.map(savedCargo => {
-                            const cargoUnit = new Unit(0, 0, savedCargo.type, idx);
+                            const cargoUnit = new Unit(0, 0, savedCargo.type, country.id);
                             cargoUnit.hp = savedCargo.hp;
                             cargoUnit.isInHarbor = false;
                             return cargoUnit;
@@ -6471,9 +6719,11 @@
             blackHoles.length = 0; // ditto - Standard Game only, same reasoning
             // Map selection is a Standard Game concept too - Campaign never goes
             // through chooseMap(), so don't let a leftover selection from an
-            // earlier Standard Game this page session leak its background art in.
+            // earlier Standard Game this page session leak its background art
+            // (or Sector 2's raider packs) in.
             gameState.selectedMapId = null;
             applyMapBackground(null);
+            clearAlienRaiderPacks();
 
             const outpostTotal = stage.objectives.filter(o => o.kind === 'outpost').length;
 
@@ -7213,6 +7463,10 @@
             // homeworld vision already works on the main map.
             const fogActive = fogOfWarEnabled && !gameState.campaignActive && !!gameState.playerCountry;
             gameState.countries.forEach(country => {
+                // Sector 2's raider packs have no real planet - a fake dot at
+                // their arbitrary spawn point would be pure noise (see
+                // spawnAlienRaiderPacks()'s stub island).
+                if (country.isRaiderPack) return;
                 const isPlayer = country.isPlayer;
                 if (fogActive && !isPlayer && !isPointRevealed(gameState.playerCountry, country.island.x, country.island.y, country.island.size)) return;
                 const p = worldToMinimap(country.island.x, country.island.y);

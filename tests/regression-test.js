@@ -127,7 +127,7 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage, assignAttackTargets, guaranteeNearestAttackersForHumans, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS, randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER, nearestMinimapLandmark, spawnHotsun, damageNearHotsun, HOTSUN_IMAGE_URL, HOTSUN_SIZE, HOTSUN_RADIATION_RANGE, HOTSUN_DAMAGE_PERCENT, PLANET_SCALE, updateFogOfWar, toggleFogOfWar, drawMinimap, isPointRevealed, revealRegion, drawFogOfWarOverlay, isGroundUnitInCargo, BUILDING_ATTACKER_TYPES, ctx, MAP_CONFIGS, openMapSelect, closeMapSelect, chooseMap, populateMapGrid, showMapDetails, closeMapDetails, applyMapBackground, spaceBackgroundImage, SPACE_BACKGROUND_URL, MAP_IMAGE_URLS };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage, assignAttackTargets, guaranteeNearestAttackersForHumans, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS, randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER, nearestMinimapLandmark, spawnHotsun, damageNearHotsun, HOTSUN_IMAGE_URL, HOTSUN_SIZE, HOTSUN_RADIATION_RANGE, HOTSUN_DAMAGE_PERCENT, PLANET_SCALE, updateFogOfWar, toggleFogOfWar, drawMinimap, isPointRevealed, revealRegion, drawFogOfWarOverlay, isGroundUnitInCargo, BUILDING_ATTACKER_TYPES, ctx, MAP_CONFIGS, openMapSelect, closeMapSelect, chooseMap, populateMapGrid, showMapDetails, closeMapDetails, applyMapBackground, spaceBackgroundImage, SPACE_BACKGROUND_URL, MAP_IMAGE_URLS, RAIDER_PACK_TYPES, RAIDER_PACK_SIZE, RAIDER_PACK_BASE_ID, spawnAlienRaiderPacks, clearAlienRaiderPacks, ALIEN_ONLY_UNIT_TYPES };',
     context,
     { filename: 'grab-refs.js' }
 );
@@ -163,7 +163,8 @@ const {
     nearestMinimapLandmark, spawnHotsun, damageNearHotsun, HOTSUN_IMAGE_URL, HOTSUN_SIZE, HOTSUN_RADIATION_RANGE, HOTSUN_DAMAGE_PERCENT, PLANET_SCALE,
     updateFogOfWar, toggleFogOfWar, drawMinimap, isPointRevealed, revealRegion, drawFogOfWarOverlay, isGroundUnitInCargo, ctx,
     MAP_CONFIGS, openMapSelect, closeMapSelect, chooseMap, populateMapGrid, showMapDetails, closeMapDetails,
-    applyMapBackground, spaceBackgroundImage, SPACE_BACKGROUND_URL, MAP_IMAGE_URLS
+    applyMapBackground, spaceBackgroundImage, SPACE_BACKGROUND_URL, MAP_IMAGE_URLS,
+    RAIDER_PACK_TYPES, RAIDER_PACK_SIZE, RAIDER_PACK_BASE_ID, spawnAlienRaiderPacks, clearAlienRaiderPacks, ALIEN_ONLY_UNIT_TYPES
 } = context.__test;
 
 // ---------- Test data: the full combat unit roster ----------
@@ -2147,6 +2148,184 @@ check('populateMapGrid()/showMapDetails() render a sector\'s image when it has o
     if (!document.getElementById('mapDetailsContent').querySelector('.mapDetailBanner')) problems.push('Sector 2 details view is missing its banner image');
     showMapDetails(0); // Sector 1
     if (document.getElementById('mapDetailsContent').querySelector('.mapDetailBanner')) problems.push('Sector 1 has no art yet - its details view should not render a banner');
+    return problems;
+});
+
+// ---------- Map 2's raider packs (2026-09-12) ----------
+//    Three packs of RAIDER_PACK_SIZE ships each ("Vrekthul Raider",
+//    "Zhanqorr Widow", "Krallosith Warhulk" - made-up names per direct
+//    request), modeled as lightweight "countries" (isRaiderPack) rather than
+//    a bespoke parallel system specifically so every existing piece of combat/
+//    movement/rendering machinery that already scans gameState.countries
+//    broadly (per-frame movement, other countries' attack loops, Defense
+//    Guns, the player's own click-to-attack) picks them up for free. These
+//    checks cover the parts that AREN'T free: the isRaiderPack exclusions
+//    from the normal nation/alien assignment system, the empty-buildings
+//    trick that keeps them out of victory/elimination bookkeeping, and the
+//    actual patrol/siege/never-fight-aliens behavior in aiTurn().
+
+check('RAIDER_PACK_TYPES defines exactly 3 distinct, real-word-free ship types, each 300 HP with its own laser color', () => {
+    const problems = [];
+    if (!Array.isArray(RAIDER_PACK_TYPES) || RAIDER_PACK_TYPES.length !== 3) problems.push(`expected 3 RAIDER_PACK_TYPES, got ${RAIDER_PACK_TYPES && RAIDER_PACK_TYPES.length}`);
+    const seenColors = new Set();
+    (RAIDER_PACK_TYPES || []).forEach(def => {
+        if (def.hp !== 300) problems.push(`${def.type}: expected 300 HP, got ${def.hp}`);
+        if (!def.laserColor) problems.push(`${def.type}: no laser color`);
+        if (seenColors.has(def.laserColor)) problems.push(`${def.type}: laser color ${def.laserColor} is reused by another pack type - each should be distinct`);
+        seenColors.add(def.laserColor);
+        if (LASER_COLORS[def.type] !== def.laserColor) problems.push(`${def.type}: LASER_COLORS entry doesn't match RAIDER_PACK_TYPES' own laserColor`);
+    });
+    return problems;
+});
+
+check('getColorForRaiderPack() returns a distinct real hex color for each of the 3 pack types', () => {
+    const seen = new Set();
+    const problems = [];
+    RAIDER_PACK_TYPES.forEach(def => {
+        const color = vm.runInContext(`getColorForRaiderPack(${JSON.stringify(def)})`, context);
+        if (!/^#[0-9a-f]{6}$/i.test(color)) problems.push(`${def.type}: expected a hex color, got ${color}`);
+        if (seen.has(color)) problems.push(`${def.type}: color ${color} is reused by another pack type`);
+        seen.add(color);
+    });
+    return problems;
+});
+
+check('spawnAlienRaiderPacks() creates exactly 3 packs of RAIDER_PACK_SIZE ships each, all flagged isRaiderPack with no buildings', () => {
+    gameState.countries = [];
+    gameState.playerCountry = null;
+    vm.runInContext('initGame();', context, { filename: 'raider-pack-spawn-setup.js' });
+    spawnAlienRaiderPacks();
+    const problems = [];
+    const packs = gameState.countries.filter(c => c.isRaiderPack);
+    if (packs.length !== 3) problems.push(`expected 3 raider-pack countries, got ${packs.length}`);
+    packs.forEach(c => {
+        if (c.units.length !== RAIDER_PACK_SIZE) problems.push(`${c.name}: expected ${RAIDER_PACK_SIZE} units, got ${c.units.length}`);
+        if (c.island.buildings.length !== 0) problems.push(`${c.name}: expected an empty buildings array, got ${c.island.buildings.length}`);
+        if (c.units.some(u => u.hp !== 300)) problems.push(`${c.name}: not every unit spawned with 300 HP`);
+        if (c.id >= 0) problems.push(`${c.name}: expected a negative sentinel id, got ${c.id}`);
+    });
+    clearAlienRaiderPacks();
+    return problems;
+});
+
+check('clearAlienRaiderPacks() removes every raider-pack country and nothing else', () => {
+    gameState.countries = [];
+    gameState.playerCountry = null;
+    vm.runInContext('initGame();', context, { filename: 'raider-pack-clear-setup.js' });
+    const before = gameState.countries.length;
+    spawnAlienRaiderPacks();
+    if (gameState.countries.length !== before + 3) return [`expected spawnAlienRaiderPacks() to add exactly 3 countries, went from ${before} to ${gameState.countries.length}`];
+    clearAlienRaiderPacks();
+    if (gameState.countries.length !== before) return [`expected clearAlienRaiderPacks() to restore the original ${before} countries, got ${gameState.countries.length}`];
+    if (gameState.countries.some(c => c.isRaiderPack)) return ['a raider-pack country survived clearAlienRaiderPacks()'];
+    return [];
+});
+
+check('chooseMap() only spawns raider packs for Sector 2 (mapId 1), and clears them for every other sector', () => {
+    gameState.countries = [];
+    gameState.playerCountry = null;
+    vm.runInContext('initGame();', context, { filename: 'raider-pack-choosemap-setup.js' });
+    openMapSelect(0);
+    chooseMap(1); // Sector 2
+    const problems = [];
+    if (gameState.countries.filter(c => c.isRaiderPack).length !== 3) problems.push('chooseMap(1) (Sector 2) should spawn the 3 raider packs');
+
+    gameState.countries = [];
+    gameState.playerCountry = null;
+    vm.runInContext('initGame();', context, { filename: 'raider-pack-choosemap-setup2.js' });
+    openMapSelect(0);
+    chooseMap(4); // Sector 5 - no raiders
+    if (gameState.countries.some(c => c.isRaiderPack)) problems.push('chooseMap(4) (Sector 5) should not have any raider packs');
+    return problems;
+});
+
+check('startHotSeatGame() and startCampaignStage() both clear any leftover raider packs - only chooseMap() ever spawns them', () => {
+    const problems = [];
+    gameState.countries = [];
+    gameState.playerCountry = null;
+    vm.runInContext('initGame();', context, { filename: 'raider-pack-hotseat-setup.js' });
+    spawnAlienRaiderPacks();
+    startHotSeatGame([0, 1]);
+    if (gameState.countries.some(c => c.isRaiderPack)) problems.push('startHotSeatGame() should clear any leftover raider packs');
+
+    spawnAlienRaiderPacks();
+    selectCampaignNation(0);
+    startCampaignStage(0);
+    if (gameState.countries.some(c => c.isRaiderPack)) problems.push('startCampaignStage() should clear any leftover raider packs');
+    return problems;
+});
+
+check('a raider pack is excluded from the normal regular/alien nation assignment system entirely', () => {
+    gameState.countries = [];
+    gameState.playerCountry = null;
+    vm.runInContext('initGame();', context, { filename: 'raider-pack-assignment-setup.js' });
+    spawnAlienRaiderPacks();
+    assignAttackTargets();
+    const problems = [];
+    const packs = gameState.countries.filter(c => c.isRaiderPack);
+    packs.forEach(c => {
+        if (c.attackTargetIds.length !== 0) problems.push(`${c.name} was assigned a target by assignAttackTargets() - it should never participate in that system`);
+    });
+    gameState.countries.filter(c => !c.isRaiderPack).forEach(c => {
+        if ((c.attackTargetIds || []).some(id => packs.some(p => p.id === id))) problems.push(`${c.name} was assigned a raider pack as its rival - raider packs must never be anyone's assigned target`);
+    });
+    startGame(0);
+    guaranteeNearestAttackersForHumans();
+    const humanAttackers = gameState.countries.filter(c => (c.attackTargetIds || []).includes(gameState.playerCountry.id));
+    if (humanAttackers.some(c => c.isRaiderPack)) problems.push('guaranteeNearestAttackersForHumans() assigned a raider pack as the human\'s guaranteed attacker');
+    clearAlienRaiderPacks();
+    return problems;
+});
+
+check('an empty-buildings raider pack can never block victory or get miscounted as "eliminated" the instant it spawns', () => {
+    gameState.countries = [];
+    gameState.playerCountry = null;
+    vm.runInContext('initGame();', context, { filename: 'raider-pack-victory-setup.js' });
+    spawnAlienRaiderPacks();
+    startGame(0);
+    // Destroy every real (non-raider-pack, non-player) country's buildings -
+    // if the raider packs' empty-buildings island were counted as "still
+    // standing" or "already eliminated" incorrectly, this would misfire.
+    gameState.countries.forEach(c => {
+        if (c.isPlayer || c.isRaiderPack) return;
+        c.island.buildings.forEach(b => { b.destroyed = true; b.hp = 0; });
+    });
+    // A prior check elsewhere in this suite may have left these set -
+    // campaignActive in particular would route checkGameOver() into its
+    // Campaign-only early return, skipping the Standard Game victory check
+    // entirely regardless of how many enemies are left.
+    gameState.paused = false;
+    gameState.campaignActive = false;
+    const before = lifetimeStats.nationsEliminated;
+    nextTurn();
+    const problems = [];
+    document.getElementById('gameOverScreen').classList.remove('victory', 'defeat');
+    checkGameOver();
+    if (!document.getElementById('gameOverScreen').classList.contains('victory')) problems.push('destroying every real nation should trigger victory even with raider packs still alive');
+    const raiderPacksNewlyCounted = lifetimeStats.nationsEliminated - before - (gameState.countries.filter(c => !c.isPlayer && !c.isRaiderPack).length);
+    if (raiderPacksNewlyCounted > 0) problems.push('a raider pack got counted in lifetimeStats.nationsEliminated just for existing with 0 buildings');
+    clearAlienRaiderPacks();
+    return problems;
+});
+
+check('aiTurn()\'s isRaiderPack branch never targets Cyborg/Zoonester/Roufestreal or another raider pack - only Earth nations', () => {
+    gameState.countries = [];
+    gameState.playerCountry = null;
+    vm.runInContext('initGame();', context, { filename: 'raider-pack-targeting-setup.js' });
+    spawnAlienRaiderPacks();
+    startGame(0);
+    // Run several turns so every pack has had a chance to lock a target.
+    for (let t = 0; t < 5; t++) nextTurn();
+    const problems = [];
+    gameState.countries.filter(c => c.isRaiderPack).forEach(pack => {
+        if (pack.raiderPatrolTargetId === null) return; // hasn't locked one yet - fine, nothing to check
+        const target = gameState.countries.find(c => c.id === pack.raiderPatrolTargetId);
+        if (!target) { problems.push(`${pack.name}'s locked target id ${pack.raiderPatrolTargetId} doesn't exist`); return; }
+        if (target.isCyborg || target.isZoonester || target.isRoufestreal || target.isRaiderPack) {
+            problems.push(`${pack.name} locked onto ${target.name}, which is an alien/raider-pack - it must only ever target Earth nations`);
+        }
+    });
+    clearAlienRaiderPacks();
     return problems;
 });
 
