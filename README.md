@@ -13,11 +13,12 @@ file.
 ### Game modes
 
 - **Standard Game** — pick one of 12 named nations (USA, China, Russia, UK,
-  France, Japan, Germany, India, Brazil, and others) on a galaxy of up to 27
-  planets. Every other nation is AI-controlled. Also present: 4 Cyborg
-  planets, a Zoonester planet, and a Roufestreal mine-layer base — special,
-  non-selectable hostile factions with their own bespoke AI (not the regular
-  economy/build system below).
+  France, Japan, Germany, India, Brazil, and others), then a map sector (see
+  **Map Select** below), on a galaxy of 27 planets total: 20 ordinary nations
+  (the 12 named ones plus 8 unnamed outposts) and 7 alien planets (4 Cyborg,
+  2 Zoonester, 1 Roufestreal mine-layer base) — special, non-selectable
+  hostile factions with their own bespoke AI (not the regular economy/build
+  system below). Every other nation is AI-controlled.
 - **Campaign Mode** — a scripted series of stages against a specific rival,
   with pre-placed garrisons and stage objectives.
 - **Hot-seat multiplayer** — 2 to 12 human players sharing one device,
@@ -37,11 +38,26 @@ file.
   galaxy. A **Mining Ship** (no weapons, no defense) parked within range of
   one drains it at 100/hour (150/hour with the Improved Extraction tech).
   AI nations use this system too, not just the player.
-- **Tech tree** — each nation's Research Lab (always building slot 0, whatever
-  its flavor name) can research one node at a time, in real time. Currently:
-  *Mining Operations* (unlocks the Mining Ship), *Improved Extraction*
-  (mining-rate boost, requires Mining Operations first), and *Vessel Plating*
-  (+15% HP on vessel-class ships, independent branch).
+- **Tech tree** (`TECH_TREE`) — each nation's Research Lab (always building
+  slot 0, whatever its flavor name) can research one node at a time, in real
+  time. 13 nodes total: a 3-node prereq chain (*Mining Operations* →
+  *Improved Extraction* → *Deep Mining*, each boosting Mining Ship income
+  further) plus 10 independent upgrades researchable in any order — combat
+  stats (*Vessel Plating*, *Reinforced Hulls*, *Aerial Superiority*),
+  sensors/defense (*Extended Sensors*, *Fortified Defenses*, *Orbital
+  Resource Scanner*), utility (*Rapid Repair Crews*, *Expanded Cargo Bays*,
+  *Warp Drive Calibration*), and one unlock (*Advanced Shipyards* — gates the
+  Tidebreaker/Whisperwind vessels).
+- **Galaxy landmarks** (Standard Game only, spawned once by `initGame()`) —
+  four permanent, unowned map features: the **Galaxy Core** (heals any
+  nearby ship 15%/turn, guarded by 3 Cyborg warships) and **Galaxy Bounty**
+  (pays 50 gold/turn to whichever nation holds the most ships nearby, guarded
+  by 7) sit in opposite corners of the galaxy; **Hotsun** sits at the exact
+  center, damaging any ship that lingers nearby instead of healing it; the
+  **Nerfflasma Hole** (`updateBlackHoles()`) roams the galaxy in real time,
+  10,000 HP, capturing any ship that gets close until it's destroyed (which
+  frees everything it's holding) or provoked into chasing whoever last hit
+  it. Deliberately absent from the minimap, unlike the Core/Bounty/Hotsun.
 - **Per-nation bonuses** (`COUNTRY_BONUSES`) — each of the 12 playable
   nations has exactly 3 stat-multiplier bonuses (HP/attack/speed/range on
   specific unit types), each shown on the country-select screen. This count
@@ -55,17 +71,44 @@ file.
   greedy nearest-first match, then `guaranteeNearestAttackersForHumans()`
   layers on top to make sure every human player's own actual nearest regular
   nation and nearest alien are always among their attackers, even if the
-  general pairing gave someone else priority. A nation already hunting a
-  human also gets a guaranteed (non-probabilistic) first build of an
-  independently-mobile attack-capable unit (`BUILDING_ATTACKER_TYPES`), and
-  the AI's regular build roll is weighted 75% toward that same list — most of
-  the 19 buildable unit types can't actually damage a building at all, so an
-  unweighted roll could produce a fleet that reaches the player and never
-  lands a hit. `reassignEliminatedAttackTargets()` keeps all of this valid
-  every turn as nations die off, always preferring the nearest living
-  replacement over a random one. Ship travel speed itself is intentionally
-  left unscaled in Standard Game — if reachability ever feels off again, the
-  fix is elsewhere in this system (or `PLANET_SPREAD_MULTIPLIER`), not speed.
+  general pairing gave someone else priority. `pickAssignedTarget()` (used
+  whenever a hunting unit has nothing in immediate visual range) always
+  prefers a live human target over any other assigned rival on the list —
+  without that, a nation or alien juggling several assigned victims (aliens
+  especially, being fewer in number and each covering multiple regular
+  nations) could roll right past the human for turn after turn and never
+  actually close the distance, silently defeating the guarantee above. A
+  nation already hunting a human also gets a guaranteed (non-probabilistic)
+  first build of an independently-mobile attack-capable unit
+  (`BUILDING_ATTACKER_TYPES`), and the AI's regular build roll is weighted
+  75% toward that same list — most of the 19 buildable unit types can't
+  actually damage a building at all, so an unweighted roll could produce a
+  fleet that reaches the player and never lands a hit.
+  `reassignEliminatedAttackTargets()` keeps all of this valid every turn as
+  nations die off, always preferring the nearest living replacement over a
+  random one. Ship travel speed itself is intentionally left unscaled in
+  Standard Game — if reachability ever feels off again, the fix is elsewhere
+  in this system (or `PLANET_SPREAD_MULTIPLIER`), not speed.
+- **Map Select** (Standard Game only) — after picking a nation, choose from
+  10 numbered sectors (`MAP_CONFIGS`), each showing its nation/alien counts,
+  landmark lineup, and a "Full Details" view with the exact numbers behind
+  every alien faction and landmark. Every sector currently plays the same
+  underlying galaxy except **Sector 2**, which adds three roaming "raider
+  pack" factions (`RAIDER_PACK_TYPES`) on top — Vrekthul Raider, Zhanqorr
+  Widow, Krallosith Warhulk, 5 ships each at 300 HP, patrolling
+  independently and laying permanent siege to whichever Earth nation planet
+  they reach until it's destroyed or they are. They're modeled as
+  lightweight "countries" (`isRaiderPack`) with an empty buildings array and
+  no real homeworld rather than a bespoke parallel system, specifically so
+  the existing per-frame movement, other nations' attack loops, Defense Gun
+  auto-fire, and the player's own click-to-attack all pick them up for free.
+  A chosen sector's own background art (`Maps/`, `applyMapBackground()`) is
+  drawn as a real world object sized from its own aspect ratio (never
+  cropped, pans with the camera like anything else) — kept in a separate
+  `mapBackgroundImage`, deliberately never reusing the default background's
+  own `spaceBackgroundImage`, since that one is mid-flight in
+  `queueImageLoad()`'s concurrency-limited queue at page load and would
+  otherwise get its `.src` overwritten back to default moments later.
 - Vessel-class ships (`isVessel()`) are the ones that fly through open space
   and collide with planets, as opposed to ground units or aircraft — named
   "vessel" rather than "naval" on purpose, since this is a space game.
@@ -131,6 +174,8 @@ tests/
 .github/workflows/
   regression-tests.yml        all 6 CI jobs described above
 Ships/, Planets/, Structures/ art assets referenced by index.html
+Maps/                        sector background art (map-2.jpg..map-9.jpg) for Map Select
+Map2Enemies/                 ship art for Sector 2's raider pack factions
 ```
 
 ## Known gaps / roadmap
@@ -139,9 +184,11 @@ Ships/, Planets/, Structures/ art assets referenced by index.html
   Firebase/backend work is tracked separately.
 - Hot-seat has no menu entry point yet (`startHotSeatGame()` exists and is
   tested, but nothing in the UI calls it).
-- The tech tree has 3 nodes so far; more are expected (new unit unlocks,
-  defensive tech, etc.).
 - "Naval" terminology has been retired from the vessel-class system
   (`isVessel()`) and its UI labels, but `Harbor`/`isHarbor`/`isInHarbor` is
   still used throughout (touches save-file field names and ~80 call sites) -
   a deliberately deferred, larger rename.
+- 9 of the 10 map-select sectors are still the same placeholder galaxy under
+  a different background image - only Sector 2 has its own distinct content
+  (the raider packs) so far. Sectors 1 and 10 also don't have background art
+  yet.
