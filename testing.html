@@ -213,7 +213,10 @@ function __universeGameTests() {
             const neededSprites = ['deepglider', 'stormbreaker', 'wavecrusher', 'skyfortress', 'cargohauler',
                 'radar', 'thunderwing', 'blazefalcon', 'skyripper', 'vortexhawk', 'razorwing', 'shadowglider',
                 'tidebreaker', 'whisperwind', 'stormbreakerbomber', 'frostwing', 'roufestreal',
-                'groundpounders', 'ironbeast', 'boomcannon'];
+                'groundpounders', 'ironbeast', 'boomcannon',
+                // Defense Cannon (2026-09-12) - two variants, chosen per-instance
+                // by owning country (see Unit.draw()), not a bare 'cannon' key.
+                'cannon_c1', 'cannon_c2'];
             neededSprites.forEach(key => {
                 record(GROUP2, `Sprite wired for buildable unit "${key}"`, !!SPRITE_URLS[key], SPRITE_URLS[key] || 'MISSING');
             });
