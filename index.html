@@ -255,6 +255,47 @@
             font-size: 14px;
             flex-shrink: 0;
         }
+        .mapDetailsLink {
+            margin-top: 12px;
+            background: none;
+            border: 1px solid rgba(102,204,255,0.5);
+            color: #66ccff;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            padding: 6px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .mapDetailsLink:hover {
+            background: rgba(102,204,255,0.12);
+            border-color: #99ddff;
+        }
+        .mapDetailSection {
+            text-align: left;
+            margin-bottom: 22px;
+        }
+        .mapDetailSection h2 {
+            color: #ffff00;
+            font-size: 15px;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+        .mapDetailRow {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 12px;
+            color: #99ffcc;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+        .mapDetailIcon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        .mapDetailRow strong {
+            color: #ffff00;
+        }
         #gameOverScreen {
             position: absolute;
             top: 50%;
@@ -765,6 +806,12 @@
             <p style="margin-bottom:10px;">Every map is its own galaxy - different odds, different hazards.</p>
             <div id="mapGrid" class="mapGrid"></div>
             <button class="countryBtn" style="margin-top:10px; text-align:center; background:#888; border-color:#888;" onclick="closeMapSelect()">← Back</button>
+        </div>
+
+        <div id="mapDetailsScreen" class="overlayPanel" style="display:none; max-width:640px;">
+            <h1 id="mapDetailsTitle">🔍 MAP DETAILS 🔍</h1>
+            <div id="mapDetailsContent" style="text-align:left;"></div>
+            <button class="countryBtn" style="margin-top:10px; text-align:center; background:#888; border-color:#888;" onclick="closeMapDetails()">← Back to Maps</button>
         </div>
 
         <div id="statsScreen" class="overlayPanel" style="display:none; max-width:500px;">
@@ -2560,21 +2607,51 @@
         // as a placeholder - swap an individual entry's stats/name once its
         // own distinct map is actually built, same shape either way.
         // ===================================================================
+        // Per-faction ability breakdown for the map details view below - real
+        // numbers pulled from Country.aiTurn()'s isCyborg/isZoonester/
+        // isRoufestreal branches and SpaceMine's constructor, not retyped by
+        // hand from memory.
+        const ALIEN_TYPES = [
+            {
+                icon: '🤖', label: 'Cyborg', count: 4,
+                desc: 'Builds 1 Cyborg Dreadnought every 5 turns. 4 planets each guard a galaxy landmark (3 dreadnoughts at the Galaxy Core, 7 at the Galaxy Bounty). Fights any ship in range and can strike buildings directly when nothing else is in range.',
+            },
+            {
+                icon: '🦠', label: 'Zoonester', count: 2,
+                desc: 'Spawns 1 Zoon Parasite every 7 turns. Highly aggressive - freezes the nearest enemy unit in range for 3 turns instead of damaging it.',
+            },
+            {
+                icon: '⛏️', label: 'Roufestreal', count: 1,
+                desc: "Spawns 1 unit every 3 turns. Lays a Space Mine (25 HP) roughly every 3 turns of travel - anything that comes within 50 units sets it off for 20% of that unit's current HP.",
+            },
+        ];
         const CURRENT_MAP_STATS = {
             // 12 named nations (COUNTRY_NAMES) + however many CUSTOM_ISLANDS
             // entries are plain "nation" outposts - see initGame().
             nationCount: COUNTRY_NAMES.length + CUSTOM_ISLANDS.filter(c => c.type === 'nation').length,
-            // 4 Cyborg planets (initGame()'s own cyborgPlanets array) + 1
-            // hardcoded Zoonester homeworld + whichever CUSTOM_ISLANDS entries
-            // are alien types (zoonester/roufestreal).
-            alienPlanetCount: 4 + 1 + CUSTOM_ISLANDS.filter(c => c.type === 'zoonester' || c.type === 'roufestreal').length,
+            alienPlanetCount: ALIEN_TYPES.reduce((sum, a) => sum + a.count, 0),
+            alienTypes: ALIEN_TYPES,
             // Exactly one of each, always - see spawnHotsun()/spawnGalaxyCore()/
             // spawnGalaxyBounty()/spawnBlackHole(), each called once from initGame().
+            // Every number below is read off the real constants, not retyped by
+            // hand, so it can't quietly drift out of sync with the actual game.
             specials: [
-                { icon: '☀️', label: 'Hotsun', desc: 'sits at the exact center - lingering nearby burns any ship that stays too long' },
-                { icon: '💚', label: 'Galaxy Core', desc: 'heals any friendly unit that stays near it' },
-                { icon: '💰', label: 'Galaxy Bounty', desc: 'pays out gold every round to whoever holds it' },
-                { icon: '🕳️', label: 'Nerfflasma Hole', desc: 'wanders the galaxy on its own, capturing and dragging off any ship it catches' },
+                {
+                    icon: '☀️', label: 'Hotsun',
+                    desc: `Sits at the exact map center. Any ship within ${Math.round(HOTSUN_RADIATION_RANGE - HOTSUN_SIZE).toLocaleString()} units of its edge takes ${Math.round(HOTSUN_DAMAGE_PERCENT * 100)}% of its own max HP in damage every turn. Cannot be destroyed.`,
+                },
+                {
+                    icon: '💚', label: 'Galaxy Core',
+                    desc: `Heals any friendly ship within ${Math.round(GALAXY_CORE_HEAL_RANGE - GALAXY_CORE_SIZE).toLocaleString()} units of its edge for ${Math.round(GALAXY_CORE_HEAL_PERCENT * 100)}% of its max HP every turn. Guarded by 3 Cyborg Dreadnoughts. Cannot be destroyed.`,
+                },
+                {
+                    icon: '💰', label: 'Galaxy Bounty',
+                    desc: `Each turn, whichever nation has the most of its own ships (${GALAXY_BOUNTY_MIN_SHIPS}+, ground troops don't count) within ${Math.round(GALAXY_BOUNTY_QUALIFY_RANGE - GALAXY_BOUNTY_SIZE).toLocaleString()} units of its edge is paid ${GALAXY_BOUNTY_GOLD_PER_ROUND} gold. Guarded by 7 Cyborg Dreadnoughts. Cannot be destroyed.`,
+                },
+                {
+                    icon: '🕳️', label: 'Nerfflasma Hole',
+                    desc: `Wanders the galaxy with ${BLACK_HOLE_MAX_HP.toLocaleString()} HP, invisible on the minimap. Any ship within ${Math.round(BLACK_HOLE_CAPTURE_RANGE - BLACK_HOLE_SIZE).toLocaleString()} units of its edge is captured and dragged along, released the instant it's destroyed. Attacking it makes it turn and chase whoever just hit it.`,
+                },
             ],
         };
         const MAP_CONFIGS = Array.from({ length: 10 }, (_, i) => ({
@@ -5145,7 +5222,9 @@
                     <div class="mapSpecialsList">
                         ${map.specials.map(s => `<div class="mapSpecialRow"><span class="mapSpecialIcon">${s.icon}</span><span><strong>${s.label}</strong> - ${s.desc}</span></div>`).join('')}
                     </div>
+                    <button type="button" class="mapDetailsLink">🔍 Full Details</button>
                 `;
+                card.querySelector('.mapDetailsLink').onclick = (e) => { e.stopPropagation(); showMapDetails(map.id); };
                 card.onclick = () => chooseMap(map.id);
                 grid.appendChild(card);
             });
@@ -5163,6 +5242,37 @@
         function closeMapSelect() {
             document.getElementById('mapSelectScreen').style.display = 'none';
             document.getElementById('singleMapSetup').style.display = 'block';
+        }
+
+        // Direct report: "match the abilities up just like they are outlined in
+        // the code" - every number here reads off the same real constants the
+        // map cards already do (see CURRENT_MAP_STATS' own comment), just
+        // spelled out in full instead of summarized, plus the per-faction alien
+        // breakdown the compact card view doesn't have room for.
+        function showMapDetails(mapId) {
+            const map = MAP_CONFIGS.find(m => m.id === mapId);
+            if (!map) return;
+            document.getElementById('mapDetailsTitle').textContent = `🔍 ${map.name} - FULL DETAILS 🔍`;
+            document.getElementById('mapDetailsContent').innerHTML = `
+                <div class="mapDetailSection">
+                    <h2>🌍 Nation Countries (${map.nationCount})</h2>
+                    <div class="mapDetailRow"><span>Ordinary rival nations - build economy, research, and a fleet just like you do, and fight each other and you.</span></div>
+                </div>
+                <div class="mapDetailSection">
+                    <h2>👽 Alien Planets (${map.alienPlanetCount})</h2>
+                    ${map.alienTypes.map(a => `<div class="mapDetailRow"><span class="mapDetailIcon">${a.icon}</span><span><strong>${a.label}</strong> x${a.count} - ${a.desc}</span></div>`).join('')}
+                </div>
+                <div class="mapDetailSection">
+                    <h2>✨ Special Landmarks</h2>
+                    ${map.specials.map(s => `<div class="mapDetailRow"><span class="mapDetailIcon">${s.icon}</span><span><strong>${s.label}</strong> - ${s.desc}</span></div>`).join('')}
+                </div>
+            `;
+            document.getElementById('mapSelectScreen').style.display = 'none';
+            document.getElementById('mapDetailsScreen').style.display = 'block';
+        }
+        function closeMapDetails() {
+            document.getElementById('mapDetailsScreen').style.display = 'none';
+            document.getElementById('mapSelectScreen').style.display = 'block';
         }
         // Doesn't change anything about the actual game yet - every MAP_CONFIGS
         // entry is the same placeholder config - but records the pick so it's
