@@ -1300,22 +1300,33 @@
         // that queue - can't be clobbered by it.
         let mapBackgroundImage = null;
         let mapBackgroundLoaded = false;
+        // World-space placement for mapBackgroundImage - {x, y, w, h} in world
+        // units, computed once per applyMapBackground() call (see its own
+        // comment for why this replaced a fixed-screen-space, cropped draw).
+        let mapBackgroundWorldRect = null;
 
         function drawSpaceBackground() {
             const t = Date.now() / 1000;
 
-            if (mapBackgroundLoaded && mapBackgroundImage) {
-                // Direct report: tiling a sector's own map photo produced an
-                // obvious repeating grid with visible seams ("multiple maps in
-                // one map with visible overlapping squares") - Background-1.png
-                // below is a seamless pattern purpose-built to tile; a real
-                // photo isn't. Draw it exactly ONCE instead, scaled to fully
-                // cover the canvas (same idea as CSS object-fit: cover) - one
-                // image, no seams, no repeats, ever.
-                const scale = Math.max(canvas.width / mapBackgroundImage.naturalWidth, canvas.height / mapBackgroundImage.naturalHeight);
-                const drawW = mapBackgroundImage.naturalWidth * scale;
-                const drawH = mapBackgroundImage.naturalHeight * scale;
-                ctx.drawImage(mapBackgroundImage, (canvas.width - drawW) / 2, (canvas.height - drawH) / 2, drawW, drawH);
+            if (mapBackgroundLoaded && mapBackgroundImage && mapBackgroundWorldRect) {
+                // Direct report (round 1): tiling a sector's own map photo
+                // produced an obvious repeating grid with visible seams.
+                // Direct report (round 2, after fixing that): drawing it once
+                // in fixed SCREEN space fixed the seams but broke two other
+                // things - cover-fit cropped part of the image off, and being
+                // screen-space meant it never moved at all when the camera
+                // panned ("when I scroll it has the same image"). This is the
+                // real fix: one copy, placed as a real WORLD object (same
+                // manual world-to-screen projection Island.draw()/GalaxyCore
+                // already use, so it pans and zooms with everything else),
+                // sized from the image's OWN aspect ratio (see
+                // mapBackgroundWorldRect's own comment) so the entire image is
+                // always what's shown - never cropped, never repeated.
+                const screenX = (mapBackgroundWorldRect.x - camera.x) * camera.zoom + canvas.width / 2;
+                const screenY = (mapBackgroundWorldRect.y - camera.y) * camera.zoom + canvas.height / 2;
+                const drawW = mapBackgroundWorldRect.w * camera.zoom;
+                const drawH = mapBackgroundWorldRect.h * camera.zoom;
+                ctx.drawImage(mapBackgroundImage, screenX - drawW / 2, screenY - drawH / 2, drawW, drawH);
             } else if (spaceBackgroundLoaded) {
                 // Clamped to a sane minimum - this crashed the whole tab in CI, where a
                 // test mocks every image (including this one) with a 1x1 placeholder
@@ -2796,13 +2807,32 @@
                 // its own comment) - just stops pointing at a sector image.
                 mapBackgroundImage = null;
                 mapBackgroundLoaded = false;
+                mapBackgroundWorldRect = null;
                 return;
             }
             if (mapBackgroundImage && mapBackgroundImage.src === url) return; // already showing this one
             mapBackgroundLoaded = false;
+            mapBackgroundWorldRect = null;
             const img = new Image();
-            img.onload = () => { mapBackgroundLoaded = true; };
-            img.onerror = () => { mapBackgroundImage = null; mapBackgroundLoaded = false; }; // fall back to default
+            img.onload = () => {
+                mapBackgroundLoaded = true;
+                // Sized off the real galaxy's own extent (not a fixed
+                // constant - PLANET_SPREAD_MULTIPLIER can make the actual
+                // spread much bigger than MAP_WIDTH/HEIGHT), with a margin so
+                // normal play never scrolls past its edge into empty space.
+                // The image's OWN aspect ratio picks the other axis - "contain",
+                // not "cover" - so the entire picture is always what's drawn,
+                // never cropped.
+                const bounds = getGalaxyBounds();
+                const centerX = (bounds.minX + bounds.maxX) / 2;
+                const centerY = (bounds.minY + bounds.maxY) / 2;
+                const targetSpan = Math.max(bounds.maxX - bounds.minX, bounds.maxY - bounds.minY) * 1.3;
+                const aspect = img.naturalWidth / img.naturalHeight;
+                const w = aspect >= 1 ? targetSpan : targetSpan * aspect;
+                const h = aspect >= 1 ? targetSpan / aspect : targetSpan;
+                mapBackgroundWorldRect = { x: centerX, y: centerY, w, h };
+            };
+            img.onerror = () => { mapBackgroundImage = null; mapBackgroundLoaded = false; mapBackgroundWorldRect = null; }; // fall back to default
             img.src = url;
             mapBackgroundImage = img;
         }
@@ -5527,6 +5557,7 @@
                     </div>
                     <div class="mapSpecialsList">
                         ${map.specials.map(s => `<div class="mapSpecialRow"><span class="mapSpecialIcon">${s.icon}</span><span><strong>${s.label}</strong> - ${s.desc}</span></div>`).join('')}
+                        ${(map.roamingThreats || []).map(r => `<div class="mapSpecialRow"><span class="mapSpecialIcon">${r.icon}</span><span><strong>${r.label}</strong> x${r.count} - ${r.desc}</span></div>`).join('')}
                     </div>
                     <button type="button" class="mapDetailsLink">🔍 Full Details</button>
                 `;
@@ -5573,6 +5604,11 @@
                     <h2>✨ Special Landmarks</h2>
                     ${map.specials.map(s => `<div class="mapDetailRow"><span class="mapDetailIcon">${s.icon}</span><span><strong>${s.label}</strong> - ${s.desc}</span></div>`).join('')}
                 </div>
+                ${(map.roamingThreats && map.roamingThreats.length) ? `
+                <div class="mapDetailSection">
+                    <h2>☠️ Roaming Threats</h2>
+                    ${map.roamingThreats.map(r => `<div class="mapDetailRow"><span class="mapDetailIcon">${r.icon}</span><span><strong>${r.label}</strong> x${r.count} - ${r.desc}</span></div>`).join('')}
+                </div>` : ''}
             `;
             document.getElementById('mapSelectScreen').style.display = 'none';
             document.getElementById('mapDetailsScreen').style.display = 'block';
@@ -6572,6 +6608,29 @@
         function openSingleMapSetup() {
             document.getElementById('startScreen').style.display = 'none';
             document.getElementById('singleMapSetup').style.display = 'block';
+            preloadBriefingVideo();
+        }
+
+        // Direct report: "why the fuck does the intro speech start 15 seconds
+        // late" - the video tag ships with preload="none" (deliberately - the
+        // OBVIOUS fix, preload="auto" in the markup itself, ties the fetch to
+        // the PAGE's own load/paint cycle, and a real remote video that's
+        // slow or briefly unreachable can stall page load itself, which is
+        // worse than the original problem). This kicks off the real fetch in
+        // the background instead, from the earliest point a player is
+        // heading toward Standard Game (nation select) - by the time they've
+        // also picked a difficulty, a country, and a map, the video has had
+        // that whole span of real time to buffer, so startGame()'s .play()
+        // moments later usually has little or nothing left to wait on.
+        // Guarded to fire only once - re-opening this screen shouldn't
+        // restart an already-in-progress (or already-finished) fetch.
+        let briefingVideoPreloadStarted = false;
+        function preloadBriefingVideo() {
+            if (briefingVideoPreloadStarted) return;
+            briefingVideoPreloadStarted = true;
+            const video = document.getElementById('briefingVideo');
+            video.preload = 'auto';
+            video.load();
         }
 
         function closeSingleMapSetup() {

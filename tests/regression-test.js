@@ -2390,6 +2390,72 @@ check('each map card describes its specials as visible text, not just a hover-on
     return problems;
 });
 
+// Direct report: "You need to put in your memory to update the details of
+// the map every map. You failed to with this upgrade" - MAP_CONFIGS[1] got a
+// roamingThreats field (see Map 2's raider packs) but neither the card grid
+// nor the Full Details view ever actually rendered it - the data existed,
+// the UI just never read it. This is the real fix, checked both places.
+check('a map\'s roamingThreats (e.g. Sector 2\'s raider packs) render on both the card grid and the Full Details view', () => {
+    const problems = [];
+    const sector2 = MAP_CONFIGS[1];
+    if (!sector2.roamingThreats || sector2.roamingThreats.length === 0) return ['test assumption broken: Sector 2 should have roamingThreats to check against'];
+
+    const grid = document.getElementById('mapGrid');
+    grid.innerHTML = '';
+    populateMapGrid();
+    const sector2Card = Array.from(grid.querySelectorAll('.mapCard')).find(c => c.querySelector('h3').textContent === 'Sector 2');
+    sector2.roamingThreats.forEach(r => {
+        if (!sector2Card.textContent.includes(r.label)) problems.push(`Sector 2's card is missing the "${r.label}" roaming threat`);
+    });
+    // A sector with none (e.g. Sector 1) shouldn't render an empty section.
+    const sector1Card = Array.from(grid.querySelectorAll('.mapCard')).find(c => c.querySelector('h3').textContent === 'Sector 1');
+    MAP_CONFIGS[1].roamingThreats.forEach(r => {
+        if (sector1Card.textContent.includes(r.label)) problems.push(`Sector 1 has no roaming threats - it should not show Sector 2's ("${r.label}")`);
+    });
+
+    showMapDetails(1); // Sector 2
+    const detailsText = document.getElementById('mapDetailsContent').textContent;
+    sector2.roamingThreats.forEach(r => {
+        if (!detailsText.includes(r.label)) problems.push(`Sector 2's Full Details view is missing the "${r.label}" roaming threat`);
+        if (!detailsText.includes(r.desc)) problems.push(`Sector 2's Full Details view is missing the "${r.label}" roaming threat's description`);
+    });
+    showMapDetails(0); // Sector 1 - no roaming threats section at all
+    const sector1DetailsText = document.getElementById('mapDetailsContent').textContent;
+    if (sector1DetailsText.includes('Roaming Threats')) problems.push('Sector 1 has no roaming threats - its Full Details view should not show that section');
+    return problems;
+});
+
+check('the video tag\'s markup-declared preload stays "none" - fetching it as part of the page\'s own load event risks hanging on a slow/unreachable video', () => {
+    // Verified live: setting preload="auto" directly in the markup made a
+    // real headless browser's page.goto({waitUntil:'load'}) time out
+    // (30s+) - the browser folded the video's own fetch into the page's
+    // load-completion criteria. Reverted in favor of triggering the real
+    // fetch from JS instead (see preloadBriefingVideo()), well after the
+    // page itself has already finished loading. Checked against the raw
+    // HTML source, not the live DOM attribute - other checks in this suite
+    // legitimately flip the live one to "auto" by calling
+    // openSingleMapSetup(), same as real play would.
+    const tagMatch = html.match(/<video id="briefingVideo"[^>]*>/);
+    if (!tagMatch) return ['could not find the <video id="briefingVideo"> tag at all'];
+    return /preload="auto"/.test(tagMatch[0]) ? ['expected the <video> tag\'s own markup to keep preload="none" - see preloadBriefingVideo() for where real preloading should happen instead'] : [];
+});
+
+check('preloadBriefingVideo() kicks off the real video fetch, triggered once nation-select opens (well before the player would ever click play)', () => {
+    // Direct report: "why the fuck does the intro speech start 15 seconds
+    // late" - preload="none" means .play() (in startGame()) is the FIRST
+    // moment the browser starts fetching the video at all. Starting that
+    // fetch here instead - from openSingleMapSetup(), the entry point into
+    // choosing a difficulty/country/map - gives it that whole span of real
+    // time to buffer in the background before startGame() ever calls .play().
+    const video = document.getElementById('briefingVideo');
+    video.preload = 'none';
+    vm.runInContext('briefingVideoPreloadStarted = false;', context); // let this fire again for this test
+    const problems = [];
+    openSingleMapSetup();
+    if (video.preload === 'none') problems.push('openSingleMapSetup() should have switched the video to preload="auto" and started loading it');
+    return problems;
+});
+
 check('picking a country opens the map screen instead of jumping straight into startGame()', () => {
     gameState.countries = [];
     gameState.playerCountry = null;
@@ -2411,6 +2477,16 @@ check('picking a country opens the map screen instead of jumping straight into s
 // live instead.
 function currentMapBackgroundSrc() {
     return vm.runInContext('mapBackgroundImage && mapBackgroundImage.src', context);
+}
+// Real image loading never happens in this headless DOM (no network, no
+// decode) - simulating the load event this way (calling the same .onload
+// this file's own code already assigned) exercises the real size-computation
+// logic without needing a real image fetch.
+function simulateMapBackgroundImageLoad(naturalWidth, naturalHeight) {
+    vm.runInContext(`mapBackgroundImage.naturalWidth = ${naturalWidth}; mapBackgroundImage.naturalHeight = ${naturalHeight}; mapBackgroundImage.onload();`, context);
+}
+function currentMapBackgroundWorldRect() {
+    return vm.runInContext('mapBackgroundWorldRect', context);
 }
 
 check('chooseMap() records the pick, closes the map screen, and finishes starting the game for the pending country', () => {
@@ -2441,6 +2517,46 @@ check('applyMapBackground() swaps the real in-game background image to the chose
     applyMapBackground(1);
     applyMapBackground(null); // no map selected at all (Campaign/hot-seat)
     if (currentMapBackgroundSrc()) problems.push(`null (no map selected) should use the default background, got ${currentMapBackgroundSrc()}`);
+    return problems;
+});
+
+// Direct report (round 2): the fixed-screen-space, cover-fit draw from round
+// 1 "fixed" the tiling seams but broke two other things - it cropped part of
+// the image off, and it never moved at all when the camera panned ("when i
+// scroll it has the same fucking image"). This checks the actual fix: a
+// world-space rect sized from the image's own aspect ratio (so nothing is
+// ever cropped - "contain", not "cover") that the draw code positions via the
+// same manual world-to-screen projection every other real map object uses
+// (so it genuinely pans/zooms with the camera).
+check('applyMapBackground() sizes the world-space background rect from the image\'s own aspect ratio - the whole image, never cropped', () => {
+    gameState.countries = [];
+    gameState.playerCountry = null;
+    vm.runInContext('initGame();', context, { filename: 'bg-worldrect-setup.js' });
+    applyMapBackground(1); // Sector 2
+    simulateMapBackgroundImageLoad(1600, 900); // a real map-N.jpg's rough proportions
+    const rect = currentMapBackgroundWorldRect();
+    const problems = [];
+    if (!rect) return ['expected mapBackgroundWorldRect to be set once the image "loads"'];
+    const gotAspect = rect.w / rect.h;
+    const wantAspect = 1600 / 900;
+    if (Math.abs(gotAspect - wantAspect) > 0.01) problems.push(`expected the world rect's aspect ratio (${gotAspect.toFixed(3)}) to match the image's own (${wantAspect.toFixed(3)}) - a mismatch means it'll be stretched or cropped`);
+    const bounds = getGalaxyBounds();
+    const span = Math.max(bounds.maxX - bounds.minX, bounds.maxY - bounds.minY);
+    if (Math.max(rect.w, rect.h) < span) problems.push('the background rect is smaller than the real galaxy\'s own extent - players could scroll past its edge during normal play');
+    return problems;
+});
+
+check('drawSpaceBackground() positions the sector background off camera.x/camera.y (a real world object), not a fixed screen-space rect', () => {
+    const src = vm.runInContext('drawSpaceBackground.toString()', context);
+    const problems = [];
+    if (!src.includes('mapBackgroundWorldRect')) problems.push('expected drawSpaceBackground() to use mapBackgroundWorldRect at all');
+    // The specific regression: a prior version computed screen position from
+    // canvas.width/2 alone (fixed), never reading camera.x/y - drawing the
+    // same crop every frame regardless of where the player scrolled to.
+    const mapBgBlock = src.slice(src.indexOf('mapBackgroundLoaded && mapBackgroundImage'), src.indexOf('else if (spaceBackgroundLoaded)'));
+    if (!/camera\.x/.test(mapBgBlock) || !/camera\.y/.test(mapBgBlock)) {
+        problems.push('the mapBackgroundWorldRect draw branch must read camera.x/camera.y so it pans with the camera like every other real world object');
+    }
     return problems;
 });
 
