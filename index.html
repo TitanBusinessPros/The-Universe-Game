@@ -1426,6 +1426,18 @@
         // spawnGalaxyCore()). Standard Game only for now - matches how
         // spawnResourceDeposits() originally shipped before Campaign mode got its own
         // retrofit (see the comment on its call in startCampaignStage()).
+        // Caps how much of the screen a galaxy landmark's sprite (Galaxy
+        // Core/Bounty/Hotsun - see GalaxyCore.draw()) can ever cover, no
+        // matter how close the camera sits or how big its real world size
+        // is. Direct report: "My radar ships on map 2 turned into a red sun
+        // looking object until I sent a ship close to them" - at a normal
+        // zoom, sitting right on top of Hotsun (10x a planet's size), its
+        // sprite is bigger than the whole viewport, so the screen shows
+        // nothing but solid sun texture and any of the player's own ships
+        // there (small icons drawn on top of it) are effectively invisible.
+        // A fraction of the smaller screen dimension, not a fixed pixel
+        // count, so it scales sanely at any window size.
+        const GALAXY_LANDMARK_MAX_SCREEN_FRACTION = 0.42;
         const GALAXY_CORE_IMAGE_URL = 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Galaxy-1.png';
         const GALAXY_CORE_SIZE = 250 * PLANET_SCALE * 10;
         // "20 ship distance away" from the request, translated into a concrete world-unit
@@ -3084,7 +3096,22 @@
             draw() {
                 const screenX = (this.x - camera.x) * camera.zoom + canvas.width / 2;
                 const screenY = (this.y - camera.y) * camera.zoom + canvas.height / 2;
-                const half = this.size * camera.zoom;
+                // Direct report: "My radar ships on map 2 turned into a red sun
+                // looking object until I sent a ship close to them and then
+                // they turned back into my radar ships that were there" -
+                // reproduced live: Hotsun's own real size (10x a planet's, per
+                // an earlier direct request) means at a normal zoom, right on
+                // top of it, its sprite is far bigger than the whole screen -
+                // the entire viewport just shows solid sun texture, and any of
+                // the player's own ships sitting there (drawn AFTER, so
+                // technically "on top") are a ~30-unit icon lost somewhere in
+                // that expanse, invisible at a glance. Capping how much of the
+                // screen this can ever cover keeps every landmark genuinely
+                // imposing up close without being able to swallow the whole
+                // view and hide anything drawn over it - GALAXY_LANDMARK_MAX_
+                // SCREEN_FRACTION of the smaller screen dimension, whatever
+                // the current zoom or how close the camera sits.
+                const half = Math.min(this.size * camera.zoom, Math.min(canvas.width, canvas.height) * GALAXY_LANDMARK_MAX_SCREEN_FRACTION);
                 if (this.sprite && this.sprite.complete && this.sprite.naturalWidth > 0) {
                     this.rotationAngle += this.rotationSpeed;
                     ctx.save();
@@ -3881,6 +3908,22 @@
                     ctx.stroke();
                 }
                 
+                // Dark contrast backing plate, drawn before anything else on this
+                // unit - direct report: "My radar ships on map 2 turned into a
+                // red sun looking object until I sent a ship close to them" -
+                // reproduced live: Sector 2's own background art (Maps/map-2.jpg)
+                // is a wide, intensely red nebula, and since that image is sized
+                // to the galaxy's own extent (see applyMapBackground()), it fills
+                // the ENTIRE screen at a normal play zoom - a small ship icon
+                // sitting on a bright, uniformly-colored patch of it has almost
+                // no contrast to be seen by at a glance. A neutral dark disc
+                // behind every unit (regardless of what's behind IT) guarantees
+                // real contrast against any background art, not just this one.
+                ctx.beginPath();
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+                ctx.arc(0, 0, size * 0.9, 0, Math.PI * 2);
+                ctx.fill();
+
                 // Subtle idle engine-glow pulse behind the sprite, even at a standstill,
                 // so units read as "alive" and not just static icons. Purely additive -
                 // drawn before the sprite, doesn't shift its position or hit area.
