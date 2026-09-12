@@ -5217,6 +5217,205 @@
         // back to the single best (farthest-from-its-nearest-neighbor) candidate
         // seen, so placement always terminates and still ends up as spread out as
         // the map allows rather than throwing or silently overlapping.
+        // Sector planet-layout patterns (2026-09-12, per direct request: "We
+        // don't want the maps to resemble map-1 only an want each map to have
+        // the planets spread out in different ways"). Before this, picking a
+        // sector in Map Select only ever swapped the background image (plus
+        // Sector 2's raider packs) - every sector's actual galaxy was the
+        // exact same initGame() uniform random scatter regardless of which
+        // one was chosen. Each sector 2-10 now gets its own distinct planet
+        // ARRANGEMENT (see sampleLayoutCandidate() below); Sector 1 keeps the
+        // original uniform scatter as the baseline every sector used to
+        // share. Keyed by MAP_CONFIGS id (0-9), not sector number.
+        const MAP_PLANET_LAYOUTS = {
+            0: 'uniform',
+            1: 'twinCluster',
+            2: 'ring',
+            3: 'spiral',
+            4: 'quadrants',
+            5: 'coreRim',
+            6: 'corridor',
+            7: 'belts',
+            8: 'diagonalChain',
+            9: 'scatteredClumps',
+        };
+        // Human-readable name for each pattern above, shown on the map-select
+        // card/Full Details (see populateMapGrid()/showMapDetails()) so the
+        // difference is actually visible to a player before they commit to a
+        // sector, not just something they discover once already playing.
+        const MAP_LAYOUT_LABELS = {
+            uniform: 'Scattered Galaxy',
+            twinCluster: 'Twin Star Clusters',
+            ring: 'Ring Formation',
+            spiral: 'Spiral Arm',
+            quadrants: 'Four Quadrant Clusters',
+            coreRim: 'Dense Core & Outer Rim',
+            corridor: 'Elongated Corridor',
+            belts: 'Concentric Asteroid Belts',
+            diagonalChain: 'Diagonal Cluster Chain',
+            scatteredClumps: 'Scattered Star Clumps',
+        };
+        // MAP_CONFIGS itself is built much earlier in the file (before these
+        // two lookups exist yet) - wire the label onto each entry here,
+        // exactly the same pattern MAP_CONFIGS[1].roamingThreats already
+        // uses for Sector 2's raider packs. Read by populateMapGrid()/
+        // showMapDetails() - see [[update-map-details-every-map-change]].
+        MAP_CONFIGS.forEach(map => {
+            map.layoutLabel = MAP_LAYOUT_LABELS[MAP_PLANET_LAYOUTS[map.id]] || MAP_LAYOUT_LABELS.uniform;
+        });
+
+        // Draws ONE raw candidate point for the given layout pattern - not yet
+        // checked against a minimum-separation requirement (see
+        // spreadPositionForLayout(), which retries this the same way
+        // randomSpreadPosition() retries its own plain uniform draw, until one
+        // clears minDistance from every planet already placed). `index`/
+        // `total` place this specific planet within whatever grouping its
+        // pattern uses (which cluster/ring slot, how far along the spiral/
+        // chain) so a whole sector's planets consistently form the intended
+        // shape instead of each being positioned independently at random.
+        // Every pattern is sized off the same spreadHalfDim every sector
+        // already uses (see initGame()) rather than a bigger or smaller box,
+        // so no sector ends up with a bigger overall galaxy/longer travel
+        // distances than any other purely as a side effect of its shape -
+        // see [[never-touch-ship-speed-without-asking]] for why that matters
+        // here even though this change never touches speed itself.
+        function sampleLayoutCandidate(layout, centerX, centerY, spreadHalfDim, index, total) {
+            switch (layout) {
+                case 'twinCluster': {
+                    // Two dense clusters on opposite sides of center - which
+                    // cluster a planet joins alternates by index.
+                    const side = index % 2 === 0 ? 1 : -1;
+                    const clusterCx = centerX + side * spreadHalfDim * 0.55;
+                    const clusterCy = centerY + side * spreadHalfDim * 0.35;
+                    const clusterR = spreadHalfDim * 0.4;
+                    const angle = Math.random() * Math.PI * 2;
+                    const r = Math.sqrt(Math.random()) * clusterR;
+                    return { x: clusterCx + Math.cos(angle) * r, y: clusterCy + Math.sin(angle) * r };
+                }
+                case 'ring': {
+                    // A donut-shaped band around center (wide enough for 27
+                    // planets to actually satisfy PATTERN_MIN_SEPARATION - a
+                    // thin ring's own circumference alone isn't nearly enough
+                    // room) - planets spaced evenly by index around it, with
+                    // angle/radius jitter so it doesn't look robotically
+                    // perfect, but still visibly emptier at the very center
+                    // than the uniform layout.
+                    const angle = (index / total) * Math.PI * 2 + (Math.random() - 0.5) * 0.3;
+                    const radius = spreadHalfDim * (0.7 + (Math.random() - 0.5) * 0.25);
+                    return { x: centerX + Math.cos(angle) * radius, y: centerY + Math.sin(angle) * radius };
+                }
+                case 'spiral': {
+                    // A single spiral arm winding out from near center -
+                    // radius grows with index, angle sweeps around several
+                    // full turns by the time it reaches the outermost planet.
+                    const t = index / total;
+                    const angle = t * Math.PI * 4.2;
+                    const radius = spreadHalfDim * (0.15 + t * 0.85);
+                    const jitter = spreadHalfDim * 0.06;
+                    return {
+                        x: centerX + Math.cos(angle) * radius + (Math.random() - 0.5) * jitter,
+                        y: centerY + Math.sin(angle) * radius + (Math.random() - 0.5) * jitter,
+                    };
+                }
+                case 'quadrants': {
+                    // Four loose clusters, one per quadrant - which quadrant a
+                    // planet joins cycles every 4th index.
+                    const quadrant = index % 4;
+                    const qx = quadrant === 0 || quadrant === 3 ? -1 : 1;
+                    const qy = quadrant < 2 ? -1 : 1;
+                    const clusterCx = centerX + qx * spreadHalfDim * 0.5;
+                    const clusterCy = centerY + qy * spreadHalfDim * 0.5;
+                    const clusterR = spreadHalfDim * 0.38;
+                    const angle = Math.random() * Math.PI * 2;
+                    const r = Math.sqrt(Math.random()) * clusterR;
+                    return { x: clusterCx + Math.cos(angle) * r, y: clusterCy + Math.sin(angle) * r };
+                }
+                case 'coreRim': {
+                    // Half the planets clustered tight near center, the other
+                    // half scattered way out on the outer rim - a dense-core/
+                    // sparse-halo shape instead of one even scatter.
+                    const inCore = index % 2 === 0;
+                    const angle = Math.random() * Math.PI * 2;
+                    const radius = inCore
+                        ? Math.sqrt(Math.random()) * spreadHalfDim * 0.22
+                        : spreadHalfDim * (0.75 + Math.random() * 0.2);
+                    return { x: centerX + Math.cos(angle) * radius, y: centerY + Math.sin(angle) * radius };
+                }
+                case 'corridor': {
+                    // A narrow band stretching the full width - a bar-shaped
+                    // galaxy instead of a round one.
+                    return {
+                        x: centerX + (Math.random() * 2 - 1) * spreadHalfDim,
+                        y: centerY + (Math.random() * 2 - 1) * spreadHalfDim * 0.18,
+                    };
+                }
+                case 'belts': {
+                    // Three concentric bands (asteroid-belt style) at
+                    // increasing radius, each with real width (not a single
+                    // thin circle - not nearly enough room there for 9 planets
+                    // each to satisfy PATTERN_MIN_SEPARATION) - which belt a
+                    // planet joins cycles every 3rd index.
+                    const belt = index % 3;
+                    const beltRadius = spreadHalfDim * (0.35 + belt * 0.3) + (Math.random() - 0.5) * spreadHalfDim * 0.12;
+                    const angle = Math.random() * Math.PI * 2;
+                    return { x: centerX + Math.cos(angle) * beltRadius, y: centerY + Math.sin(angle) * beltRadius };
+                }
+                case 'diagonalChain': {
+                    // A chain of small clusters strung out along the diagonal,
+                    // from one corner of the spread area to the opposite one.
+                    const t = total > 1 ? index / (total - 1) : 0;
+                    const chainCx = centerX + (t * 2 - 1) * spreadHalfDim * 0.8;
+                    const chainCy = centerY + (t * 2 - 1) * spreadHalfDim * 0.8;
+                    const clusterR = spreadHalfDim * 0.16;
+                    const angle = Math.random() * Math.PI * 2;
+                    const r = Math.sqrt(Math.random()) * clusterR;
+                    return { x: chainCx + Math.cos(angle) * r, y: chainCy + Math.sin(angle) * r };
+                }
+                case 'scatteredClumps': {
+                    // A handful of small, irregular clumps positioned around
+                    // the SAME overall extent as every other sector (not a
+                    // bigger galaxy, just a different arrangement within it) -
+                    // which clump a planet joins cycles by index.
+                    const clumpCount = 6;
+                    const slot = index % clumpCount;
+                    const clumpAngle = (slot / clumpCount) * Math.PI * 2 + 0.6; // offset off ring's own angles
+                    const clumpDist = spreadHalfDim * (0.35 + (slot % 3) * 0.18);
+                    const clumpCx = centerX + Math.cos(clumpAngle) * clumpDist;
+                    const clumpCy = centerY + Math.sin(clumpAngle) * clumpDist;
+                    const clumpR = spreadHalfDim * 0.22;
+                    const angle = Math.random() * Math.PI * 2;
+                    const r = Math.sqrt(Math.random()) * clumpR;
+                    return { x: clumpCx + Math.cos(angle) * r, y: clumpCy + Math.sin(angle) * r };
+                }
+                case 'uniform':
+                default:
+                    return {
+                        x: centerX + (Math.random() * 2 - 1) * spreadHalfDim,
+                        y: centerY + (Math.random() * 2 - 1) * spreadHalfDim,
+                    };
+            }
+        }
+
+        // Same rejection-sampling shape as randomSpreadPosition() below (retry
+        // until a candidate clears minDistance from everything already
+        // placed, else fall back to the least-crowded attempt found) but
+        // draws each candidate from the sector's own layout pattern instead
+        // of a flat uniform box.
+        function spreadPositionForLayout(layout, centerX, centerY, spreadHalfDim, index, total, existingPoints, minDistance, maxAttempts = 300) {
+            let best = null, bestDist = -Infinity;
+            for (let i = 0; i < maxAttempts; i++) {
+                const { x, y } = sampleLayoutCandidate(layout, centerX, centerY, spreadHalfDim, index, total);
+                let nearestDist = Infinity;
+                for (const p of existingPoints) {
+                    const d = Math.hypot(x - p.x, y - p.y);
+                    if (d < nearestDist) nearestDist = d;
+                }
+                if (nearestDist >= minDistance) return { x, y };
+                if (nearestDist > bestDist) { bestDist = nearestDist; best = { x, y }; }
+            }
+            return best;
+        }
+
         function randomSpreadPosition(minX, maxX, minY, maxY, existingPoints, minDistance, maxAttempts = 300) {
             if (existingPoints.length === 0) {
                 return { x: minX + Math.random() * (maxX - minX), y: minY + Math.random() * (maxY - minY) };
@@ -5313,6 +5512,68 @@
             const len = Math.hypot(90000, -70000);
             return { x: -90000 / len, y: -70000 / len };
         })();
+
+        // Called from chooseMap() (and applySaveData(), to reproduce the same
+        // shape on Continue/Load) - overwrites every REAL planet's position
+        // using the chosen sector's own layout pattern (see
+        // MAP_PLANET_LAYOUTS/sampleLayoutCandidate() above) instead of the one
+        // shared scatter initGame() seeded every sector with regardless of
+        // which was picked. Sector 2's raider packs aren't real estate (empty
+        // buildings array, stub island - see spawnAlienRaiderPacks()) and
+        // patrol independently of any planet, so they're excluded here.
+        // Iterates ids in ascending order - identical to initGame()'s own
+        // construction order (12 nations, 4 Cyborg, Zoonester, then
+        // CUSTOM_ISLANDS) - so a pattern's per-index placement (e.g. ring()
+        // spacing planets evenly around a circle by index) is stable and
+        // reproducible rather than depending on gameState.countries' current
+        // array order.
+        function repositionPlanetsForMap(mapId) {
+            const layout = (mapId !== null && mapId !== undefined && MAP_PLANET_LAYOUTS[mapId]) || 'uniform';
+            const centerX = MAP_WIDTH / 2;
+            const centerY = MAP_HEIGHT / 2;
+            const spreadHalfDim = Math.max(MAP_WIDTH, MAP_HEIGHT) * 0.4 * PLANET_SPREAD_MULTIPLIER;
+            // Seeded with the exact map center, same reasoning as initGame()'s
+            // own planetPositions - keeps it clear for Hotsun/the black hole's
+            // starting point.
+            const planetPositions = [{ x: centerX, y: centerY }];
+
+            // Any shape other than 'uniform' necessarily concentrates 27
+            // planets into a smaller effective area than the full free-form
+            // spread box (that's the whole point - a ring/belt/cluster reads
+            // as a shape precisely because it ISN'T using the whole box) so
+            // demanding the exact same PLANET_MIN_SEPARATION the box was
+            // calibrated for leaves most planets unable to satisfy it, and
+            // the existing fallback-to-least-crowded-attempt logic below then
+            // dominates the result, blurring every pattern back toward a
+            // generic scatter. A 40%-of-normal minimum keeps planets
+            // meaningfully apart (still well clear of literally overlapping -
+            // each planet's own visual/collision size is far smaller than
+            // even this reduced distance) while leaving each pattern enough
+            // room to actually read as its intended shape instead of being
+            // smoothed back into a blurry scatter by the fallback logic
+            // below. Sector 1's 'uniform' baseline is untouched - still the
+            // exact original PLANET_MIN_SEPARATION.
+            const minDistance = layout === 'uniform' ? PLANET_MIN_SEPARATION : PLANET_MIN_SEPARATION * 0.4;
+
+            const realPlanetIds = gameState.countries.filter(c => !c.isRaiderPack).map(c => c.id).sort((a, b) => a - b);
+            realPlanetIds.forEach((id, index) => {
+                const country = gameState.countries.find(c => c.id === id);
+                if (!country) return;
+                const pos = spreadPositionForLayout(layout, centerX, centerY, spreadHalfDim, index, realPlanetIds.length, planetPositions, minDistance);
+                planetPositions.push(pos);
+                country.island.x = pos.x;
+                country.island.y = pos.y;
+            });
+
+            // The galaxy-wide landmarks were originally placed relative to
+            // initGame()'s own uniform scatter (see farthestPlanetRadius()) -
+            // respawn them now that the actual spread shape/extent has
+            // changed, the same idempotent calls initGame() itself made.
+            spawnGalaxyCore();
+            spawnGalaxyBounty();
+            spawnHotsun();
+            spawnBlackHole();
+        }
 
         function initGame() {
             // Initialize audio
@@ -5535,6 +5796,7 @@
                     ${map.imageUrl ? `<img class="mapCardThumb" src="${map.imageUrl}" alt="${map.name}">` : ''}
                     <h3>${map.name}</h3>
                     <div class="mapStats">
+                        🌌 ${map.layoutLabel}<br>
                         🌍 ${map.nationCount} nation countries<br>
                         👽 ${map.alienPlanetCount} alien planets
                     </div>
@@ -5572,6 +5834,10 @@
             document.getElementById('mapDetailsContent').innerHTML = `
                 ${map.imageUrl ? `<img class="mapDetailBanner" src="${map.imageUrl}" alt="${map.name}">` : ''}
                 <div class="mapDetailSection">
+                    <h2>🌌 Galaxy Shape</h2>
+                    <div class="mapDetailRow"><span><strong>${map.layoutLabel}</strong> - this sector's planets are arranged this way, not the same scatter every other sector uses.</span></div>
+                </div>
+                <div class="mapDetailSection">
                     <h2>🌍 Nation Countries (${map.nationCount})</h2>
                     <div class="mapDetailRow"><span>Ordinary rival nations - build economy, research, and a fleet just like you do, and fight each other and you.</span></div>
                 </div>
@@ -5596,11 +5862,15 @@
             document.getElementById('mapDetailsScreen').style.display = 'none';
             document.getElementById('mapSelectScreen').style.display = 'block';
         }
-        // Doesn't change anything about the actual game yet - every MAP_CONFIGS
-        // entry is the same placeholder config - but records the pick so it's
-        // there (gameState.selectedMapId) once real per-map differences exist.
         function chooseMap(mapId) {
             gameState.selectedMapId = mapId;
+            // Reposition every real planet into this sector's own layout
+            // pattern (see MAP_PLANET_LAYOUTS/repositionPlanetsForMap()) -
+            // before applyMapBackground() below, which sizes the background
+            // image off the galaxy's actual extent (getGalaxyBounds()) and
+            // needs the FINAL positions to size against, not initGame()'s
+            // original uniform scatter.
+            repositionPlanetsForMap(mapId);
             applyMapBackground(mapId);
             // Sector 2 only - see RAIDER_PACK_TYPES. Explicitly cleared for
             // every other sector too, in case a prior game this same page
@@ -6390,6 +6660,16 @@
             // A save from before map-select existed has no selectedMapId at all -
             // falls back to the default background, same as null.
             gameState.selectedMapId = typeof saveData.selectedMapId === 'number' ? saveData.selectedMapId : null;
+            // Reproduce the same sector-specific planet arrangement the
+            // player was actually looking at (see MAP_PLANET_LAYOUTS/
+            // repositionPlanetsForMap()) - a fresh page load's own initGame()
+            // seeded every planet with the default uniform scatter before
+            // this, same as it always does, so this puts them back into
+            // whatever shape the chosen sector actually uses. Before
+            // applyMapBackground() below, which sizes the background image
+            // off the galaxy's actual extent (getGalaxyBounds()) and needs
+            // the FINAL positions to size against.
+            repositionPlanetsForMap(gameState.selectedMapId);
             applyMapBackground(gameState.selectedMapId);
             // Sector 2's raider packs, if this save has any, need to exist at
             // the same gameState.countries indices they occupied when this was

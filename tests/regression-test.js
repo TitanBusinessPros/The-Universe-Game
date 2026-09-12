@@ -127,7 +127,7 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage, assignAttackTargets, guaranteeNearestAttackersForHumans, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS, randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER, nearestMinimapLandmark, spawnHotsun, damageNearHotsun, HOTSUN_IMAGE_URL, HOTSUN_SIZE, HOTSUN_RADIATION_RANGE, HOTSUN_DAMAGE_PERCENT, PLANET_SCALE, updateFogOfWar, toggleFogOfWar, drawMinimap, isPointRevealed, revealRegion, drawFogOfWarOverlay, isGroundUnitInCargo, BUILDING_ATTACKER_TYPES, ctx, MAP_CONFIGS, openMapSelect, closeMapSelect, chooseMap, populateMapGrid, showMapDetails, closeMapDetails, applyMapBackground, spaceBackgroundImage, SPACE_BACKGROUND_URL, MAP_IMAGE_URLS, RAIDER_PACK_TYPES, RAIDER_PACK_SIZE, RAIDER_PACK_BASE_ID, spawnAlienRaiderPacks, clearAlienRaiderPacks, ALIEN_ONLY_UNIT_TYPES };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage, assignAttackTargets, guaranteeNearestAttackersForHumans, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS, randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER, nearestMinimapLandmark, spawnHotsun, damageNearHotsun, HOTSUN_IMAGE_URL, HOTSUN_SIZE, HOTSUN_RADIATION_RANGE, HOTSUN_DAMAGE_PERCENT, PLANET_SCALE, updateFogOfWar, toggleFogOfWar, drawMinimap, isPointRevealed, revealRegion, drawFogOfWarOverlay, isGroundUnitInCargo, BUILDING_ATTACKER_TYPES, ctx, MAP_CONFIGS, openMapSelect, closeMapSelect, chooseMap, populateMapGrid, showMapDetails, closeMapDetails, applyMapBackground, spaceBackgroundImage, SPACE_BACKGROUND_URL, MAP_IMAGE_URLS, RAIDER_PACK_TYPES, RAIDER_PACK_SIZE, RAIDER_PACK_BASE_ID, spawnAlienRaiderPacks, clearAlienRaiderPacks, ALIEN_ONLY_UNIT_TYPES, MAP_PLANET_LAYOUTS, MAP_LAYOUT_LABELS, sampleLayoutCandidate, spreadPositionForLayout, repositionPlanetsForMap };',
     context,
     { filename: 'grab-refs.js' }
 );
@@ -164,7 +164,8 @@ const {
     updateFogOfWar, toggleFogOfWar, drawMinimap, isPointRevealed, revealRegion, drawFogOfWarOverlay, isGroundUnitInCargo, ctx,
     MAP_CONFIGS, openMapSelect, closeMapSelect, chooseMap, populateMapGrid, showMapDetails, closeMapDetails,
     applyMapBackground, spaceBackgroundImage, SPACE_BACKGROUND_URL, MAP_IMAGE_URLS,
-    RAIDER_PACK_TYPES, RAIDER_PACK_SIZE, RAIDER_PACK_BASE_ID, spawnAlienRaiderPacks, clearAlienRaiderPacks, ALIEN_ONLY_UNIT_TYPES
+    RAIDER_PACK_TYPES, RAIDER_PACK_SIZE, RAIDER_PACK_BASE_ID, spawnAlienRaiderPacks, clearAlienRaiderPacks, ALIEN_ONLY_UNIT_TYPES,
+    MAP_PLANET_LAYOUTS, MAP_LAYOUT_LABELS, sampleLayoutCandidate, spreadPositionForLayout, repositionPlanetsForMap
 } = context.__test;
 
 // ---------- Test data: the full combat unit roster ----------
@@ -5615,6 +5616,143 @@ check("initGame()'s planet-spread box is a true square (both axes sized off the 
     if (ratio < 0.5 || ratio > 2) {
         problems.push(`expected the real galaxy's X and Y extents to be roughly comparable (square spread box), got xRange=${xRange.toFixed(0)}, yRange=${yRange.toFixed(0)} (ratio ${ratio.toFixed(2)})`);
     }
+    return problems;
+});
+
+// ---------- Per-sector planet layouts (2026-09-12) ----------
+// Direct report: "We don't want the maps to resemble map-1 only an want each
+// map to have the planets spread out in different ways" - before this, every
+// sector (MAP_CONFIGS id 0-9) shared the exact same initGame() uniform
+// scatter regardless of which one was picked; Map Select only ever changed
+// the background image (and Sector 2's raider packs). repositionPlanetsForMap()
+// now gives each sector its own distinct arrangement - see
+// MAP_PLANET_LAYOUTS/sampleLayoutCandidate().
+
+check('every sector 2-10 has its own MAP_PLANET_LAYOUTS entry, distinct from Sector 1\'s baseline "uniform" and from each other', () => {
+    const problems = [];
+    if (MAP_PLANET_LAYOUTS[0] !== 'uniform') problems.push(`expected Sector 1 (id 0) to keep the baseline "uniform" layout, got "${MAP_PLANET_LAYOUTS[0]}"`);
+    const seen = new Set();
+    for (let id = 1; id <= 9; id++) {
+        const layout = MAP_PLANET_LAYOUTS[id];
+        if (!layout || layout === 'uniform') problems.push(`Sector ${id + 1} (id ${id}) has no distinct layout pattern, got "${layout}"`);
+        if (seen.has(layout)) problems.push(`Sector ${id + 1}'s layout "${layout}" is reused from an earlier sector - every sector 2-10 should look different`);
+        seen.add(layout);
+        if (!MAP_LAYOUT_LABELS[layout]) problems.push(`layout "${layout}" (Sector ${id + 1}) has no human-readable MAP_LAYOUT_LABELS entry`);
+    }
+    return problems;
+});
+
+check('MAP_CONFIGS.layoutLabel is wired onto every sector, and shows up on both the card grid and Full Details - see [[update-map-details-every-map-change]]', () => {
+    const problems = [];
+    MAP_CONFIGS.forEach(map => {
+        if (!map.layoutLabel) problems.push(`Sector ${map.id + 1} has no layoutLabel`);
+    });
+    const grid = document.getElementById('mapGrid');
+    grid.innerHTML = '';
+    populateMapGrid();
+    const sector3Card = Array.from(grid.querySelectorAll('.mapCard')).find(c => c.querySelector('h3').textContent === 'Sector 3');
+    if (!sector3Card || !sector3Card.textContent.includes(MAP_CONFIGS[2].layoutLabel)) {
+        problems.push('expected the card grid to show Sector 3\'s layoutLabel');
+    }
+    showMapDetails(2); // Sector 3
+    const detailsText = document.getElementById('mapDetailsContent').textContent;
+    if (!detailsText.includes(MAP_CONFIGS[2].layoutLabel)) problems.push('expected the Full Details view to show Sector 3\'s layoutLabel');
+    return problems;
+});
+
+check('repositionPlanetsForMap() actually moves every real planet, and produces a measurably different shape per sector', () => {
+    const problems = [];
+    gameState.countries = [];
+    vm.runInContext('initGame();', context, { filename: 'layout-setup.js' });
+    const centerX = MAP_WIDTH / 2, centerY = MAP_HEIGHT / 2;
+
+    const distances = (mapId) => {
+        repositionPlanetsForMap(mapId);
+        return gameState.countries.map(c => Math.hypot(c.island.x - centerX, c.island.y - centerY));
+    };
+    const stdDev = (arr) => {
+        const mean = arr.reduce((s, v) => s + v, 0) / arr.length;
+        return Math.sqrt(arr.reduce((s, v) => s + (v - mean) ** 2, 0) / arr.length);
+    };
+
+    // 'ring' (Sector 3, id 2) holds every planet at roughly the same radius -
+    // low variance in distance-from-center. 'uniform' (Sector 1, id 0) scatters
+    // them across a whole square box - much higher variance. If these ever
+    // produced statistically indistinguishable shapes, the "sector 3 doesn't
+    // resemble sector 1" request wouldn't actually be met.
+    const ringDistances = distances(2);
+    const uniformDistances = distances(0);
+    const ringSpread = stdDev(ringDistances) / (ringDistances.reduce((s, v) => s + v, 0) / ringDistances.length);
+    const uniformSpread = stdDev(uniformDistances) / (uniformDistances.reduce((s, v) => s + v, 0) / uniformDistances.length);
+    if (ringSpread >= uniformSpread) {
+        problems.push(`expected the ring layout's distance-from-center to vary much less than the uniform layout's, got ring=${ringSpread.toFixed(3)} vs uniform=${uniformSpread.toFixed(3)}`);
+    }
+
+    // 'corridor' (Sector 7, id 6) is a narrow horizontal band - Y should vary
+    // much less than X, unlike 'uniform' where both vary about the same.
+    repositionPlanetsForMap(6);
+    const corridorXs = gameState.countries.map(c => c.island.x);
+    const corridorYs = gameState.countries.map(c => c.island.y);
+    const corridorRatio = stdDev(corridorYs) / stdDev(corridorXs);
+    if (corridorRatio > 0.5) {
+        problems.push(`expected the corridor layout to be much wider than it is tall (Y std-dev well under X's), got ratio ${corridorRatio.toFixed(2)}`);
+    }
+    return problems;
+});
+
+check('repositionPlanetsForMap() never moves a sector\'s galaxy bigger than another\'s - every layout stays within the same overall spread scale (travel distances/times stay comparable, see [[never-touch-ship-speed-without-asking]])', () => {
+    const problems = [];
+    gameState.countries = [];
+    vm.runInContext('initGame();', context, { filename: 'layout-scale-setup.js' });
+    const centerX = MAP_WIDTH / 2, centerY = MAP_HEIGHT / 2;
+    const spreadHalfDim = Math.max(MAP_WIDTH, MAP_HEIGHT) * 0.4 * PLANET_SPREAD_MULTIPLIER;
+
+    for (let id = 0; id <= 9; id++) {
+        repositionPlanetsForMap(id);
+        const farthest = Math.max(...gameState.countries.map(c => Math.hypot(c.island.x - centerX, c.island.y - centerY)));
+        // Generous ceiling (1.5x the box's own half-dimension) - every pattern
+        // is built from fractions of spreadHalfDim, so none should even
+        // approach this, but this is what would actually catch a sector
+        // quietly ending up with a much bigger galaxy (and therefore much
+        // longer AI travel times) than the others.
+        if (farthest > spreadHalfDim * 1.5) {
+            problems.push(`Sector ${id + 1}'s farthest planet is ${farthest.toFixed(0)} from center - more than 1.5x spreadHalfDim (${spreadHalfDim.toFixed(0)}), a noticeably bigger galaxy than other sectors`);
+        }
+    }
+    return problems;
+});
+
+check('repositionPlanetsForMap() never repositions Sector 2\'s raider packs - only real planets are real estate', () => {
+    const problems = [];
+    gameState.countries = [];
+    vm.runInContext('initGame();', context, { filename: 'layout-raider-setup.js' });
+    spawnAlienRaiderPacks();
+    const before = gameState.countries.filter(c => c.isRaiderPack).map(c => ({ id: c.id, x: c.island.x, y: c.island.y }));
+    repositionPlanetsForMap(1); // Sector 2's own layout
+    const after = gameState.countries.filter(c => c.isRaiderPack).map(c => ({ id: c.id, x: c.island.x, y: c.island.y }));
+    before.forEach((b, i) => {
+        if (after[i].x !== b.x || after[i].y !== b.y) problems.push(`raider pack ${b.id}'s stub island position changed - repositionPlanetsForMap() should only touch real planets`);
+    });
+    return problems;
+});
+
+check('chooseMap() applies the chosen sector\'s planet layout before starting the game', () => {
+    const problems = [];
+    gameState.countries = [];
+    vm.runInContext('initGame();', context, { filename: 'choosemap-layout-setup.js' });
+    const centerX = MAP_WIDTH / 2, centerY = MAP_HEIGHT / 2;
+    const before = gameState.countries.map(c => ({ id: c.id, x: c.island.x, y: c.island.y }));
+    pendingCountryIdx = 0;
+    chooseMap(6); // Sector 7 - corridor layout
+    const afterYs = gameState.countries.map(c => c.island.y - centerY);
+    const afterXs = gameState.countries.map(c => c.island.x - centerX);
+    const movedAtAll = gameState.countries.some((c, i) => c.island.x !== before[i].x || c.island.y !== before[i].y);
+    if (!movedAtAll) problems.push('expected chooseMap() to actually reposition planets, but nothing moved');
+    const stdDev = (arr) => {
+        const mean = arr.reduce((s, v) => s + v, 0) / arr.length;
+        return Math.sqrt(arr.reduce((s, v) => s + (v - mean) ** 2, 0) / arr.length);
+    };
+    if (stdDev(afterYs) > stdDev(afterXs)) problems.push('expected Sector 7\'s corridor layout (much wider than tall) after chooseMap(6)');
     return problems;
 });
 
