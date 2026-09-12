@@ -203,6 +203,15 @@
             gap: 14px;
             margin: 20px 0;
         }
+        /* Direct report: fog of war "in the game itself" was confusing - moved
+           to a one-time choice made here, before a sector is picked, instead
+           of a live in-game toggle (see chooseMap()). A button (like every
+           other toggle in this game - #soundToggle etc.), not a checkbox -
+           this page's global user-select:none rule assumes there are no real
+           text inputs anywhere to protect. */
+        #fogOfWarPreGameToggle {
+            margin-bottom: 12px;
+        }
         .mapCard {
             border: 1px solid rgba(0,255,0,0.35);
             background: rgba(0,255,0,0.04);
@@ -798,6 +807,7 @@
         <div id="mapSelectScreen" class="overlayPanel" style="display:none; max-width:900px;">
             <h1>🗺️ CHOOSE YOUR MAP 🗺️</h1>
             <p style="margin-bottom:10px;">Every map is its own galaxy - different odds, different hazards.</p>
+            <button id="fogOfWarPreGameToggle" onclick="toggleFogOfWar()" style="background: #556b2f;">🌫️ FOG OF WAR ON</button>
             <div id="mapGrid" class="mapGrid"></div>
             <button class="countryBtn" style="margin-top:10px; text-align:center; background:#888; border-color:#888;" onclick="closeMapSelect()">← Back</button>
         </div>
@@ -879,7 +889,6 @@
                     <button onclick="loadGame()" style="background: #0088ff;">📂 LOAD FROM FILE</button>
                     <button onclick="newGame()" style="background: #ff8800;">🔄 NEW GAME</button>
                     <button id="soundToggle" onclick="toggleSound()" style="background: #ffaa00;">🔇 SOUND OFF</button>
-                    <button id="fogOfWarToggle" onclick="toggleFogOfWar()" style="background: #556b2f;">🌫️ FOG OF WAR ON</button>
                     <button onclick="openInstructions()" style="background: #00aaff;">📖 INSTRUCTIONS</button>
                 </div>
             </div>
@@ -1083,9 +1092,14 @@
         // the map." Only the setting itself - drawMinimap()/nearestMinimapLandmark()
         // both already no-op the fog check entirely in Campaign mode, so this has no
         // effect there regardless of which way it's left.
+        //
+        // Direct follow-up report: having this as a live in-game toggle (a
+        // button in the INFO tab) was "confusing" - it's now a one-time
+        // pre-game choice made on the map-select screen instead (see
+        // #fogOfWarPreGameToggle, the only button still calling this).
         function toggleFogOfWar() {
             fogOfWarEnabled = !fogOfWarEnabled;
-            const btn = document.getElementById('fogOfWarToggle');
+            const btn = document.getElementById('fogOfWarPreGameToggle');
             if (btn) btn.textContent = fogOfWarEnabled ? '🌫️ FOG OF WAR ON' : '🌍 FOG OF WAR OFF';
         }
 
@@ -5859,6 +5873,12 @@
             pendingCountryIdx = idx;
             document.getElementById('singleMapSetup').style.display = 'none';
             document.getElementById('mapSelectScreen').style.display = 'block';
+            // Reflects whatever fogOfWarEnabled currently is (e.g. left off
+            // from a previous game this session) rather than always resetting
+            // the button back to its default label regardless of the last
+            // real choice.
+            const fogBtn = document.getElementById('fogOfWarPreGameToggle');
+            if (fogBtn) fogBtn.textContent = fogOfWarEnabled ? '🌫️ FOG OF WAR ON' : '🌍 FOG OF WAR OFF';
         }
         function closeMapSelect() {
             document.getElementById('mapSelectScreen').style.display = 'none';
@@ -5907,6 +5927,10 @@
         }
         function chooseMap(mapId) {
             gameState.selectedMapId = mapId;
+            // fogOfWarEnabled itself is already up to date here - the map-
+            // select screen's own #fogOfWarPreGameToggle button (see
+            // toggleFogOfWar()) sets it directly the moment it's clicked,
+            // same as the in-game button it replaced used to.
             // Reposition every real planet into this sector's own layout
             // pattern (see MAP_PLANET_LAYOUTS/repositionPlanetsForMap()) -
             // before applyMapBackground() below, which sizes the background
@@ -6649,6 +6673,10 @@
                 // chooseMap()) - purely cosmetic (which background art is showing),
                 // null for anything that never went through that screen.
                 selectedMapId: typeof gameState.selectedMapId === 'number' ? gameState.selectedMapId : null,
+                // Chosen once on the map-select screen before the game starts
+                // (see chooseMap()) - round-tripped so Continue/Load reproduces
+                // the same choice instead of silently reverting to the default.
+                fogOfWarEnabled: fogOfWarEnabled,
                 camera: { x: camera.x, y: camera.y, zoom: camera.zoom },
                 spaceMines: spaceMines.map(m => ({ x: m.x, y: m.y, countryId: m.countryId, hp: m.hp })),
                 resourceDeposits: resourceDeposits.map(d => ({ x: d.x, y: d.y, resources: d.resources })),
@@ -6703,6 +6731,11 @@
             // A save from before map-select existed has no selectedMapId at all -
             // falls back to the default background, same as null.
             gameState.selectedMapId = typeof saveData.selectedMapId === 'number' ? saveData.selectedMapId : null;
+            // A save from before this pre-game toggle existed has no
+            // fogOfWarEnabled field at all - falls back to the original
+            // default (on) rather than silently changing behavior for an old
+            // save.
+            fogOfWarEnabled = typeof saveData.fogOfWarEnabled === 'boolean' ? saveData.fogOfWarEnabled : true;
             // Reproduce the same sector-specific planet arrangement the
             // player was actually looking at (see MAP_PLANET_LAYOUTS/
             // repositionPlanetsForMap()) - a fresh page load's own initGame()
