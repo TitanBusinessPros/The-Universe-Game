@@ -233,28 +233,6 @@
             text-align: left;
             width: 100%;
         }
-        .mapCard .mapSpecialsList {
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid rgba(0,255,0,0.2);
-            text-align: left;
-        }
-        .mapSpecialRow {
-            display: flex;
-            align-items: flex-start;
-            gap: 6px;
-            font-size: 10.5px;
-            color: #99ffcc;
-            line-height: 1.5;
-            margin-bottom: 6px;
-        }
-        .mapSpecialRow:last-child {
-            margin-bottom: 0;
-        }
-        .mapSpecialIcon {
-            font-size: 14px;
-            flex-shrink: 0;
-        }
         .mapCardThumb {
             width: 100%;
             height: 110px;
@@ -5554,10 +5532,6 @@
                     <div class="mapStats">
                         🌍 ${map.nationCount} nation countries<br>
                         👽 ${map.alienPlanetCount} alien planets
-                    </div>
-                    <div class="mapSpecialsList">
-                        ${map.specials.map(s => `<div class="mapSpecialRow"><span class="mapSpecialIcon">${s.icon}</span><span><strong>${s.label}</strong> - ${s.desc}</span></div>`).join('')}
-                        ${(map.roamingThreats || []).map(r => `<div class="mapSpecialRow"><span class="mapSpecialIcon">${r.icon}</span><span><strong>${r.label}</strong> x${r.count} - ${r.desc}</span></div>`).join('')}
                     </div>
                     <button type="button" class="mapDetailsLink">🔍 Full Details</button>
                 `;
