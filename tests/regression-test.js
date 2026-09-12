@@ -2982,6 +2982,68 @@ check('continueFromAutosave() with a corrupted save alerts and clears it instead
     return problems;
 });
 
+// Direct report: "why in the hell can i control enemy alien ships". Root
+// cause: buildSaveData()/applySaveData() round-trip gameState.countries by
+// ARRAY POSITION, which only lines up with each country's real .id for the
+// full, fixed Standard Game roster. startCampaignStage() builds a small,
+// stage-specific roster where the player is always pushed to array index 0
+// regardless of their real nation id, and objectives (including alien
+// planets) land at whatever index they're pushed to. Since nextTurn() used
+// to autosave unconditionally, hitting the landing screen's "Continue"
+// button later reapplied that mismatched, positionally-saved data onto a
+// freshly-rebuilt FULL Standard roster - silently handing whichever country
+// ended up as gameState.playerCountry another country's (sometimes an
+// alien's) saved units. See nextTurn()'s and applySaveData()'s own comments
+// for the two-layer fix: stop writing this autosave during Campaign at all,
+// and reject any (including already-corrupted, pre-fix) autosave whose
+// country count doesn't match the roster it's being applied to.
+check('nextTurn() does not autosave during Campaign Mode - its roster is not id-aligned with array position like Standard Game\'s', () => {
+    const problems = [];
+    // Real entry points, not a hand-built minimal country - startCampaignStage()
+    // is what actually sets up campaignStages/campaignStageIndex/etc. that
+    // nextTurn()'s own checkGameOver() campaign branch needs to run at all.
+    selectCampaignNation(5);
+    startCampaignStage(0);
+    gameState.paused = false;
+    localStorage.removeItem(AUTOSAVE_KEY);
+
+    nextTurn();
+
+    if (!gameState.campaignActive) return ['test assumption broken: expected campaignActive to be true after startCampaignStage()'];
+    if (localStorage.getItem(AUTOSAVE_KEY) !== null) problems.push('expected nextTurn() not to write an autosave while campaignActive is true');
+    gameState.campaignActive = false;
+    localStorage.removeItem(AUTOSAVE_KEY);
+    return problems;
+});
+
+check('applySaveData() rejects a save whose country count doesn\'t match the current roster, instead of silently misassigning countries by position', () => {
+    const problems = [];
+    // Simulate exactly what a leftover, pre-fix Campaign Mode autosave looks
+    // like: a handful of countries (here, 1) being applied against whatever
+    // full roster happens to be loaded right now (3) - the same shape that
+    // let a Campaign save's alien-type units land on the player's own
+    // country by coincidence of array position.
+    gameState.countries = [0, 1, 2].map(id => new Country(id, `Nation${id}`, '#ffffff', new Island(id * 1000, 0, id), id === 0));
+    gameState.playerCountry = gameState.countries[0];
+    const mismatchedSave = {
+        turn: 5, difficulty: 'normal', playerCountryId: 0, selectedMapId: null,
+        camera: { x: 0, y: 0, zoom: 1 }, spaceMines: [], resourceDeposits: [],
+        countries: [{
+            id: 0, resources: 1000, cyborgTurnCounter: 0, zoonesterTurnCounter: 0, roufestrealTurnCounter: 0,
+            raiderPatrolTargetId: null, researchedTech: [], activeResearch: null, exploredRegions: [],
+            units: [{ x: 0, y: 0, type: 'cyborgdreadnought', hp: 500, hasAttacked: false, isInHarbor: false, frozenTurns: 0, frozenBy: null, cargo: [] }],
+            buildings: []
+        }]
+    };
+    let threw = false;
+    try { applySaveData(mismatchedSave); } catch (e) { threw = true; }
+    if (!threw) problems.push('expected applySaveData() to throw on a country-count mismatch instead of applying the save');
+    if (gameState.countries[0].units.some(u => u.type === 'cyborgdreadnought')) {
+        problems.push('the mismatched save was applied anyway - the player\'s own country ended up with an alien unit type');
+    }
+    return problems;
+});
+
 check('startHotSeatGame() rejects fewer than 2 or more than 12 players without changing state', () => {
     const problems = [];
     const island = new Island(0, 0, 0);
