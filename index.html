@@ -197,6 +197,47 @@
             opacity: 1;
             color: #99ddff;
         }
+        .mapGrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 14px;
+            margin: 20px 0;
+        }
+        .mapCard {
+            border: 1px solid rgba(0,255,0,0.35);
+            background: rgba(0,255,0,0.04);
+            border-radius: 10px;
+            padding: 16px 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, transform 0.2s, background 0.2s;
+        }
+        .mapCard:hover {
+            border-color: #00ff00;
+            background: rgba(0,255,0,0.08);
+            transform: translateY(-3px);
+        }
+        .mapCard h3 {
+            color: #ffff00;
+            font-size: 14px;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+        .mapCard .mapStats {
+            font-size: 11px;
+            color: #88ff88;
+            line-height: 1.6;
+            text-align: left;
+            width: 100%;
+        }
+        .mapCard .mapSpecials {
+            margin-top: 10px;
+            font-size: 17px;
+            letter-spacing: 4px;
+        }
         #gameOverScreen {
             position: absolute;
             top: 50%;
@@ -700,6 +741,13 @@
             <p style="margin-bottom: 20px;">Select Your Country:</p>
             <div id="countrySelect"></div>
             <button class="countryBtn" style="margin-top:20px; text-align:center; background:#888; border-color:#888;" onclick="closeSingleMapSetup()">← Back</button>
+        </div>
+
+        <div id="mapSelectScreen" class="overlayPanel" style="display:none; max-width:900px;">
+            <h1>🗺️ CHOOSE YOUR MAP 🗺️</h1>
+            <p style="margin-bottom:10px;">Every map is its own galaxy - different odds, different hazards.</p>
+            <div id="mapGrid" class="mapGrid"></div>
+            <button class="countryBtn" style="margin-top:10px; text-align:center; background:#888; border-color:#888;" onclick="closeMapSelect()">← Back</button>
         </div>
 
         <div id="statsScreen" class="overlayPanel" style="display:none; max-width:500px;">
@@ -2485,7 +2533,39 @@
 
         ];
         // =====================================================================
-        
+
+        // ===================================================================
+        // MAP SELECT (2026-09-12, per direct request): a "choose your map"
+        // screen shown after nation select, eventually offering 10 genuinely
+        // different galaxies (different alien/nation counts, different
+        // landmark mixes, different abilities). Only one real map/config
+        // exists right now, so every one of the 10 slots below points at it
+        // as a placeholder - swap an individual entry's stats/name once its
+        // own distinct map is actually built, same shape either way.
+        // ===================================================================
+        const CURRENT_MAP_STATS = {
+            // 12 named nations (COUNTRY_NAMES) + however many CUSTOM_ISLANDS
+            // entries are plain "nation" outposts - see initGame().
+            nationCount: COUNTRY_NAMES.length + CUSTOM_ISLANDS.filter(c => c.type === 'nation').length,
+            // 4 Cyborg planets (initGame()'s own cyborgPlanets array) + 1
+            // hardcoded Zoonester homeworld + whichever CUSTOM_ISLANDS entries
+            // are alien types (zoonester/roufestreal).
+            alienPlanetCount: 4 + 1 + CUSTOM_ISLANDS.filter(c => c.type === 'zoonester' || c.type === 'roufestreal').length,
+            // Exactly one of each, always - see spawnHotsun()/spawnGalaxyCore()/
+            // spawnGalaxyBounty()/spawnBlackHole(), each called once from initGame().
+            specials: [
+                { icon: '☀️', label: 'Hotsun', desc: 'sits at the exact center - lingering nearby burns any ship that stays too long' },
+                { icon: '💚', label: 'Galaxy Core', desc: 'heals any friendly unit that stays near it' },
+                { icon: '💰', label: 'Galaxy Bounty', desc: 'pays out gold every round to whoever holds it' },
+                { icon: '🕳️', label: 'Nerfflasma Hole', desc: 'wanders the galaxy on its own, capturing and dragging off any ship it catches' },
+            ],
+        };
+        const MAP_CONFIGS = Array.from({ length: 10 }, (_, i) => ({
+            id: i,
+            name: `Sector ${i + 1}`,
+            ...CURRENT_MAP_STATS,
+        }));
+
         let gameState = {
             countries: [],
             playerCountry: null,
@@ -5020,12 +5100,58 @@
                 btn.style.borderColor = COUNTRY_COLORS[idx];
                 btn.style.color = '#000';
                 btn.innerHTML = `<strong>${name}</strong><span class="bonusText">${describeCountryBonusHTML(idx)}</span>`;
-                btn.onclick = () => startGame(idx);
+                btn.onclick = () => openMapSelect(idx);
                 selectDiv.appendChild(btn);
             });
 
             const defaultDiffBtn = document.getElementById('diffBtn-' + currentDifficulty);
             if (defaultDiffBtn) defaultDiffBtn.classList.add('active');
+
+            populateMapGrid();
+        }
+
+        // Built once at load, same pattern as the countrySelect buttons above -
+        // every card currently shows the same placeholder stats (see
+        // MAP_CONFIGS' own comment) until each of the 10 slots gets its own
+        // real map.
+        function populateMapGrid() {
+            const grid = document.getElementById('mapGrid');
+            MAP_CONFIGS.forEach(map => {
+                const card = document.createElement('div');
+                card.className = 'mapCard';
+                card.innerHTML = `
+                    <h3>${map.name}</h3>
+                    <div class="mapStats">
+                        🌍 ${map.nationCount} nation countries<br>
+                        👽 ${map.alienPlanetCount} alien planets
+                    </div>
+                    <div class="mapSpecials" title="${map.specials.map(s => s.label + ': ' + s.desc).join(' | ')}">${map.specials.map(s => s.icon).join(' ')}</div>
+                `;
+                card.onclick = () => chooseMap(map.id);
+                grid.appendChild(card);
+            });
+        }
+
+        // Country select -> here (instead of straight into startGame()) so the
+        // player picks a map before the briefing video. Remembers which nation
+        // was picked so chooseMap() below can finish starting the game.
+        let pendingCountryIdx = null;
+        function openMapSelect(idx) {
+            pendingCountryIdx = idx;
+            document.getElementById('singleMapSetup').style.display = 'none';
+            document.getElementById('mapSelectScreen').style.display = 'block';
+        }
+        function closeMapSelect() {
+            document.getElementById('mapSelectScreen').style.display = 'none';
+            document.getElementById('singleMapSetup').style.display = 'block';
+        }
+        // Doesn't change anything about the actual game yet - every MAP_CONFIGS
+        // entry is the same placeholder config - but records the pick so it's
+        // there (gameState.selectedMapId) once real per-map differences exist.
+        function chooseMap(mapId) {
+            gameState.selectedMapId = mapId;
+            document.getElementById('mapSelectScreen').style.display = 'none';
+            startGame(pendingCountryIdx);
         }
 
         function startGame(countryIdx) {
