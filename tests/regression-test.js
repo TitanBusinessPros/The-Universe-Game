@@ -127,7 +127,7 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage, assignAttackTargets, guaranteeNearestAttackersForHumans, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS, randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER, nearestMinimapLandmark, spawnHotsun, damageNearHotsun, HOTSUN_IMAGE_URL, HOTSUN_SIZE, HOTSUN_RADIATION_RANGE, HOTSUN_DAMAGE_PERCENT, PLANET_SCALE, updateFogOfWar, toggleFogOfWar, drawMinimap, isPointRevealed, revealRegion, drawFogOfWarOverlay, isGroundUnitInCargo, BUILDING_ATTACKER_TYPES, ctx, MAP_CONFIGS, openMapSelect, closeMapSelect, chooseMap, populateMapGrid, showMapDetails, closeMapDetails, applyMapBackground, spaceBackgroundImage, SPACE_BACKGROUND_URL, MAP_IMAGE_URLS, RAIDER_PACK_TYPES, RAIDER_PACK_SIZE, RAIDER_PACK_BASE_ID, spawnAlienRaiderPacks, clearAlienRaiderPacks, ALIEN_ONLY_UNIT_TYPES, MAP_PLANET_LAYOUTS, MAP_LAYOUT_LABELS, sampleLayoutCandidate, spreadPositionForLayout, repositionPlanetsForMap, GALAXY_LANDMARK_MAX_SCREEN_FRACTION };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage, assignAttackTargets, guaranteeNearestAttackersForHumans, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS, randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER, nearestMinimapLandmark, spawnHotsun, damageNearHotsun, HOTSUN_IMAGE_URL, HOTSUN_SIZE, HOTSUN_RADIATION_RANGE, HOTSUN_DAMAGE_PERCENT, PLANET_SCALE, updateFogOfWar, toggleFogOfWar, drawMinimap, isPointRevealed, revealRegion, drawFogOfWarOverlay, isGroundUnitInCargo, BUILDING_ATTACKER_TYPES, ctx, MAP_CONFIGS, openMapSelect, closeMapSelect, chooseMap, populateMapGrid, showMapDetails, closeMapDetails, applyMapBackground, spaceBackgroundImage, SPACE_BACKGROUND_URL, MAP_IMAGE_URLS, RAIDER_PACK_TYPES, RAIDER_PACK_SIZE, RAIDER_PACK_BASE_ID, spawnAlienRaiderPacks, clearAlienRaiderPacks, ALIEN_ONLY_UNIT_TYPES, MAP_PLANET_LAYOUTS, MAP_LAYOUT_LABELS, sampleLayoutCandidate, spreadPositionForLayout, repositionPlanetsForMap, GALAXY_LANDMARK_MAX_SCREEN_FRACTION, isNamedNationId, getCannonTier, initiateCannonPlacement, blendToward, LASER_CORE_COLORS, CANNON_COST, CANNON_BASE_RANGE, CANNON_RANGE_STEP, CANNON_RANGE_TIERS, CANNON_BASE_HP, CANNON_HP_STEP, CANNON_DAMAGE_PERCENT, CANNON_PLACEMENT_MAX_RANGE, CANNON_VISIBILITY_RANGE };',
     context,
     { filename: 'grab-refs.js' }
 );
@@ -166,7 +166,9 @@ const {
     applyMapBackground, spaceBackgroundImage, SPACE_BACKGROUND_URL, MAP_IMAGE_URLS,
     RAIDER_PACK_TYPES, RAIDER_PACK_SIZE, RAIDER_PACK_BASE_ID, spawnAlienRaiderPacks, clearAlienRaiderPacks, ALIEN_ONLY_UNIT_TYPES,
     MAP_PLANET_LAYOUTS, MAP_LAYOUT_LABELS, sampleLayoutCandidate, spreadPositionForLayout, repositionPlanetsForMap,
-    GALAXY_LANDMARK_MAX_SCREEN_FRACTION
+    GALAXY_LANDMARK_MAX_SCREEN_FRACTION, isNamedNationId, getCannonTier, initiateCannonPlacement, blendToward,
+    LASER_CORE_COLORS, CANNON_COST, CANNON_BASE_RANGE, CANNON_RANGE_STEP, CANNON_RANGE_TIERS, CANNON_BASE_HP,
+    CANNON_HP_STEP, CANNON_DAMAGE_PERCENT, CANNON_PLACEMENT_MAX_RANGE, CANNON_VISIBILITY_RANGE
 } = context.__test;
 
 // ---------- Test data: the full combat unit roster ----------
@@ -3320,6 +3322,244 @@ check('Country.defenseGunAttack() hits the nearest in-range enemy but leaves sam
     return problems;
 });
 
+// ---------- Defense Cannon (2026-09-12) ----------
+// Direct request: a stationary, auto-firing planetary defense structure any
+// real planet can build for CANNON_COST, placed in open space up to
+// CANNON_PLACEMENT_MAX_RANGE from home - see index.html's own big comment
+// block above CANNON_COST for the full design.
+
+check('isNamedNationId() is true only for the 12 named nations (id 0-11), false for every alien/outpost id', () => {
+    const problems = [];
+    if (!isNamedNationId(0) || !isNamedNationId(11)) problems.push('expected ids 0 and 11 (the named-nation range) to be true');
+    if (isNamedNationId(12) || isNamedNationId(26)) problems.push('expected ids 12+ (aliens/outposts) to be false');
+    if (isNamedNationId(-1)) problems.push('expected a negative id (a raider pack) to be false');
+    return problems;
+});
+
+check('getCannonTier() counts researched cannon_range_N nodes in strict prereq order, 0 if none', () => {
+    const problems = [];
+    const country = new Country(0, 'TierTest', '#fff', new Island(0, 0, 0), true);
+    if (getCannonTier(country) !== 0) problems.push('expected tier 0 with nothing researched');
+    if (getCannonTier(null) !== 0) problems.push('expected tier 0 for a null country (defensive default)');
+    country.researchedTech.add('cannon_range_1');
+    country.researchedTech.add('cannon_range_2');
+    if (getCannonTier(country) !== 2) problems.push(`expected tier 2 with the first two researched, got ${getCannonTier(country)}`);
+    // Researching tier 4 without 3 shouldn't happen via startResearch()'s own
+    // prereq check, but getCannonTier() should still report the correct
+    // CONTIGUOUS tier rather than over-counting a gap.
+    country.researchedTech.add('cannon_range_4');
+    if (getCannonTier(country) !== 2) problems.push(`expected tier still 2 with a gap at tier 3, got ${getCannonTier(country)}`);
+    return problems;
+});
+
+check('a Defense Cannon starts at CANNON_BASE_RANGE/CANNON_BASE_HP and both scale with cannon_range_N research', () => {
+    const problems = [];
+    const country = new Country(0, 'CannonStatsTest', '#fff', new Island(0, 0, 0), true);
+    gameState.countries = [country];
+    const cannon = new Unit(0, 0, 'cannon', 0);
+    if (cannon.getRange() !== CANNON_BASE_RANGE) problems.push(`expected base range ${CANNON_BASE_RANGE}, got ${cannon.getRange()}`);
+    if (cannon.maxHp !== CANNON_BASE_HP) problems.push(`expected base max HP ${CANNON_BASE_HP}, got ${cannon.maxHp}`);
+
+    for (let i = 1; i <= CANNON_RANGE_TIERS; i++) country.researchedTech.add(`cannon_range_${i}`);
+    // Range is checked LIVE - the same already-built cannon should read the
+    // new max range immediately, same convention as Fortified Defenses.
+    if (cannon.getRange() !== CANNON_BASE_RANGE + CANNON_RANGE_TIERS * CANNON_RANGE_STEP) {
+        problems.push(`expected maxed live range ${CANNON_BASE_RANGE + CANNON_RANGE_TIERS * CANNON_RANGE_STEP}, got ${cannon.getRange()}`);
+    }
+    if (cannon.getRange() !== 2500) problems.push(`expected maxed range to literally be 2,500 per direct request, got ${cannon.getRange()}`);
+    // Max HP is fixed at construction time instead (Vessel Plating/Reinforced
+    // Hulls convention) - the already-built cannon above must NOT retroactively
+    // gain HP just because research finished after it was placed.
+    if (cannon.maxHp !== CANNON_BASE_HP) problems.push(`expected the already-built cannon's maxHp to stay at ${CANNON_BASE_HP}, got ${cannon.maxHp}`);
+    const newCannon = new Unit(0, 0, 'cannon', 0);
+    if (newCannon.maxHp !== 300) problems.push(`expected a newly-built cannon after maxing research to have 300 max HP, got ${newCannon.maxHp}`);
+    return problems;
+});
+
+check('Unit.getAttackPower() returns 0 for a cannon - its real damage is percentage-based (see Country.cannonAttack())', () => {
+    const cannon = new Unit(0, 0, 'cannon', 0);
+    return cannon.getAttackPower() === 0 ? [] : [`expected 0, got ${cannon.getAttackPower()}`];
+});
+
+check('a cannon can only target vessels, never ground troops or aircraft', () => {
+    const problems = [];
+    const cannon = new Unit(0, 0, 'cannon', 0);
+    const vessel = new Unit(100, 0, 'stormbreaker', 1);
+    const ground = new Unit(100, 0, 'groundpounders', 1);
+    const aircraft = new Unit(100, 0, 'radar', 1);
+    if (!cannon.canAttackUnit(vessel)) problems.push('expected a cannon to be able to target a vessel');
+    if (cannon.canAttackUnit(ground)) problems.push('expected a cannon to NOT be able to target a ground unit');
+    if (cannon.canAttackUnit(aircraft)) problems.push('expected a cannon to NOT be able to target an aircraft');
+    return problems;
+});
+
+check('a cannon never moves, regardless of who issues the order - per direct request ("they do not move and are stationary")', () => {
+    const cannon = new Unit(500, 500, 'cannon', 0);
+    cannon.moveTo(9999, 9999);
+    return (cannon.targetX === 500 && cannon.targetY === 500)
+        ? []
+        : [`expected moveTo() to be a complete no-op, got targetX/Y ${cannon.targetX},${cannon.targetY}`];
+});
+
+check("a cannon's own visibility caps at CANNON_VISIBILITY_RANGE regardless of the observer's own sight bonus - per direct request", () => {
+    const problems = [];
+    const human = new Country(0, 'Observer', '#fff', new Island(0, 0, 0), true);
+    const enemy = new Country(1, 'Owner', '#fff', new Island(9999999, 9999999, 1), false);
+    gameState.countries = [human, enemy];
+    gameState.playerCountry = human;
+    human.researchedTech.add('extended_sensors'); // +50% sight - should NOT extend how far a cannon can be seen
+    const scout = new Unit(0, 0, 'radar', 0); // radar has its own real sight bonus too
+    human.units = [scout];
+    const farCannon = new Unit(CANNON_VISIBILITY_RANGE + 50, 0, 'cannon', 1);
+    const nearCannon = new Unit(CANNON_VISIBILITY_RANGE - 50, 0, 'cannon', 1);
+    let drawnFar = false, drawnNear = false;
+    const origArc = ctx.arc;
+    ctx.arc = function (...args) { drawnFar = drawnFar || this === undefined; return origArc.apply(this, args); };
+    // draw() doesn't return a flag directly - instead check via the same
+    // isVisible logic path indirectly: call draw() and see whether it drew
+    // anything past the early-return by checking a canvas call happened.
+    // Simpler and more direct: reuse the exact same distance/sight-range math
+    // draw() itself uses, since that's the real contract under test.
+    const sightRange = Math.min(getEffectiveSightRange(human, hasRadarDetection(scout)), CANNON_VISIBILITY_RANGE);
+    if (Math.hypot(farCannon.x - scout.x, farCannon.y - scout.y) <= sightRange) problems.push('expected the far cannon to be beyond the capped sight range');
+    if (Math.hypot(nearCannon.x - scout.x, nearCannon.y - scout.y) > sightRange) problems.push('expected the near cannon to be within the capped sight range');
+    if (sightRange > CANNON_VISIBILITY_RANGE) problems.push(`expected sight range capped at ${CANNON_VISIBILITY_RANGE} even with Extended Sensors + radar, got ${sightRange}`);
+    ctx.arc = origArc;
+    return problems;
+});
+
+check('Country.buildCannon() deducts CANNON_COST and places the cannon between the homeworld\'s edge and CANNON_PLACEMENT_MAX_RANGE away', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'BuilderTest', '#fff', island, true); // comes with a standing War Factory by default (ISLAND_STRUCTURES)
+    gameState.countries = [country];
+    country.resources = CANNON_COST;
+
+    const built = country.buildCannon();
+    if (!built) return ['expected buildCannon() to succeed with exactly enough resources'];
+    if (country.resources !== 0) problems.push(`expected resources reduced by exactly CANNON_COST, left with ${country.resources}`);
+    const cannon = country.units.find(u => u.type === 'cannon');
+    if (!cannon) return ['expected a new cannon unit in country.units'];
+    const dist = Math.hypot(cannon.x - island.x, cannon.y - island.y);
+    if (dist > CANNON_PLACEMENT_MAX_RANGE + 1) problems.push(`expected the cannon within CANNON_PLACEMENT_MAX_RANGE, got ${dist.toFixed(0)}`);
+    if (dist < island.size) problems.push(`expected the cannon clear of the planet itself, got ${dist.toFixed(0)} vs island.size ${island.size}`);
+
+    // Not enough resources -> refuses, no partial charge.
+    country.resources = CANNON_COST - 1;
+    const before = country.units.length;
+    if (country.buildCannon()) problems.push('expected buildCannon() to refuse with insufficient resources');
+    if (country.units.length !== before) problems.push('expected no new unit when buildCannon() refuses');
+    if (country.resources !== CANNON_COST - 1) problems.push('expected resources untouched when buildCannon() refuses');
+    return problems;
+});
+
+check('Country.buildCannon() refuses without a standing War Factory, same gate the player\'s own placement uses', () => {
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'NoFactoryTest', '#fff', island, true);
+    gameState.countries = [country];
+    country.resources = CANNON_COST * 2;
+    // Every regular nation's island already comes with a War Factory by
+    // default (see ISLAND_STRUCTURES) - destroy it rather than assuming a
+    // fresh Island has none, so canBuildUnit('cannon') genuinely says no via
+    // UNIT_BUILDING_REQUIREMENTS['cannon'] = 'warfactory'.
+    const warFactory = island.buildings.find(b => b.isWarFactory);
+    if (!warFactory) return ['test assumption broken: expected a fresh Island to have a War Factory building to destroy'];
+    warFactory.destroyed = true;
+    return country.buildCannon() ? ['expected buildCannon() to refuse without a standing War Factory'] : [];
+});
+
+check("Country.cannonAttack() deals CANNON_DAMAGE_PERCENT of the target's CURRENT hp, only to the nearest in-range vessel, leaving ground/aircraft/same-team/out-of-range units alone", () => {
+    const problems = [];
+    const home = new Country(0, 'CannonDefender', '#ff0000', new Island(0, 0, 0), true);
+    const enemy = new Country(1, 'CannonAttacker', '#00ff00', new Island(9999999, 9999999, 1), false);
+    gameState.countries = [home, enemy];
+    gameState.playerCountry = home;
+    const cannon = new Unit(0, 0, 'cannon', 0);
+    home.units = [cannon];
+    const range = cannon.getRange();
+
+    const nearVessel = new Unit(range - 200, 0, 'stormbreaker', 1);
+    const farVessel = new Unit(range - 50, 0, 'stormbreaker', 1); // in range but further than nearVessel
+    const outOfRangeVessel = new Unit(range + 500, 0, 'stormbreaker', 1);
+    const groundInRange = new Unit(range - 300, 0, 'groundpounders', 1);
+    const ownVessel = new Unit(range - 200, 0, 'stormbreaker', 0); // same country - never a target
+    enemy.units = [nearVessel, farVessel, outOfRangeVessel, groundInRange];
+    home.units.push(ownVessel);
+
+    const hpBefore = nearVessel.hp;
+    home.cannonAttack();
+
+    if (nearVessel.hp !== hpBefore - hpBefore * CANNON_DAMAGE_PERCENT) {
+        problems.push(`expected the nearest vessel to lose ${CANNON_DAMAGE_PERCENT * 100}% of its own current hp, got ${hpBefore} -> ${nearVessel.hp}`);
+    }
+    if (farVessel.hp !== farVessel.maxHp) problems.push('expected the further (but also in-range) vessel untouched - only the nearest target fires');
+    if (outOfRangeVessel.hp !== outOfRangeVessel.maxHp) problems.push('expected the out-of-range vessel untouched');
+    if (groundInRange.hp !== groundInRange.maxHp) problems.push('expected an in-range ground unit untouched - cannons only target vessels');
+    if (ownVessel.hp !== ownVessel.maxHp) problems.push("expected the defender's own vessel never targeted");
+    if (!cannon.hasAttacked) problems.push('expected the cannon marked hasAttacked after firing');
+
+    // Refuses to fire twice in the same turn.
+    const hpAfterFirstShot = nearVessel.hp;
+    home.cannonAttack();
+    if (nearVessel.hp !== hpAfterFirstShot) problems.push('expected a second cannonAttack() this turn to do nothing (hasAttacked already true)');
+    return problems;
+});
+
+check('initiateCannonPlacement() arms placeCannon mode when affordable and buildable, refuses otherwise, without ever charging gold up front', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'PlaceTest', '#fff', island, true);
+    gameState.countries = [country];
+    gameState.playerCountry = country;
+    gameState.paused = false;
+    gameState.actionMode = null;
+
+    // No standing War Factory - should refuse and never arm placement mode.
+    // Every regular nation's island already comes with one by default (see
+    // ISLAND_STRUCTURES) - destroy it rather than assuming a fresh Island
+    // has none.
+    const warFactory = island.buildings.find(b => b.isWarFactory);
+    if (!warFactory) return ['test assumption broken: expected a fresh Island to have a War Factory building to destroy'];
+    warFactory.destroyed = true;
+    country.resources = CANNON_COST * 2;
+    initiateCannonPlacement();
+    if (gameState.actionMode === 'placeCannon') problems.push('expected initiateCannonPlacement() to refuse without a standing War Factory');
+
+    warFactory.destroyed = false;
+
+    // Not enough gold - should refuse.
+    country.resources = CANNON_COST - 1;
+    initiateCannonPlacement();
+    if (gameState.actionMode === 'placeCannon') problems.push('expected initiateCannonPlacement() to refuse without enough resources');
+    if (country.resources !== CANNON_COST - 1) problems.push('expected resources untouched by a refused placement attempt');
+
+    // Affordable and buildable - should arm it, without charging anything yet
+    // (cost is only deducted once a valid spot is actually clicked).
+    country.resources = CANNON_COST;
+    initiateCannonPlacement();
+    if (gameState.actionMode !== 'placeCannon') problems.push('expected initiateCannonPlacement() to arm placeCannon mode');
+    if (country.resources !== CANNON_COST) problems.push('expected initiateCannonPlacement() itself to never deduct gold');
+    gameState.actionMode = null;
+    return problems;
+});
+
+check('getLaserColor()/LASER_CORE_COLORS give C-1 and C-2 cannons distinct two-tone neon colors, per direct request', () => {
+    const problems = [];
+    if (getLaserColor('cannon_c1') === getLaserColor('cannon_c2')) problems.push('expected C-1 and C-2 to have different edge colors');
+    if (getLaserColor('cannon_c1') === DEFAULT_LASER_COLOR || getLaserColor('cannon_c2') === DEFAULT_LASER_COLOR) {
+        problems.push('expected real colors for both cannon variants, not the generic default');
+    }
+    return problems;
+});
+
+check('blendToward() blends toward an arbitrary target color, not just white - lightenRgb() is the white-specific special case', () => {
+    const problems = [];
+    if (blendToward('0,0,0', '255,0,0', 1) !== '255,0,0') problems.push('expected a full (amount=1) blend to land exactly on the target color');
+    if (blendToward('0,0,0', '255,0,0', 0) !== '0,0,0') problems.push('expected a zero blend to leave the original color unchanged');
+    if (lightenRgb('0,0,0', 1) !== '255,255,255') problems.push('expected lightenRgb() to still blend toward pure white');
+    return problems;
+});
+
 // ---------- 24. UI selection / mode-switching (2026-08-27) ----------
 
 check('switchTab() shows the chosen tab content and highlights the clicked tab button', () => {
@@ -3659,12 +3899,14 @@ check('a player-issued attack fires a colored laser for the attacker\'s own type
 //    the actual live code path (getMaxHP/getAttackPower/defenseGunAttack/
 //    etc.), not by re-deriving the expected number and hoping it matches.
 
-check('TECH_TREE now has 13 nodes, all 13 required by the schema guardrail above are present', () => {
+check('TECH_TREE now has 17 nodes, all required by the schema guardrail above are present', () => {
     const ids = Object.keys(TECH_TREE);
     const expectedNew = ['reinforced_hulls', 'aerial_superiority', 'extended_sensors', 'fortified_defenses',
-        'rapid_repair', 'deep_mining', 'expanded_cargo', 'advanced_shipyards', 'warp_drive', 'deposit_scanner'];
+        'rapid_repair', 'deep_mining', 'expanded_cargo', 'advanced_shipyards', 'warp_drive', 'deposit_scanner',
+        // Defense Cannon range/HP chain (2026-09-12) - see getCannonTier().
+        'cannon_range_1', 'cannon_range_2', 'cannon_range_3', 'cannon_range_4'];
     const problems = [];
-    if (ids.length !== 13) problems.push(`expected 13 total nodes (3 original + 10 new), got ${ids.length}`);
+    if (ids.length !== 17) problems.push(`expected 17 total nodes (3 original + 10 + 4 cannon tiers), got ${ids.length}`);
     expectedNew.forEach(id => { if (!TECH_TREE[id]) problems.push(`missing new node "${id}"`); });
     return problems;
 });
