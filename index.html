@@ -1869,19 +1869,46 @@
             });
         }
 
-        // Picks one live (buildings not all destroyed) country at random from
+        // Picks one live (buildings not all destroyed) country from
         // country.attackTargetIds - the fixed rival/alien pairing set up by
         // assignAttackTargets() and kept valid by reassignEliminatedAttackTargets().
         // Returns null if country has no assignment yet, or every assigned target
         // has since been eliminated and not yet replaced - callers should treat a
         // null return as "don't issue a hunt order this roll", not an error.
+        //
+        // Direct report (2026-09-11): "no problem being attacked by aliens but no
+        // actual country attacked me" - live-simulated (15 real games, real
+        // galaxy/speeds, not tests/balance's artificial ring - see
+        // verify-against-real-game-not-a-simulation project note) with the fix
+        // for guaranteeNearestAttackersForHumans()'s own gap: an alien nation's
+        // attackTargetIds round-robins across however many regular nations it's
+        // responsible for ("aliens are usually far fewer in number... splitting
+        // attention across multiple regular nations" - see assignAttackTargets())
+        // PLUS the human once guaranteed nearest - a picket alien covering 3
+        // regular-nation rivals only had a 1-in-4 uniform-random chance of ever
+        // picking the human on a given roll, so it wandered toward whichever
+        // rival came up instead and never closed the distance (confirmed: closest
+        // approach stayed 10,000+ units away the entire match, every sample,
+        // while the assigned REGULAR attacker - who typically only juggles 1-2
+        // targets and hits this pick's 50/50 far more often - reliably closed to
+        // attack range by turn 3-8). A uniform pick was silently defeating the
+        // whole point of the guarantee ("reachable, not just nominally
+        // assigned"), so a live human target always wins this pick over a
+        // fellow-AI rival now, same as any other rival would if it were the only
+        // entry.
         function pickAssignedTarget(country) {
             const liveTargetIds = (country.attackTargetIds || []).filter(id => {
                 const c = gameState.countries.find(cc => cc.id === id);
                 return c && c.island.buildings.some(b => !b.destroyed);
             });
             if (liveTargetIds.length === 0) return null;
-            const pickedId = liveTargetIds[Math.floor(Math.random() * liveTargetIds.length)];
+            const humanTargetId = liveTargetIds.find(id => {
+                const c = gameState.countries.find(cc => cc.id === id);
+                return c && c.isPlayer;
+            });
+            const pickedId = humanTargetId !== undefined
+                ? humanTargetId
+                : liveTargetIds[Math.floor(Math.random() * liveTargetIds.length)];
             return gameState.countries.find(c => c.id === pickedId) || null;
         }
 
@@ -4070,11 +4097,39 @@
                                         attacker.hasAttacked = true;
                                         targetFound = true;
                                     }
+
+                                    // Direct report (2026-09-11): "no problem being attacked by
+                                    // aliens but no actual country attacked me" - live simulation
+                                    // (10 real games, real speeds/distances) traced this to the
+                                    // opposite gap: cyborgdreadnought IS flagged buildable-attacker
+                                    // (see BUILDING_ATTACKER_TYPES/canAttackBuildings()), but this
+                                    // branch - unlike the shared regular-nation attack loop below -
+                                    // never once tried the building fallback, so a Cyborg attacker
+                                    // sitting right on the human's homeworld with no unit target in
+                                    // range just sat idle forever instead of ever damaging it. Same
+                                    // pattern as the shared loop's own building-attack fallback.
+                                    if (!targetFound && attacker.canAttackBuildings() && Math.random() < AI_BUILDING_ATTACK_CHANCE) {
+                                        let nearestBuilding = null;
+                                        let nearestBuildingDist = Infinity;
+                                        country.island.buildings.forEach(building => {
+                                            if (building.destroyed) return;
+                                            const bdx = (country.island.x + building.x) - attacker.x;
+                                            const bdy = (country.island.y + building.y) - attacker.y;
+                                            const bdist = Math.sqrt(bdx * bdx + bdy * bdy);
+                                            if (bdist < nearestBuildingDist) { nearestBuildingDist = bdist; nearestBuilding = building; }
+                                        });
+
+                                        if (nearestBuilding && nearestBuildingDist < attacker.getRange()) {
+                                            nearestBuilding.takeDamage(attacker.getAttackPower(), attacker.countryId);
+                                            attacker.hasAttacked = true;
+                                            targetFound = true;
+                                        }
+                                    }
                                 }
                             });
                         }
                     });
-                    
+
                     this.units = this.units.filter(u => u.hp > 0);
                     return;
                 }
