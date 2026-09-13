@@ -127,7 +127,7 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, getHomeDefenseVisionRange, HOME_DEFENSE_VISION_RANGE, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage, assignAttackTargets, guaranteeNearestAttackersForHumans, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS, randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER, nearestMinimapLandmark, spawnHotsun, damageNearHotsun, HOTSUN_IMAGE_URL, HOTSUN_SIZE, HOTSUN_RADIATION_RANGE, HOTSUN_DAMAGE_PERCENT, PLANET_SCALE, updateFogOfWar, toggleFogOfWar, drawMinimap, isPointRevealed, revealRegion, drawFogOfWarOverlay, isGroundUnitInCargo, BUILDING_ATTACKER_TYPES, ctx, MAP_CONFIGS, openMapSelect, closeMapSelect, chooseMap, populateMapGrid, showMapDetails, closeMapDetails, applyMapBackground, spaceBackgroundImage, SPACE_BACKGROUND_URL, MAP_IMAGE_URLS, RAIDER_PACK_TYPES, RAIDER_PACK_SIZE, RAIDER_PACK_BASE_ID, spawnAlienRaiderPacks, clearAlienRaiderPacks, ALIEN_ONLY_UNIT_TYPES, MAP_PLANET_LAYOUTS, MAP_LAYOUT_LABELS, sampleLayoutCandidate, spreadPositionForLayout, repositionPlanetsForMap, GALAXY_LANDMARK_MAX_SCREEN_FRACTION, isNamedNationId, getCannonTier, initiateCannonPlacement, blendToward, LASER_CORE_COLORS, CANNON_COST, CANNON_BASE_RANGE, CANNON_RANGE_STEP, CANNON_RANGE_TIERS, CANNON_BASE_HP, CANNON_HP_STEP, CANNON_DAMAGE_PERCENT, CANNON_PLACEMENT_MAX_RANGE, CANNON_VISIBILITY_RANGE };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, getHomeDefenseVisionRange, HOME_DEFENSE_VISION_RANGE, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage, assignAttackTargets, guaranteeNearestAttackersForHumans, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS, randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER, nearestMinimapLandmark, spawnHotsun, damageNearHotsun, HOTSUN_IMAGE_URL, HOTSUN_SIZE, HOTSUN_RADIATION_RANGE, HOTSUN_DAMAGE_PERCENT, PLANET_SCALE, updateFogOfWar, toggleFogOfWar, drawMinimap, isPointRevealed, revealRegion, drawFogOfWarOverlay, isGroundUnitInCargo, BUILDING_ATTACKER_TYPES, ctx, MAP_CONFIGS, openMapSelect, closeMapSelect, chooseMap, populateMapGrid, showMapDetails, closeMapDetails, applyMapBackground, spaceBackgroundImage, SPACE_BACKGROUND_URL, MAP_IMAGE_URLS, RAIDER_PACK_TYPES, RAIDER_PACK_SIZE, RAIDER_PACK_BASE_ID, spawnAlienRaiderPacks, clearAlienRaiderPacks, ALIEN_ONLY_UNIT_TYPES, FELISGATHER_COUNT, FELISGATHER_HP, FELISGATHER_CONVERT_RANGE, FELISGATHER_ID, spawnFelisgathers, clearFelisgathers, MAP_PLANET_LAYOUTS, MAP_LAYOUT_LABELS, sampleLayoutCandidate, spreadPositionForLayout, repositionPlanetsForMap, GALAXY_LANDMARK_MAX_SCREEN_FRACTION, isNamedNationId, getCannonTier, initiateCannonPlacement, blendToward, LASER_CORE_COLORS, CANNON_COST, CANNON_BASE_RANGE, CANNON_RANGE_STEP, CANNON_RANGE_TIERS, CANNON_BASE_HP, CANNON_HP_STEP, CANNON_DAMAGE_PERCENT, CANNON_PLACEMENT_MAX_RANGE, CANNON_VISIBILITY_RANGE };',
     context,
     { filename: 'grab-refs.js' }
 );
@@ -165,6 +165,7 @@ const {
     MAP_CONFIGS, openMapSelect, closeMapSelect, chooseMap, populateMapGrid, showMapDetails, closeMapDetails,
     applyMapBackground, spaceBackgroundImage, SPACE_BACKGROUND_URL, MAP_IMAGE_URLS,
     RAIDER_PACK_TYPES, RAIDER_PACK_SIZE, RAIDER_PACK_BASE_ID, spawnAlienRaiderPacks, clearAlienRaiderPacks, ALIEN_ONLY_UNIT_TYPES,
+    FELISGATHER_COUNT, FELISGATHER_HP, FELISGATHER_CONVERT_RANGE, FELISGATHER_ID, spawnFelisgathers, clearFelisgathers,
     MAP_PLANET_LAYOUTS, MAP_LAYOUT_LABELS, sampleLayoutCandidate, spreadPositionForLayout, repositionPlanetsForMap,
     GALAXY_LANDMARK_MAX_SCREEN_FRACTION, isNamedNationId, getCannonTier, initiateCannonPlacement, blendToward,
     LASER_CORE_COLORS, CANNON_COST, CANNON_BASE_RANGE, CANNON_RANGE_STEP, CANNON_RANGE_TIERS, CANNON_BASE_HP,
@@ -2333,6 +2334,247 @@ check('aiTurn()\'s isRaiderPack branch never targets Cyborg/Zoonester/Roufestrea
     });
     clearAlienRaiderPacks();
     return problems;
+});
+
+// ---------- Map 3's Felisgathers (2026-09-13, per direct request) ----------
+//    "peacekeepers that go around converting ships within 200 range... that
+//    ship turns bright white and follows the Felisgather around... they
+//    convert one ship each turn... they don't attack the ships they
+//    capture[, but the ships they] capture attack anything around them and
+//    when they have a pack going around they attack all the earth nations
+//    only... hp of 400... 3 of these ships."
+
+check('spawnFelisgathers() creates exactly FELISGATHER_COUNT converters in one Felisgather Collective, flagged isFelisgather with no buildings', () => {
+    gameState.countries = [];
+    gameState.playerCountry = null;
+    vm.runInContext('initGame();', context, { filename: 'felisgather-spawn-setup.js' });
+    spawnFelisgathers();
+    const problems = [];
+    const collectives = gameState.countries.filter(c => c.isFelisgather);
+    if (collectives.length !== 1) problems.push(`expected exactly 1 Felisgather Collective country, got ${collectives.length}`);
+    const collective = collectives[0];
+    if (collective) {
+        if (collective.units.length !== FELISGATHER_COUNT) problems.push(`expected ${FELISGATHER_COUNT} converter units, got ${collective.units.length}`);
+        if (collective.units.some(u => u.type !== 'felisgather')) problems.push('every unit spawnFelisgathers() creates should be type felisgather');
+        if (collective.units.some(u => u.hp !== FELISGATHER_HP)) problems.push(`not every converter spawned with ${FELISGATHER_HP} HP`);
+        if (collective.island.buildings.length !== 0) problems.push('expected an empty buildings array');
+        if (collective.id >= 0) problems.push(`expected a negative sentinel id, got ${collective.id}`);
+    }
+    clearFelisgathers();
+    return problems;
+});
+
+check('clearFelisgathers() removes the Felisgather Collective and nothing else', () => {
+    gameState.countries = [];
+    gameState.playerCountry = null;
+    vm.runInContext('initGame();', context, { filename: 'felisgather-clear-setup.js' });
+    const before = gameState.countries.length;
+    spawnFelisgathers();
+    if (gameState.countries.length !== before + 1) return [`expected spawnFelisgathers() to add exactly 1 country, went from ${before} to ${gameState.countries.length}`];
+    clearFelisgathers();
+    if (gameState.countries.length !== before) return [`expected clearFelisgathers() to restore the original ${before} countries, got ${gameState.countries.length}`];
+    if (gameState.countries.some(c => c.isFelisgather)) return ['a Felisgather country survived clearFelisgathers()'];
+    return [];
+});
+
+check('chooseMap() only spawns Felisgathers for Sector 3 (mapId 2), and clears them for every other sector', () => {
+    gameState.countries = [];
+    gameState.playerCountry = null;
+    vm.runInContext('initGame();', context, { filename: 'felisgather-choosemap-setup.js' });
+    openMapSelect(0);
+    chooseMap(2); // Sector 3
+    const problems = [];
+    if (gameState.countries.filter(c => c.isFelisgather).length !== 1) problems.push('chooseMap(2) (Sector 3) should spawn the Felisgather Collective');
+
+    gameState.countries = [];
+    gameState.playerCountry = null;
+    vm.runInContext('initGame();', context, { filename: 'felisgather-choosemap-setup2.js' });
+    openMapSelect(0);
+    chooseMap(4); // Sector 5 - no Felisgathers
+    if (gameState.countries.some(c => c.isFelisgather)) problems.push('chooseMap(4) (Sector 5) should not have any Felisgathers');
+    gameState.selectedMapId = null; // restore for later checks
+    return problems;
+});
+
+check('startHotSeatGame() and startCampaignStage() both clear any leftover Felisgathers - only chooseMap() ever spawns them', () => {
+    const problems = [];
+    gameState.countries = [];
+    gameState.playerCountry = null;
+    vm.runInContext('initGame();', context, { filename: 'felisgather-hotseat-setup.js' });
+    spawnFelisgathers();
+    startHotSeatGame([0, 1]);
+    if (gameState.countries.some(c => c.isFelisgather)) problems.push('startHotSeatGame() should clear any leftover Felisgathers');
+
+    spawnFelisgathers();
+    selectCampaignNation(0);
+    startCampaignStage(0);
+    if (gameState.countries.some(c => c.isFelisgather)) problems.push('startCampaignStage() should clear any leftover Felisgathers');
+    return problems;
+});
+
+check('the Felisgather Collective is excluded from the normal regular/alien nation assignment system entirely', () => {
+    gameState.countries = [];
+    gameState.playerCountry = null;
+    vm.runInContext('initGame();', context, { filename: 'felisgather-assignment-setup.js' });
+    spawnFelisgathers();
+    assignAttackTargets();
+    const problems = [];
+    const collective = gameState.countries.find(c => c.isFelisgather);
+    if (collective.attackTargetIds.length !== 0) problems.push('the Felisgather Collective was assigned a target by assignAttackTargets() - it should never participate in that system');
+    gameState.countries.filter(c => !c.isFelisgather).forEach(c => {
+        if ((c.attackTargetIds || []).includes(collective.id)) problems.push(`${c.name} was assigned the Felisgather Collective as its rival - it must never be anyone's assigned target`);
+    });
+    startGame(0);
+    guaranteeNearestAttackersForHumans();
+    const humanAttackers = gameState.countries.filter(c => (c.attackTargetIds || []).includes(gameState.playerCountry.id));
+    if (humanAttackers.some(c => c.isFelisgather)) problems.push('guaranteeNearestAttackersForHumans() assigned the Felisgather Collective as the human\'s guaranteed attacker');
+    clearFelisgathers();
+    return problems;
+});
+
+check('an empty-buildings Felisgather Collective can never block victory or get miscounted as "eliminated" the instant it spawns', () => {
+    gameState.countries = [];
+    gameState.playerCountry = null;
+    vm.runInContext('initGame();', context, { filename: 'felisgather-victory-setup.js' });
+    spawnFelisgathers();
+    startGame(0);
+    gameState.countries.forEach(c => {
+        if (c.isPlayer || c.isFelisgather) return;
+        c.island.buildings.forEach(b => { b.destroyed = true; b.hp = 0; });
+    });
+    gameState.paused = false;
+    gameState.campaignActive = false;
+    const before = lifetimeStats.nationsEliminated;
+    nextTurn();
+    const problems = [];
+    document.getElementById('gameOverScreen').classList.remove('victory', 'defeat');
+    checkGameOver();
+    if (!document.getElementById('gameOverScreen').classList.contains('victory')) problems.push('destroying every real nation should trigger victory even with the Felisgather Collective still alive');
+    const felisgatherNewlyCounted = lifetimeStats.nationsEliminated - before - (gameState.countries.filter(c => !c.isPlayer && !c.isFelisgather).length);
+    if (felisgatherNewlyCounted > 0) problems.push('the Felisgather Collective got counted in lifetimeStats.nationsEliminated just for existing with 0 buildings');
+    clearFelisgathers();
+    return problems;
+});
+
+check('a Felisgather converts a nearby Earth-nation ship within range, once per turn, leaving its stats/type untouched but changing its owner', () => {
+    gameState.countries = [];
+    gameState.playerCountry = null;
+    vm.runInContext('initGame();', context, { filename: 'felisgather-convert-setup.js' });
+    spawnFelisgathers();
+    startGame(0);
+    const collective = gameState.countries.find(c => c.isFelisgather);
+    const felisgather = collective.units[0];
+    const victim = new Unit(felisgather.x + 50, felisgather.y, 'stormbreaker', gameState.playerCountry.id);
+    victim.attackMoveTarget = { kind: 'unit', unit: felisgather }; // a standing order that conversion should cancel
+    gameState.playerCountry.units.push(victim);
+
+    const problems = [];
+    collective.aiTurn();
+    if (victim.countryId !== collective.id) problems.push(`expected the victim's countryId to change to the Felisgather Collective's (${collective.id}), got ${victim.countryId}`);
+    if (victim.type !== 'stormbreaker') problems.push(`expected the converted ship to keep its own type, got ${victim.type}`);
+    if (victim.hp !== victim.maxHp) problems.push('conversion should not damage the ship at all');
+    if (gameState.playerCountry.units.includes(victim)) problems.push('the converted ship should be removed from its original owner\'s roster');
+    if (!collective.units.includes(victim)) problems.push('the converted ship should be added to the Felisgather Collective\'s roster');
+    if (victim.attackMoveTarget !== null) problems.push('conversion should cancel any standing attack-move order');
+    if (!felisgather.hasAttacked) problems.push('the converting Felisgather should be marked hasAttacked (its once-per-turn action)');
+
+    // A second victim in range this same turn should NOT also be converted -
+    // "they convert one ship each turn" (per Felisgather, already spent above).
+    const secondVictim = new Unit(felisgather.x + 40, felisgather.y, 'deepglider', gameState.playerCountry.id);
+    gameState.playerCountry.units.push(secondVictim);
+    collective.aiTurn();
+    if (secondVictim.countryId !== gameState.playerCountry.id) problems.push('a Felisgather that already converted a ship this turn should not convert a second one');
+
+    clearFelisgathers();
+    return problems;
+});
+
+check('a Felisgather never converts a ship out of range, a ground unit, or a unit belonging to another hostile faction', () => {
+    gameState.countries = [];
+    gameState.playerCountry = null;
+    vm.runInContext('initGame();', context, { filename: 'felisgather-convert-restrictions-setup.js' });
+    spawnFelisgathers();
+    startGame(0);
+    const collective = gameState.countries.find(c => c.isFelisgather);
+    const felisgather = collective.units[0];
+
+    const tooFar = new Unit(felisgather.x + FELISGATHER_CONVERT_RANGE + 500, felisgather.y, 'stormbreaker', gameState.playerCountry.id);
+    gameState.playerCountry.units.push(tooFar);
+    const groundTroop = new Unit(felisgather.x + 10, felisgather.y, 'groundpounders', gameState.playerCountry.id);
+    gameState.playerCountry.units.push(groundTroop);
+    const cyborg = gameState.countries.find(c => c.isCyborg);
+    let cyborgVictim = null;
+    if (cyborg) {
+        cyborgVictim = new Unit(felisgather.x + 10, felisgather.y, 'cyborgdreadnought', cyborg.id);
+        cyborg.units.push(cyborgVictim);
+    }
+
+    collective.aiTurn();
+    const problems = [];
+    if (tooFar.countryId !== gameState.playerCountry.id) problems.push('a ship well outside FELISGATHER_CONVERT_RANGE was converted anyway');
+    if (groundTroop.countryId !== gameState.playerCountry.id) problems.push('a ground unit was converted - only ships should be convertible');
+    if (cyborgVictim && cyborgVictim.countryId !== cyborg.id) problems.push('a Cyborg unit was converted - only Earth-nation ships should be convertible');
+    clearFelisgathers();
+    return problems;
+});
+
+check('a captured (converted) ship attacks Earth nations in range using its own stats, and never targets Cyborg/Zoonester/Roufestreal/another raider pack', () => {
+    gameState.countries = [];
+    gameState.playerCountry = null;
+    vm.runInContext('initGame();', context, { filename: 'felisgather-captive-attack-setup.js' });
+    spawnFelisgathers();
+    startGame(0);
+    const collective = gameState.countries.find(c => c.isFelisgather);
+    // A captured ship, placed directly in the collective's own roster (as if
+    // already converted), with a live Earth-nation target in range.
+    const captive = new Unit(0, 0, 'stormbreaker', collective.id);
+    collective.units.push(captive);
+    const enemyNation = gameState.countries.find(c => !c.isPlayer && !c.isCyborg && !c.isZoonester && !c.isRoufestreal && !c.isFelisgather);
+    const target = new Unit(captive.x + 10, captive.y, 'stormbreaker', enemyNation.id);
+    enemyNation.units.push(target);
+    const hpBefore = target.hp;
+
+    collective.aiTurn();
+    const problems = [];
+    if (target.hp !== hpBefore - captive.getAttackPower()) problems.push(`expected the captive to deal its own ${captive.getAttackPower()} attack power, target hp went ${hpBefore} -> ${target.hp}`);
+    if (!captive.hasAttacked) problems.push('expected the attacking captive to be marked hasAttacked');
+    clearFelisgathers();
+    return problems;
+});
+
+check('a captured ship with nothing in range follows the nearest Felisgather instead of standing still', () => {
+    gameState.countries = [];
+    gameState.playerCountry = null;
+    vm.runInContext('initGame();', context, { filename: 'felisgather-follow-setup.js' });
+    spawnFelisgathers();
+    startGame(0);
+    const collective = gameState.countries.find(c => c.isFelisgather);
+    const felisgather = collective.units[0];
+    // Far from the felisgather, and far from every real Earth nation too, so
+    // nothing is in attack range - the only sensible action is to follow.
+    const captive = new Unit(felisgather.x + 500, felisgather.y + 500, 'stormbreaker', collective.id);
+    collective.units.push(captive);
+
+    collective.aiTurn();
+    const problems = [];
+    if (typeof captive.targetX !== 'number') problems.push('expected the idle captive to be given a move order toward the Felisgather pack');
+    else {
+        const distBefore = Math.hypot(felisgather.x - (felisgather.x + 500), felisgather.y - (felisgather.y + 500));
+        const distToNewTarget = Math.hypot(felisgather.x - captive.targetX, felisgather.y - captive.targetY);
+        if (distToNewTarget >= distBefore) problems.push('expected the follow move order to head toward the Felisgather, not away from it');
+    }
+    clearFelisgathers();
+    return problems;
+});
+
+check('Unit.draw() visually tints a captured ship bright white, but never the Felisgather converters themselves', () => {
+    if (!/capturedByFelisgather[\s\S]{0,200}brightness\(0\) invert\(1\)/.test(script)) {
+        return ["expected Unit.draw() to apply a 'brightness(0) invert(1)' filter when a unit has been captured by the Felisgather Collective"];
+    }
+    if (!/this\.type !== 'felisgather'\s*\n\s*&& \(gameState\.countries\.find/.test(script)) {
+        return ['expected the captured-ship check to exclude the Felisgather converters themselves (this.type !== \'felisgather\')'];
+    }
+    return [];
 });
 
 check('MAP_CONFIGS specials/alienTypes text stays in sync with the real constants (no hand-typed numbers that can drift)', () => {
@@ -6137,8 +6379,12 @@ check('chooseMap() keeps every resource deposit tied to its planet\'s NEW positi
     gameState.countries = [];
     vm.runInContext('initGame();', context, { filename: 'choosemap-deposit-setup.js' });
     pendingCountryIdx = 0;
-    chooseMap(2); // Sector 3 - ring layout, drastically different from the uniform scatter initGame() seeded
+    chooseMap(2); // Sector 3 - ring layout, drastically different from the uniform scatter initGame() seeded (also spawns the Felisgather Collective - see FELISGATHER_ID)
     gameState.countries.forEach(country => {
+        // The Felisgather Collective (and Sector 2's raider packs) have a
+        // stub island, not a real planet - no nearby deposit to have ever
+        // been "left behind" for them in the first place.
+        if (country.isRaiderPack || country.isFelisgather) return;
         const nearestDist = resourceDeposits.reduce((best, d) => {
             const dist = Math.hypot(d.x - country.island.x, d.y - country.island.y);
             return best === null ? dist : Math.min(best, dist);
@@ -6151,6 +6397,12 @@ check('chooseMap() keeps every resource deposit tied to its planet\'s NEW positi
             problems.push(`${country.name}'s nearest deposit is ${nearestDist.toFixed(0)} units away (island.size ${country.island.size.toFixed(0)}) - looks left behind at the old pre-reposition spot, not moved with the planet`);
         }
     });
+    // Restore for later checks - chooseMap(2) above left gameState.selectedMapId
+    // set to 2 (and a live Felisgather Collective in gameState.countries),
+    // which would otherwise leak into any later check that calls
+    // applySaveData()/buildSaveData() without picking its own sector first.
+    gameState.selectedMapId = null;
+    clearFelisgathers();
     return problems;
 });
 

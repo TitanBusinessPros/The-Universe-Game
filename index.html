@@ -1804,7 +1804,7 @@
         // that rush-build filter's own comment: canBuildUnit() would say yes,
         // since there's no UNIT_BUILDING_REQUIREMENTS entry to gate it, but
         // buildUnit() has no cost entry for these and silently no-ops).
-        const ALIEN_ONLY_UNIT_TYPES = ['cyborgdreadnought', 'zoonparasite', 'roufestreal', 'vrekthul', 'zhanqorr', 'krallosith'];
+        const ALIEN_ONLY_UNIT_TYPES = ['cyborgdreadnought', 'zoonparasite', 'roufestreal', 'vrekthul', 'zhanqorr', 'krallosith', 'felisgather'];
 
         // ===================================================================
         // DEFENSE CANNON (2026-09-12, per direct request) - a stationary,
@@ -1901,6 +1901,8 @@
         'vrekthul': 1.3,
         'zhanqorr': 1.1,
         'krallosith': 0.9,
+        // Map 3's roaming Felisgathers (2026-09-13) - see FELISGATHER_ID.
+        'felisgather': 1.0,
         // Was missing entirely - every other buildable unit has a tuned entry
         // here, but 'miningship' fell through to the generic default (2) in
         // Unit.update() instead. It happened to still move, just untuned and
@@ -2074,7 +2076,7 @@
         // attacker able to reach the player within 12 turns, confirmed by
         // direct simulation.
         function assignAttackTargets() {
-            const regularNations = gameState.countries.filter(c => !c.isCyborg && !c.isZoonester && !c.isRoufestreal && !c.isRaiderPack);
+            const regularNations = gameState.countries.filter(c => !c.isCyborg && !c.isZoonester && !c.isRoufestreal && !c.isRaiderPack && !c.isFelisgather);
             const alienNations = gameState.countries.filter(c => c.isCyborg || c.isZoonester || c.isRoufestreal);
 
             gameState.countries.forEach(c => { c.attackTargetIds = []; });
@@ -2185,7 +2187,7 @@
         // startHotSeatGame()), once isPlayer is actually set, layered on top of
         // (never replacing) whatever the general pairing already assigned.
         function guaranteeNearestAttackersForHumans() {
-            const regularNations = gameState.countries.filter(c => !c.isCyborg && !c.isZoonester && !c.isRoufestreal && !c.isRaiderPack);
+            const regularNations = gameState.countries.filter(c => !c.isCyborg && !c.isZoonester && !c.isRoufestreal && !c.isRaiderPack && !c.isFelisgather);
             const alienNations = gameState.countries.filter(c => c.isCyborg || c.isZoonester || c.isRoufestreal);
             const livingRegularNow = regularNations.filter(c => c.island.buildings.some(b => !b.destroyed));
             const livingAlienNow = alienNations.filter(c => c.island.buildings.some(b => !b.destroyed));
@@ -2248,7 +2250,7 @@
             // a uniformly random replacement here - possibly clear across the
             // galaxy - quietly undoing that guarantee for the rest of the match.
             const livingRegular = gameState.countries.filter(c =>
-                aliveIds.includes(c.id) && !c.isCyborg && !c.isZoonester && !c.isRoufestreal && !c.isRaiderPack);
+                aliveIds.includes(c.id) && !c.isCyborg && !c.isZoonester && !c.isRoufestreal && !c.isRaiderPack && !c.isFelisgather);
             const livingAlien = gameState.countries.filter(c =>
                 aliveIds.includes(c.id) && (c.isCyborg || c.isZoonester || c.isRoufestreal));
             const nearestOf = (pool, victim) => pool.reduce((best, c) =>
@@ -2557,6 +2559,8 @@
             'vrekthul': 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Map2Enemies/vrekthul.png',
             'zhanqorr': 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Map2Enemies/zhanqorr.png',
             'krallosith': 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Map2Enemies/krallosith.png',
+            // Map 3's roaming Felisgathers (2026-09-13) - see FELISGATHER_ID.
+            'felisgather': 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Map3Enemies/Felisgathers.png',
             'struct0': 'https://raw.githubusercontent.com/TitanBusinessPros/SGA-1/main/Building-2.png',
             'struct1': 'https://raw.githubusercontent.com/TitanBusinessPros/The-Universe-Game/main/Structures/Building-3.png',
             'struct2': 'https://raw.githubusercontent.com/TitanBusinessPros/SGA-1/main/Building-4.png',
@@ -3073,6 +3077,31 @@
             desc: `${p.hp} HP each. Patrols the galaxy in a pack of ${RAIDER_PACK_SIZE}, hunting only Earth nations - never the Cyborg/Zoonester/Roufestreal aliens, never another raider pack. Once a pack reaches a planet, it lays siege until that planet is destroyed or the whole pack is.`,
         }));
 
+        // Map 3's own hostile faction (2026-09-13, per direct request): 3
+        // "peacekeeper" ships that roam space and convert (not destroy) any
+        // Earth-nation ship they get near - see Country.aiTurn()'s
+        // isFelisgather branch for the actual rule. Unlike Sector 2's raider
+        // packs, the Felisgathers themselves never attack anything at all;
+        // their only action each turn is converting one nearby ship (per
+        // Felisgather) to their own side. A converted ship keeps its own
+        // type/stats but changes owner, turns bright white (see Unit.draw()),
+        // and starts fighting for the Felisgathers - attacking any Earth
+        // nation in range exactly like a raider pack does, and otherwise
+        // following the nearest Felisgather around. The captured roster only
+        // ever grows (no respawning, same as raider packs).
+        const FELISGATHER_COUNT = 3;
+        const FELISGATHER_HP = 400;
+        const FELISGATHER_CONVERT_RANGE = 200;
+        // Sentinel id, well clear of any real country id (0-26) or the
+        // raider packs' own reserved range (RAIDER_PACK_BASE_ID and below) -
+        // one shared "collective" country holds all 3 converters plus every
+        // ship they've captured, rather than one country per ship.
+        const FELISGATHER_ID = -201;
+        MAP_CONFIGS[2].roamingThreats = [{
+            icon: '🕊️', label: 'Felisgather', count: FELISGATHER_COUNT,
+            desc: `${FELISGATHER_HP} HP each. Never attacks directly - instead, each one converts (not destroys) one nearby Earth-nation ship per turn within ${FELISGATHER_CONVERT_RANGE} range. A converted ship turns bright white, joins the Felisgathers' growing pack, and starts attacking Earth nations itself - the Felisgathers just keep roaming and converting more.`,
+        }];
+
         // Direct report: picking a sector on the map-select screen was only
         // ever decorating that screen's own cards - it never actually changed
         // what you see while PLAYING that sector. This is the actual fix:
@@ -3181,6 +3210,46 @@
         // copy of the same hex values.
         function getColorForRaiderPack(def) {
             return { 'vrekthul': '#ff0078', 'zhanqorr': '#78ff00', 'krallosith': '#0090ff' }[def.type] || '#888888';
+        }
+
+        // Same reasoning as clearAlienRaiderPacks() - filtered out of
+        // gameState.countries like any other cleared roster, not just
+        // emptied in place.
+        function clearFelisgathers() {
+            gameState.countries = gameState.countries.filter(c => !c.isFelisgather);
+        }
+
+        // Map 3 only (see chooseMap()) - one shared "collective" country
+        // starting with FELISGATHER_COUNT converter ships, same lightweight-
+        // country technique as spawnAlienRaiderPacks() (see that function's
+        // own comment for why - every existing piece of machinery that scans
+        // gameState.countries broadly picks this up for free). Grows over
+        // time as Country.aiTurn()'s isFelisgather branch converts more
+        // ships into it - never shrinks back except by combat losses, and
+        // never respawns once wiped out.
+        function spawnFelisgathers() {
+            clearFelisgathers();
+            const bounds = getGalaxyBounds();
+            const stubIsland = {
+                x: bounds.minX + Math.random() * (bounds.maxX - bounds.minX),
+                y: bounds.minY + Math.random() * (bounds.maxY - bounds.minY),
+                size: 0,
+                buildings: [],
+                draw() {},
+                getHarbor() { return null; },
+                getDefenseGun() { return null; },
+                getResearchLab() { return null; },
+                getProductionBuilding() { return null; },
+                collidesWith() { return false; },
+            };
+            const country = new Country(FELISGATHER_ID, 'Felisgather Collective', '#ffffff', stubIsland, false);
+            country.isFelisgather = true;
+            for (let i = 0; i < FELISGATHER_COUNT; i++) {
+                const angle = (i / FELISGATHER_COUNT) * Math.PI * 2;
+                const unit = new Unit(stubIsland.x + Math.cos(angle) * 150, stubIsland.y + Math.sin(angle) * 150, 'felisgather', FELISGATHER_ID);
+                country.units.push(unit);
+            }
+            gameState.countries.push(country);
         }
 
         let gameState = {
@@ -3807,7 +3876,7 @@
             // restriction was removed 2026-08-28 at the user's request, so vessels move
             // exactly like aircraft now: no collision with planets, ever.
             isVessel() {
-                return ['deepglider', 'stormbreaker', 'wavecrusher', 'skyfortress', 'cargohauler', 'tidebreaker', 'whisperwind', 'cyborgdreadnought', 'zoonparasite', 'roufestreal', 'miningship', 'vrekthul', 'zhanqorr', 'krallosith'].includes(this.type);
+                return ['deepglider', 'stormbreaker', 'wavecrusher', 'skyfortress', 'cargohauler', 'tidebreaker', 'whisperwind', 'cyborgdreadnought', 'zoonparasite', 'roufestreal', 'miningship', 'vrekthul', 'zhanqorr', 'krallosith', 'felisgather'].includes(this.type);
             }
 
             isMiningShip() {
@@ -3854,7 +3923,9 @@
                 'roufestreal': 100,
                 'miningship': 40, // deliberately fragile - "no defense" per the mining economy redesign
                 // Map 2's roaming raider packs (2026-09-12, per direct request) - 300 HP each, explicitly specified.
-                'vrekthul': 300, 'zhanqorr': 300, 'krallosith': 300
+                'vrekthul': 300, 'zhanqorr': 300, 'krallosith': 300,
+                // Map 3's roaming Felisgathers (2026-09-13, per direct request) - see FELISGATHER_HP.
+                'felisgather': FELISGATHER_HP
                 };
                 const baseHP = hpMap[this.type] || 100;
 
@@ -3913,7 +3984,10 @@
                 'roufestreal': 0,
                 'miningship': 0, // no weapons - "no defense" per the mining economy redesign
                 // Map 2's roaming raider packs (2026-09-12) - see RAIDER_PACK_TYPES.
-                'vrekthul': 190, 'zhanqorr': 220, 'krallosith': 250
+                'vrekthul': 190, 'zhanqorr': 220, 'krallosith': 250,
+                // Map 3's roaming Felisgathers (2026-09-13) - never attack
+                // directly, only convert (see FELISGATHER_ID).
+                'felisgather': 0
                 };
                 const basePower = powerMap[this.type] || 20;
 
@@ -3978,7 +4052,11 @@
                 'roufestreal': 150,
                 'miningship': 0,
                 // Map 2's roaming raider packs (2026-09-12) - see RAIDER_PACK_TYPES.
-                'vrekthul': 480, 'zhanqorr': 520, 'krallosith': 550
+                'vrekthul': 480, 'zhanqorr': 520, 'krallosith': 550,
+                // Map 3's roaming Felisgathers (2026-09-13) - reused as their
+                // conversion detection radius (see FELISGATHER_CONVERT_RANGE,
+                // kept equal), not a combat range - they never attack.
+                'felisgather': FELISGATHER_CONVERT_RANGE
                 };
                 const baseRange = rangeMap[this.type] || 100;
                 
@@ -4003,6 +4081,9 @@
                 'miningship': 9,
                 // Map 2's roaming raider packs (2026-09-12) - see RAIDER_PACK_TYPES.
                 'vrekthul': 14, 'zhanqorr': 15, 'krallosith': 18,
+                // Map 3's roaming Felisgathers (2026-09-13) - a big, imposing
+                // "peacekeeper" ship, closer to a Skyfortress than a fighter.
+                'felisgather': 16,
                 // Defense Cannon (2026-09-12) - a big, imposing turret in its
                 // own art (see C-1.png/C-2.png), sized closer to a Skyfortress
                 // than a small fighter.
@@ -4304,11 +4385,22 @@
                 const sprite = this.type === 'cannon'
                     ? SPRITES[isNamedNationId(this.countryId) ? 'cannon_c1' : 'cannon_c2']
                     : SPRITES[this.type];
+                // Felisgather capture (2026-09-13, per direct request: "that
+                // ship turns bright white") - a captured ship keeps its own
+                // type/sprite (see Country.aiTurn()'s isFelisgather branch),
+                // so the visual change has to be applied here at draw time
+                // rather than by swapping to a different sprite. ctx.filter
+                // is captured/restored by the ctx.save()/restore() pair
+                // around this whole block, same as fillStyle/strokeStyle
+                // changes elsewhere already rely on - no manual reset needed.
+                const capturedByFelisgather = this.type !== 'felisgather'
+                    && (gameState.countries.find(c => c.id === this.countryId) || {}).isFelisgather;
+                if (capturedByFelisgather) ctx.filter = 'brightness(0) invert(1)';
                 if (sprite) {
                     ctx.drawImage(sprite, -size, -size, size * 2, size * 2);
                 } else {
-                    ctx.fillStyle = this.getColor();
-                    ctx.strokeStyle = COUNTRY_COLORS[this.countryId] || '#00ffff';
+                    ctx.fillStyle = capturedByFelisgather ? '#ffffff' : this.getColor();
+                    ctx.strokeStyle = capturedByFelisgather ? '#ffffff' : (COUNTRY_COLORS[this.countryId] || '#00ffff');
                     ctx.lineWidth = 2;
 
                     if (this.isAircraft()) {
@@ -4783,7 +4875,7 @@
                     const activeUnits = this.units.filter(u => u.hp > 0);
                     if (activeUnits.length === 0) return; // wiped out - nothing left, ever (no respawning)
 
-                    const isValidRaiderTarget = (c) => c && !c.isCyborg && !c.isZoonester && !c.isRoufestreal && !c.isRaiderPack
+                    const isValidRaiderTarget = (c) => c && !c.isCyborg && !c.isZoonester && !c.isRoufestreal && !c.isRaiderPack && !c.isFelisgather
                         && c.island.buildings.some(b => !b.destroyed);
 
                     // "Once they show up to a planet they don't leave until they
@@ -4852,6 +4944,132 @@
                             }
                             return false;
                         });
+                    });
+
+                    this.units = this.units.filter(u => u.hp > 0);
+                    return;
+                }
+
+                // Map 3's roaming Felisgathers (2026-09-13, per direct
+                // request) - see FELISGATHER_ID/spawnFelisgathers(). Every
+                // unit whose type is still literally 'felisgather' is one of
+                // the original converters; everything else in this.units is
+                // a captured ship (own type/stats retained, just reassigned
+                // here - see the click handler/aiTurn() calls elsewhere that
+                // build/move real units, none of which need to know about
+                // this at all).
+                if (this.isFelisgather) {
+                    const converters = this.units.filter(u => u.type === 'felisgather' && u.hp > 0);
+                    const captives = this.units.filter(u => u.type !== 'felisgather' && u.hp > 0);
+                    if (converters.length === 0 && captives.length === 0) return; // wiped out - nothing left, ever (no respawning)
+
+                    // "Attack all the earth nations only" - same definition
+                    // of "Earth nation" every other alien faction/raider pack
+                    // already uses: the real 20/27-country roster, never
+                    // another hostile faction and never each other.
+                    const isEarthNation = (c) => c && !c.isCyborg && !c.isZoonester && !c.isRoufestreal && !c.isRaiderPack && !c.isFelisgather;
+
+                    // Movement: each converter roams independently rather
+                    // than beelining for a specific planet (they're
+                    // "cruising around space", not besieging anything) -
+                    // picks a fresh random point across the galaxy once it's
+                    // gotten close to its last one.
+                    converters.forEach(unit => {
+                        if (unit.hasAttacked) return;
+                        const hasWaypoint = typeof unit.targetX === 'number';
+                        const distToWaypoint = hasWaypoint ? Math.hypot(unit.targetX - unit.x, unit.targetY - unit.y) : 0;
+                        if (!hasWaypoint || distToWaypoint < 150) {
+                            const bounds = getGalaxyBounds();
+                            unit.moveTo(
+                                bounds.minX + Math.random() * (bounds.maxX - bounds.minX),
+                                bounds.minY + Math.random() * (bounds.maxY - bounds.minY)
+                            );
+                        }
+                    });
+
+                    // Conversion: "they don't attack the ships they capture" -
+                    // this replaces combat entirely for a converter, gated by
+                    // the same once-per-turn hasAttacked flag every other
+                    // attack in this game uses. "Convert one ship each turn"
+                    // - per converter, not once for the whole pack, same as
+                    // how a raider pack's own units each get their own
+                    // opportunistic attack every turn.
+                    converters.forEach(felisgather => {
+                        if (felisgather.hasAttacked) return;
+                        let nearestVictim = null, nearestCountry = null, nearestDist = Infinity;
+                        gameState.countries.forEach(country => {
+                            if (!isEarthNation(country)) return;
+                            country.units.forEach(u => {
+                                if (u.isGroundUnit() || u.hp <= 0) return; // "converting ships" - ground troops aren't ships
+                                const d = Math.hypot(u.x - felisgather.x, u.y - felisgather.y);
+                                if (d <= FELISGATHER_CONVERT_RANGE && d < nearestDist) {
+                                    nearestDist = d; nearestVictim = u; nearestCountry = country;
+                                }
+                            });
+                        });
+                        if (nearestVictim) {
+                            nearestCountry.units = nearestCountry.units.filter(u => u !== nearestVictim);
+                            nearestVictim.countryId = this.id;
+                            nearestVictim.attackMoveTarget = null; // a change of ownership cancels any standing order
+                            nearestVictim.targetX = null;
+                            nearestVictim.targetY = null;
+                            this.units.push(nearestVictim);
+                            felisgather.hasAttacked = true;
+                        }
+                    });
+
+                    // Captured ships: "attack anything around them... they
+                    // attack all the earth nations only" - identical
+                    // opportunistic closestUnit-then-building-fallback
+                    // pattern the raider pack branch above uses, restricted
+                    // to Earth nations via isEarthNation() instead of
+                    // isValidRaiderTarget(). A captive that finds nothing in
+                    // range follows the nearest converter instead, so the
+                    // pack actually travels together as it grows.
+                    captives.forEach(attacker => {
+                        if (attacker.hasAttacked || attacker.isGroundUnit() || attacker.frozenTurns > 0) return;
+                        let attacked = false;
+                        gameState.countries.some(country => {
+                            if (!isEarthNation(country)) return false;
+                            let closestUnit = null, closestDist = Infinity;
+                            country.units.forEach(u => {
+                                if (u.isGroundUnit() && u.isInHarbor) return;
+                                if (!attacker.canAttackUnit(u)) return;
+                                const d = Math.hypot(u.x - attacker.x, u.y - attacker.y);
+                                if (d < attacker.getRange() && d < closestDist) { closestUnit = u; closestDist = d; }
+                            });
+                            if (closestUnit) {
+                                if (country.isPlayer) fireLaserEffect(attacker.type, attacker.x, attacker.y, closestUnit.x, closestUnit.y);
+                                playLaserAttackSound(attacker.countryId, closestUnit.countryId);
+                                closestUnit.hp -= attacker.getAttackPower();
+                                attacker.hasAttacked = true;
+                                attacked = true;
+                                return true;
+                            }
+                            if (attacker.canAttackBuildings()) {
+                                let nearestBuilding = null, nearestBuildingDist = Infinity;
+                                country.island.buildings.forEach(b => {
+                                    if (b.destroyed) return;
+                                    const bd = Math.hypot((country.island.x + b.x) - attacker.x, (country.island.y + b.y) - attacker.y);
+                                    if (bd < nearestBuildingDist) { nearestBuildingDist = bd; nearestBuilding = b; }
+                                });
+                                if (nearestBuilding && nearestBuildingDist < attacker.getRange()) {
+                                    nearestBuilding.takeDamage(attacker.getAttackPower(), attacker.countryId);
+                                    attacker.hasAttacked = true;
+                                    attacked = true;
+                                    return true;
+                                }
+                            }
+                            return false;
+                        });
+                        if (!attacked && converters.length > 0) {
+                            const leader = converters.reduce((best, f) =>
+                                Math.hypot(f.x - attacker.x, f.y - attacker.y) < Math.hypot(best.x - attacker.x, best.y - attacker.y) ? f : best
+                            );
+                            if (Math.hypot(leader.x - attacker.x, leader.y - attacker.y) > 80) {
+                                attacker.moveTo(leader.x + (Math.random() - 0.5) * 60, leader.y + (Math.random() - 0.5) * 60);
+                            }
+                        }
                     });
 
                     this.units = this.units.filter(u => u.hp > 0);
@@ -6383,6 +6601,8 @@
             // session left packs behind (chooseMap() is the one place a
             // Standard Game roster is finalized before play starts).
             if (mapId === 1) spawnAlienRaiderPacks(); else clearAlienRaiderPacks();
+            // Sector 3 only - see FELISGATHER_ID. Same reasoning as above.
+            if (mapId === 2) spawnFelisgathers(); else clearFelisgathers();
             document.getElementById('mapSelectScreen').style.display = 'none';
             startGame(pendingCountryIdx);
         }
@@ -6436,10 +6656,12 @@
             gameState.selectedCountryIdx = countryIndices[0];
             // Hot-seat never goes through chooseMap() - don't let a leftover
             // Standard Game map selection from earlier this page session leak
-            // its background art (or Sector 2's raider packs) in here.
+            // its background art (or Sector 2's raider packs/Sector 3's
+            // Felisgathers) in here.
             gameState.selectedMapId = null;
             applyMapBackground(null);
             clearAlienRaiderPacks();
+            clearFelisgathers();
             guaranteeNearestAttackersForHumans();
 
             document.getElementById('startScreen').style.display = 'none';
@@ -6924,12 +7146,12 @@
                 if (diedCount > 0) lifetimeStats.unitsLost += diedCount;
             }
             gameState.countries.forEach(c => {
-                // isRaiderPack guard: an empty buildings array makes .every()
-                // vacuously true from the moment it spawns, which would
-                // otherwise count Sector 2's raider packs as "eliminated" (for
-                // free, permanently) the instant they exist rather than when
-                // their ships are actually destroyed.
-                if (!c.isPlayer && !c.isRaiderPack && !c.eliminatedCounted && c.island.buildings.every(b => b.destroyed)) {
+                // isRaiderPack/isFelisgather guard: an empty buildings array
+                // makes .every() vacuously true from the moment either
+                // spawns, which would otherwise count them as "eliminated"
+                // (for free, permanently) the instant they exist rather than
+                // when their ships are actually destroyed.
+                if (!c.isPlayer && !c.isRaiderPack && !c.isFelisgather && !c.eliminatedCounted && c.island.buildings.every(b => b.destroyed)) {
                     c.eliminatedCounted = true;
                     lifetimeStats.nationsEliminated++;
                 }
@@ -7224,14 +7446,17 @@
             // the FINAL positions to size against.
             repositionPlanetsForMap(gameState.selectedMapId);
             applyMapBackground(gameState.selectedMapId);
-            // Sector 2's raider packs, if this save has any, need to exist at
-            // the same gameState.countries indices they occupied when this was
-            // saved BEFORE the per-country restore loop below runs (it maps
-            // saveData.countries[idx] -> gameState.countries[idx] positionally) -
-            // spawnAlienRaiderPacks() always appends in the same fixed order,
+            // Sector 2's raider packs (or Sector 3's Felisgathers), if this
+            // save has any, need to exist at the same gameState.countries
+            // indices they occupied when this was saved BEFORE the per-
+            // country restore loop below runs (it maps saveData.countries[idx]
+            // -> gameState.countries[idx] positionally) - spawnAlienRaiderPacks()/
+            // spawnFelisgathers() always append in the same fixed order (and
+            // in the same relative order to each other as chooseMap() uses),
             // so this reproduces that layout exactly, same as a fresh
             // chooseMap() call would have.
             if (gameState.selectedMapId === 1) spawnAlienRaiderPacks(); else clearAlienRaiderPacks();
+            if (gameState.selectedMapId === 2) spawnFelisgathers(); else clearFelisgathers();
 
             // Defensive guard against exactly the corrupted-autosave bug fixed
             // in nextTurn() (see its own comment - direct report: "why in the
@@ -7626,10 +7851,11 @@
             // Map selection is a Standard Game concept too - Campaign never goes
             // through chooseMap(), so don't let a leftover selection from an
             // earlier Standard Game this page session leak its background art
-            // (or Sector 2's raider packs) in.
+            // (or Sector 2's raider packs/Sector 3's Felisgathers) in.
             gameState.selectedMapId = null;
             applyMapBackground(null);
             clearAlienRaiderPacks();
+            clearFelisgathers();
 
             const outpostTotal = stage.objectives.filter(o => o.kind === 'outpost').length;
 
@@ -8411,10 +8637,11 @@
             // homeworld vision already works on the main map.
             const fogActive = fogOfWarEnabled && !gameState.campaignActive && !!gameState.playerCountry;
             gameState.countries.forEach(country => {
-                // Sector 2's raider packs have no real planet - a fake dot at
-                // their arbitrary spawn point would be pure noise (see
-                // spawnAlienRaiderPacks()'s stub island).
-                if (country.isRaiderPack) return;
+                // Sector 2's raider packs (and Sector 3's Felisgathers) have
+                // no real planet - a fake dot at their arbitrary spawn point
+                // would be pure noise (see spawnAlienRaiderPacks()'s/
+                // spawnFelisgathers()'s stub island).
+                if (country.isRaiderPack || country.isFelisgather) return;
                 const isPlayer = country.isPlayer;
                 if (fogActive && !isPlayer && !isPointRevealed(gameState.playerCountry, country.island.x, country.island.y, country.island.size)) return;
                 const p = worldToMinimap(country.island.x, country.island.y);
