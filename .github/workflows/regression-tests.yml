@@ -230,6 +230,18 @@ jobs:
         run: node visual-test.js ../../index.html --update
 
       - name: Commit updated baseline
+        # [skip ci] here is deliberate (no point re-running every job just for
+        # a baseline-only commit) but has a real consequence worth knowing:
+        # GitHub Actions never starts a new run for a commit pushed with the
+        # default GITHUB_TOKEN in the first place, and a PR's required-status-
+        # check gate can also stay BLOCKED even after a later, normal push on
+        # top of this commit reports every check green - the checks have to
+        # come from an actual `pull_request` event on the PR's head SHA, not
+        # just any check run matching that SHA (a manual `workflow_dispatch`
+        # run against the branch doesn't count either). If that happens, an
+        # ordinary content commit (not an empty one - those were observed not
+        # to reliably trigger a fresh `pull_request run either) is what
+        # actually unblocks it.
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"

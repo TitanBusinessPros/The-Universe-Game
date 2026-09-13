@@ -39,6 +39,7 @@
     "describeCountryBonus",
     "describeCountryBonusHTML",
     "deselectAllUnits",
+    "dispatchSyntheticMouseEvent",
     "drawFogOfWarOverlay",
     "drawMinimap",
     "drawRadarPulses",
