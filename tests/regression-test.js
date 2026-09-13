@@ -127,7 +127,7 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, getHomeDefenseVisionRange, HOME_DEFENSE_VISION_RANGE, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage, assignAttackTargets, guaranteeNearestAttackersForHumans, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS, randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER, nearestMinimapLandmark, spawnHotsun, damageNearHotsun, HOTSUN_IMAGE_URL, HOTSUN_SIZE, HOTSUN_RADIATION_RANGE, HOTSUN_DAMAGE_PERCENT, PLANET_SCALE, updateFogOfWar, toggleFogOfWar, drawMinimap, isPointRevealed, revealRegion, drawFogOfWarOverlay, isGroundUnitInCargo, BUILDING_ATTACKER_TYPES, ctx, MAP_CONFIGS, openMapSelect, closeMapSelect, chooseMap, populateMapGrid, showMapDetails, closeMapDetails, applyMapBackground, spaceBackgroundImage, SPACE_BACKGROUND_URL, MAP_IMAGE_URLS, RAIDER_PACK_TYPES, RAIDER_PACK_SIZE, RAIDER_PACK_BASE_ID, spawnAlienRaiderPacks, clearAlienRaiderPacks, ALIEN_ONLY_UNIT_TYPES, FELISGATHER_COUNT, FELISGATHER_HP, FELISGATHER_CONVERT_RANGE, FELISGATHER_ID, spawnFelisgathers, clearFelisgathers, MAP_PLANET_LAYOUTS, MAP_LAYOUT_LABELS, sampleLayoutCandidate, spreadPositionForLayout, repositionPlanetsForMap, GALAXY_LANDMARK_MAX_SCREEN_FRACTION, isNamedNationId, getCannonTier, initiateCannonPlacement, blendToward, LASER_CORE_COLORS, CANNON_COST, CANNON_BASE_RANGE, CANNON_RANGE_STEP, CANNON_RANGE_TIERS, CANNON_BASE_HP, CANNON_HP_STEP, CANNON_DAMAGE_PERCENT, CANNON_PLACEMENT_MAX_RANGE, CANNON_VISIBILITY_RANGE, gameLoop, confirmExitGame };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, getHomeDefenseVisionRange, HOME_DEFENSE_VISION_RANGE, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage, assignAttackTargets, guaranteeNearestAttackersForHumans, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS, randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER, nearestMinimapLandmark, spawnHotsun, damageNearHotsun, HOTSUN_IMAGE_URL, HOTSUN_SIZE, HOTSUN_RADIATION_RANGE, HOTSUN_DAMAGE_PERCENT, PLANET_SCALE, updateFogOfWar, toggleFogOfWar, drawMinimap, isPointRevealed, revealRegion, drawFogOfWarOverlay, isGroundUnitInCargo, BUILDING_ATTACKER_TYPES, ctx, MAP_CONFIGS, openMapSelect, closeMapSelect, chooseMap, populateMapGrid, showMapDetails, closeMapDetails, applyMapBackground, spaceBackgroundImage, SPACE_BACKGROUND_URL, MAP_IMAGE_URLS, RAIDER_PACK_TYPES, RAIDER_PACK_SIZE, RAIDER_PACK_BASE_ID, spawnAlienRaiderPacks, clearAlienRaiderPacks, ALIEN_ONLY_UNIT_TYPES, FELISGATHER_COUNT, FELISGATHER_HP, FELISGATHER_CONVERT_RANGE, FELISGATHER_ID, spawnFelisgathers, clearFelisgathers, MAP_PLANET_LAYOUTS, MAP_LAYOUT_LABELS, sampleLayoutCandidate, spreadPositionForLayout, repositionPlanetsForMap, GALAXY_LANDMARK_MAX_SCREEN_FRACTION, isNamedNationId, getCannonTier, initiateCannonPlacement, blendToward, LASER_CORE_COLORS, CANNON_COST, CANNON_BASE_RANGE, CANNON_RANGE_STEP, CANNON_RANGE_TIERS, CANNON_BASE_HP, CANNON_HP_STEP, CANNON_DAMAGE_PERCENT, CANNON_PLACEMENT_MAX_RANGE, CANNON_VISIBILITY_RANGE, gameLoop, confirmExitGame, updateDebugHud };',
     context,
     { filename: 'grab-refs.js' }
 );
@@ -170,7 +170,7 @@ const {
     GALAXY_LANDMARK_MAX_SCREEN_FRACTION, isNamedNationId, getCannonTier, initiateCannonPlacement, blendToward,
     LASER_CORE_COLORS, CANNON_COST, CANNON_BASE_RANGE, CANNON_RANGE_STEP, CANNON_RANGE_TIERS, CANNON_BASE_HP,
     CANNON_HP_STEP, CANNON_DAMAGE_PERCENT, CANNON_PLACEMENT_MAX_RANGE, CANNON_VISIBILITY_RANGE,
-    gameLoop, confirmExitGame,
+    gameLoop, confirmExitGame, updateDebugHud,
 } = context.__test;
 
 // ---------- Test data: the full combat unit roster ----------
@@ -7370,6 +7370,77 @@ check('#exitGameBtn lives inside #controls, alongside HOME/VIEW ALL - always vis
         return ['expected #exitGameBtn to be a child of #controls'];
     }
     return [];
+});
+
+// ---------- 36. TEMPORARY diagnostic tool: #debugHud (2026-09-13) ----------
+//    Added specifically because a live, repeated report ("enemy ships still
+//    moving toward my planet, resources keep going up [while paused]")
+//    directly contradicts every test above and every live-site test run
+//    against production (desktop and Android-Chrome-emulated touch, both
+//    with real wall-clock time, not manually-stepped frames) - remote
+//    testing cannot reproduce it, so this puts hard, live numbers on the
+//    player's own screen to screenshot/record at the moment it happens.
+//    Remove this whole section (and #debugHud/updateDebugHud themselves)
+//    once the real cause is found.
+
+check('updateDebugHud() increments a frame counter and reports the live paused/turn/resources/nearest-enemy-distance state into #debugHud\'s text every call', () => {
+    const problems = [];
+    const island = new Island(0, 0, 1);
+    const player = new Country(0, 'DebugHudPlayer', '#00ff00', island, true);
+    const enemyIsland = new Island(1000, 0, 1);
+    const enemy = new Country(1, 'DebugHudEnemy', '#ff0000', enemyIsland, false);
+    const enemyShip = new Unit(500, 0, 'stormbreaker', 1); // 500 units from player's homeworld at (0,0)
+    enemy.units = [enemyShip];
+    gameState.countries = [player, enemy];
+    gameState.playerCountry = player;
+    gameState.turn = 7;
+    gameState.turnTimeRemaining = 42.4;
+    gameState.paused = true;
+
+    updateDebugHud();
+    const hud = document.getElementById('debugHud');
+    const text1 = hud.textContent;
+    if (!/PAUSED:YES/.test(text1)) problems.push(`expected "PAUSED:YES" while gameState.paused is true, got: ${text1}`);
+    if (!/Turn:7/.test(text1)) problems.push(`expected "Turn:7", got: ${text1}`);
+    if (!/NearestEnemy:500u/.test(text1)) problems.push(`expected the enemy ship's real distance (500u) reported, got: ${text1}`);
+
+    gameState.paused = false;
+    updateDebugHud();
+    const text2 = hud.textContent;
+    if (!/PAUSED:NO/.test(text2)) problems.push(`expected "PAUSED:NO" once gameState.paused is false, got: ${text2}`);
+
+    const frameMatch1 = text1.match(/Frame:(\d+)/);
+    const frameMatch2 = text2.match(/Frame:(\d+)/);
+    if (!frameMatch1 || !frameMatch2 || Number(frameMatch2[1]) !== Number(frameMatch1[1]) + 1) {
+        problems.push(`expected the frame counter to increment by exactly 1 across these two calls, got ${frameMatch1 && frameMatch1[1]} then ${frameMatch2 && frameMatch2[1]}`);
+    }
+
+    gameState.paused = false;
+    return problems;
+});
+
+check('gameLoop() calls updateDebugHud() as the very first thing, unconditionally - before the gameState.paused check, so this diagnostic can never itself be silenced by whatever bug it exists to catch', () => {
+    const fnMatch = script.match(/function gameLoop\(\)\s*\{[\s\S]{0,200}/);
+    if (!fnMatch) return ['could not find gameLoop() in the source'];
+    if (!/function gameLoop\(\)\s*\{\s*if \(!gameState\.gameStarted\) return;\s*updateDebugHud\(\);/.test(fnMatch[0])) {
+        return ['expected updateDebugHud() to be the first call inside gameLoop(), right after the gameStarted guard and before anything paused-related'];
+    }
+    return [];
+});
+
+check('#debugHud has its own separate display:none/.visible CSS pair (not folded into #legend/#controls/#uiToggle\'s shared selector), so it can be removed later without risking that group\'s own regression check above', () => {
+    const problems = [];
+    if (!/#debugHud\s*\{\s*display:\s*none;\s*\}/.test(html)) problems.push('expected a standalone "#debugHud { display: none; }" rule');
+    if (!/#debugHud\.visible\s*\{\s*display:\s*block;\s*\}/.test(html)) problems.push('expected a standalone "#debugHud.visible { display: block; }" rule');
+    if (/#legend,\s*#controls,\s*#uiToggle,\s*#debugHud/.test(html)) problems.push('expected #debugHud NOT to be folded into the #legend/#controls/#uiToggle shared selector');
+    return problems;
+});
+
+check('enterGameplay() reveals #debugHud, the same shared entry point as #legend/#controls/#uiToggle', () => {
+    document.getElementById('debugHud').classList.remove('visible');
+    enterGameplay();
+    const problems = document.getElementById('debugHud').classList.contains('visible') ? [] : ['expected enterGameplay() to reveal #debugHud'];
+    return problems;
 });
 
 report();
