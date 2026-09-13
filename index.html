@@ -8590,9 +8590,6 @@
         }
 
         canvas.addEventListener('click', (e) => {
-            if (window.__TAP_SELECT_DEBUG) {
-                console.log('[tap-select-debug] click fired', JSON.stringify({ gameStarted: gameState.gameStarted, suppressNextClick, clientX: e.clientX, clientY: e.clientY }));
-            }
             if (!gameState.gameStarted) return;
 
             // The browser still fires 'click' after mouseup even when the mousedown->mouseup
@@ -8611,10 +8608,7 @@
             // Minimap clicks/drags are fully handled in mousedown/mousemove/mouseup below
             // (select-by-drag, click-to-move selected units, or click-to-navigate) - bail out
             // of the normal world-click handling entirely here.
-            if (isOnMinimap(screenX, screenY)) {
-                if (window.__TAP_SELECT_DEBUG) console.log('[tap-select-debug] bailed: isOnMinimap');
-                return;
-            }
+            if (isOnMinimap(screenX, screenY)) return;
 
             const worldX = (screenX - canvas.width / 2) / camera.zoom + camera.x;
             const worldY = (screenY - canvas.height / 2) / camera.zoom + camera.y;
@@ -8654,15 +8648,6 @@
             // unit selects it, exactly like clicking it inside a selection box would.
             if (!gameState.actionMode && gameState.selectedUnits.length === 0) {
                 const ownUnit = gameState.playerCountry.units.find(u => u.isHovered(worldX, worldY));
-                if (window.__TAP_SELECT_DEBUG) {
-                    console.log('[tap-select-debug]', JSON.stringify({
-                        worldX, worldY, screenX, screenY, clientX: e.clientX, clientY: e.clientY,
-                        camera: { x: camera.x, y: camera.y, zoom: camera.zoom },
-                        canvas: { width: canvas.width, height: canvas.height },
-                        found: !!ownUnit,
-                        units: gameState.playerCountry.units.map(u => ({ type: u.type, x: u.x, y: u.y, size: u.getSize() })),
-                    }));
-                }
                 if (ownUnit) {
                     selectUnit(ownUnit);
                     return;

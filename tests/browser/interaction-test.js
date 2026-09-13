@@ -119,15 +119,22 @@ async function runForEngine(engineName) {
     // page reload mid-setup and broke every scenario - caught by running this
     // suite locally before it ever reached CI.
     page.on('dialog', d => { if (d.type() === 'alert') d.accept(); else d.dismiss(); });
-    page.on('console', msg => { if (msg.text().startsWith('[tap-select-debug]')) console.log(`[${engineName}]`, msg.text()); });
 
     const absoluteGamePath = path.resolve(GAME_PATH);
     await page.goto('file:///' + absoluteGamePath.replace(/\\/g, '/'));
-    await page.evaluate(() => { window.__TAP_SELECT_DEBUG = true; });
 
     const tag = (name) => `[${engineName}] ${name}`;
 
     await setupGame(page);
+    // WebKit-specific warm-up: confirmed via CI diagnostics that on a freshly
+    // loaded page, WebKit's very first synthetic mouse click never dispatches
+    // a 'click' DOM event at all (every click after the first works fine,
+    // including in the same run) - an established-mouse-device quirk, not a
+    // game bug. One throwaway move+click off in empty space (nothing there to
+    // react to it) is enough to warm it up before the real scenario below.
+    await page.mouse.move(5, 5);
+    await page.mouse.click(5, 5);
+
     let geo = await getCanvasGeometry(page);
     const unitWorld = { x: geo.camera.x + 400, y: geo.camera.y };
     const unitScreen = worldToScreen(unitWorld, geo.camera, geo.canvasSize, geo.rect);
@@ -140,21 +147,6 @@ async function runForEngine(engineName) {
     // selects it too, exactly like tapping it on a phone would.
     await page.mouse.click(unitScreen.x, unitScreen.y);
     let tapSelectedCount = await page.evaluate(() => gameState.selectedUnits.length);
-    if (tapSelectedCount !== 1) {
-        const diag = await page.evaluate(({ ux, uy }) => {
-            const u = gameState.playerCountry.units.find(u => u.type === 'stormbreaker');
-            return {
-                actionMode: gameState.actionMode,
-                isSelecting: gameState.isSelecting,
-                selectionBox: gameState.selectionBox,
-                unitPos: u ? { x: u.x, y: u.y } : null,
-                unitHovered: u ? u.isHovered(ux, uy) : null,
-                canvasRect: (() => { const r = canvas.getBoundingClientRect(); return { left: r.left, top: r.top, width: r.width, height: r.height }; })(),
-                canvasBackingSize: { width: canvas.width, height: canvas.height },
-            };
-        }, { ux: unitWorld.x, uy: unitWorld.y });
-        console.log(`[${engineName}] DIAGNOSTIC unitScreen=${JSON.stringify(unitScreen)} unitWorld=${JSON.stringify(unitWorld)} geo=${JSON.stringify(geo)} diag=${JSON.stringify(diag)}`);
-    }
     check(tag('a plain click directly on your own unit selects it'), tapSelectedCount === 1, `selectedUnits.length = ${tapSelectedCount}`);
     // Back to a clean slate before the drag-select scenario below.
     await page.mouse.click(unitScreen.x, unitScreen.y, { button: 'right' });
