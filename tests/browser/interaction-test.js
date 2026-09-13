@@ -222,6 +222,38 @@ async function runForEngine(engineName) {
         `selected before=${selectedBeforeRightClick}, after=${selectedAfterRightClick}`
     );
 
+    // ---- Scenario 4b: clicking to attack while paused does nothing ----
+    // Direct report: "the pause button only pauses the timer and not the
+    // game functions" - the canvas's own smart-click attack path applied
+    // damage directly, completely bypassing gameState.paused (only the
+    // MOVE/ATTACK buttons' setActionMode() checked it, and only regression-
+    // test.js covers that one directly - this is the other real gap, and it
+    // needs a real click on the actual canvas to prove).
+    const pauseScenario = await page.evaluate(() => {
+        const mine = new Unit(camera.x + 200, camera.y, 'stormbreaker', gameState.playerCountry.id);
+        gameState.playerCountry.units.push(mine);
+        const enemyCountry = gameState.countries.find(c => c.id !== gameState.playerCountry.id);
+        const target = new Unit(mine.x + 10, mine.y, 'stormbreaker', enemyCountry.id);
+        enemyCountry.units.push(target);
+        selectUnit(mine);
+        togglePause();
+        return { mineWorld: { x: mine.x, y: mine.y }, targetWorld: { x: target.x, y: target.y }, hpBefore: target.hp, paused: gameState.paused };
+    });
+    geo = await getCanvasGeometry(page);
+    const pausedTargetScreen = worldToScreen(pauseScenario.targetWorld, geo.camera, geo.canvasSize, geo.rect);
+    await page.mouse.click(pausedTargetScreen.x, pausedTargetScreen.y);
+    const afterPausedClick = await page.evaluate(() => {
+        const enemyCountry = gameState.countries.find(c => c.id !== gameState.playerCountry.id);
+        const target = enemyCountry.units[enemyCountry.units.length - 1];
+        return { hp: target.hp, selected: gameState.selectedUnits.length };
+    });
+    check(
+        tag('clicking to attack an enemy unit while paused does not damage it'),
+        pauseScenario.paused && afterPausedClick.hp === pauseScenario.hpBefore,
+        `paused=${pauseScenario.paused}, hp before=${pauseScenario.hpBefore}, hp after click=${afterPausedClick.hp}`
+    );
+    await page.evaluate(() => { togglePause(); }); // unpause so later scenarios aren't affected
+
     // ---- Scenario 5: Save to File downloads a real file matching live state ----
     // Exercises the actual button (Blob, object URL, synthetic <a download>
     // click) - not just buildSaveData() underneath it, which regression-test.js
@@ -348,6 +380,24 @@ async function runForEngine(engineName) {
             }));
         }
         window.__fireTouch = fireTouch;
+
+        // Multi-touch variant for pinch-zoom: `points` is an array of
+        // {x, y} - one Touch per finger, all reported in the event's
+        // `touches`/`targetTouches` (an empty array for touchend/touchcancel,
+        // matching a real lifted-finger event).
+        function fireTouchMulti(type, points) {
+            const touches = points.map((p, i) => new Touch({
+                identifier: i, target: canvas, clientX: p.x, clientY: p.y,
+                pageX: p.x, pageY: p.y, screenX: p.x, screenY: p.y,
+                radiusX: 1, radiusY: 1, rotationAngle: 0, force: 1,
+            }));
+            const list = type === 'touchend' || type === 'touchcancel' ? [] : touches;
+            canvas.dispatchEvent(new TouchEvent(type, {
+                touches: list, targetTouches: list, changedTouches: touches,
+                bubbles: true, cancelable: true, view: window,
+            }));
+        }
+        window.__fireTouchMulti = fireTouchMulti;
     });
 
     let touchGeo = await getCanvasGeometry(touchPage);
@@ -398,6 +448,34 @@ async function runForEngine(engineName) {
     await touchPage.evaluate(({ x, y }) => window.__fireTouch('touchend', x, y), { x: holdUnitScreen.x + 40, y: holdUnitScreen.y + 40 });
     const touchHoldSelectedCount = await touchPage.evaluate(() => gameState.selectedUnits.length);
     check(tag('press-and-hold past the long-press delay, then drag, box-selects a unit (touch)'), touchHoldSelectedCount === 1, `selectedUnits.length = ${touchHoldSelectedCount}`);
+
+    // ---- Scenario 10: two-finger pinch zooms the camera in and out ----
+    // Direct report: "Can't zoom in and out on mobile version" - touch-
+    // action:none (needed so single-finger gestures above don't fight the
+    // browser's own scroll/zoom) also blocks the browser's native pinch-
+    // zoom, so without the game's own pinch handling there was no way to
+    // zoom on a touch device at all.
+    await touchPage.evaluate(() => { if (touchGestureMode) window.__fireTouch('touchend', 0, 0); }); // clear any stray gesture state from scenario 9
+    const zoomBeforePinch = await touchPage.evaluate(() => camera.zoom);
+    await touchPage.evaluate(() => window.__fireTouchMulti('touchstart', [{ x: 620, y: 380 }, { x: 660, y: 380 }]));
+    await touchPage.evaluate(() => window.__fireTouchMulti('touchmove', [{ x: 540, y: 380 }, { x: 740, y: 380 }])); // fingers spreading apart
+    const zoomAfterPinchOut = await touchPage.evaluate(() => camera.zoom);
+    await touchPage.evaluate(() => window.__fireTouchMulti('touchend', []));
+    check(
+        tag('a two-finger pinch-out (fingers spreading apart) zooms the camera in'),
+        zoomAfterPinchOut > zoomBeforePinch,
+        `zoom went from ${zoomBeforePinch} to ${zoomAfterPinchOut}, expected an increase`
+    );
+
+    await touchPage.evaluate(() => window.__fireTouchMulti('touchstart', [{ x: 540, y: 380 }, { x: 740, y: 380 }]));
+    await touchPage.evaluate(() => window.__fireTouchMulti('touchmove', [{ x: 600, y: 380 }, { x: 680, y: 380 }])); // fingers pinching together
+    const zoomAfterPinchIn = await touchPage.evaluate(() => camera.zoom);
+    await touchPage.evaluate(() => window.__fireTouchMulti('touchend', []));
+    check(
+        tag('a two-finger pinch-in (fingers pinching together) zooms the camera out'),
+        zoomAfterPinchIn < zoomAfterPinchOut,
+        `zoom went from ${zoomAfterPinchOut} to ${zoomAfterPinchIn}, expected a decrease`
+    );
 
     await browser.close();
 }

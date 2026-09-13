@@ -3680,6 +3680,36 @@ check('setActionMode() refuses to arm a mode with nothing selected, and refuses 
     return problems;
 });
 
+// Direct report: "the pause button only pauses the timer and not the game
+// functions" - buildUnit()/researchTech()/initiateCannonPlacement() already
+// refused to act while paused, but setActionMode() (armed by the MOVE/
+// ATTACK/LOAD/etc. buttons) and the canvas's own smart-click/minimap-click
+// move-and-attack execution paths did not, so a "paused" game could still be
+// fully played - only the automatic turn-advance clock actually stopped.
+check('setActionMode() refuses to arm any mode while paused, even with a valid unit selected', () => {
+    const problems = [];
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'PausedMode', '#ff0000', island, true);
+    gameState.playerCountry = country;
+
+    const freshUnit = new Unit(0, 0, 'stormbreaker', 0);
+    country.units = [freshUnit];
+    gameState.selectedUnits = [freshUnit];
+    gameState.actionMode = null;
+    gameState.paused = true;
+
+    setActionMode('move');
+    if (gameState.actionMode !== null) problems.push('expected setActionMode("move") to refuse while paused');
+
+    gameState.paused = false;
+    setActionMode('move');
+    if (gameState.actionMode !== 'move') problems.push('expected setActionMode("move") to succeed normally once unpaused');
+
+    gameState.paused = false; // restore for later checks
+    gameState.actionMode = null;
+    return problems;
+});
+
 check('chooseDifficulty() applies the preset live and highlights the matching button', () => {
     const problems = [];
     chooseDifficulty('hard');
