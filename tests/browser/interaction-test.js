@@ -52,10 +52,16 @@ function check(name, condition, detail) {
 // World -> screen conversion, matching the game's own formula exactly
 // (see the canvas 'click'/'mousedown' handlers in index.html):
 //   screenX = (worldX - camera.x) * zoom + canvas.width / 2
-function worldToScreen(world, camera, canvasSize) {
+// That "screenX" is canvas-relative (the game itself immediately undoes
+// getBoundingClientRect() to get it from the real event's clientX) - so it
+// has to be shifted by the canvas's own on-page offset (rect.left/top,
+// normally 0 but not guaranteed identical across engines/platforms) before
+// it's a valid clientX/clientY to hand to page.mouse.*/synthetic touch
+// events, which operate in viewport space, not canvas space.
+function worldToScreen(world, camera, canvasSize, rect = { left: 0, top: 0 }) {
     return {
-        x: (world.x - camera.x) * camera.zoom + canvasSize.width / 2,
-        y: (world.y - camera.y) * camera.zoom + canvasSize.height / 2,
+        x: (world.x - camera.x) * camera.zoom + canvasSize.width / 2 + rect.left,
+        y: (world.y - camera.y) * camera.zoom + canvasSize.height / 2 + rect.top,
     };
 }
 
@@ -78,10 +84,14 @@ async function setupGame(page) {
 }
 
 async function getCanvasGeometry(page) {
-    return page.evaluate(() => ({
-        camera: { x: camera.x, y: camera.y, zoom: camera.zoom },
-        canvasSize: { width: canvas.width, height: canvas.height },
-    }));
+    return page.evaluate(() => {
+        const r = canvas.getBoundingClientRect();
+        return {
+            camera: { x: camera.x, y: camera.y, zoom: camera.zoom },
+            canvasSize: { width: canvas.width, height: canvas.height },
+            rect: { left: r.left, top: r.top },
+        };
+    });
 }
 
 async function runForEngine(engineName) {
@@ -118,7 +128,7 @@ async function runForEngine(engineName) {
     await setupGame(page);
     let geo = await getCanvasGeometry(page);
     const unitWorld = { x: geo.camera.x + 400, y: geo.camera.y };
-    const unitScreen = worldToScreen(unitWorld, geo.camera, geo.canvasSize);
+    const unitScreen = worldToScreen(unitWorld, geo.camera, geo.canvasSize, geo.rect);
 
     // ---- Scenario 0: a plain tap/click directly on your own unit selects it ----
     // Direct report: "I can't press on a ship after building it and click on
@@ -128,6 +138,21 @@ async function runForEngine(engineName) {
     // selects it too, exactly like tapping it on a phone would.
     await page.mouse.click(unitScreen.x, unitScreen.y);
     let tapSelectedCount = await page.evaluate(() => gameState.selectedUnits.length);
+    if (tapSelectedCount !== 1) {
+        const diag = await page.evaluate(({ ux, uy }) => {
+            const u = gameState.playerCountry.units.find(u => u.type === 'stormbreaker');
+            return {
+                actionMode: gameState.actionMode,
+                isSelecting: gameState.isSelecting,
+                selectionBox: gameState.selectionBox,
+                unitPos: u ? { x: u.x, y: u.y } : null,
+                unitHovered: u ? u.isHovered(ux, uy) : null,
+                canvasRect: (() => { const r = canvas.getBoundingClientRect(); return { left: r.left, top: r.top, width: r.width, height: r.height }; })(),
+                canvasBackingSize: { width: canvas.width, height: canvas.height },
+            };
+        }, { ux: unitWorld.x, uy: unitWorld.y });
+        console.log(`[${engineName}] DIAGNOSTIC unitScreen=${JSON.stringify(unitScreen)} unitWorld=${JSON.stringify(unitWorld)} geo=${JSON.stringify(geo)} diag=${JSON.stringify(diag)}`);
+    }
     check(tag('a plain click directly on your own unit selects it'), tapSelectedCount === 1, `selectedUnits.length = ${tapSelectedCount}`);
     // Back to a clean slate before the drag-select scenario below.
     await page.mouse.click(unitScreen.x, unitScreen.y, { button: 'right' });
@@ -143,7 +168,7 @@ async function runForEngine(engineName) {
 
     // ---- Scenario 2: clicking empty space with a unit selected issues a move order ----
     const moveTargetWorld = { x: geo.camera.x + 1000, y: geo.camera.y + 500 };
-    const moveTargetScreen = worldToScreen(moveTargetWorld, geo.camera, geo.canvasSize);
+    const moveTargetScreen = worldToScreen(moveTargetWorld, geo.camera, geo.canvasSize, geo.rect);
     await page.mouse.click(moveTargetScreen.x, moveTargetScreen.y);
 
     const unitOrder = await page.evaluate(() => {
@@ -187,7 +212,7 @@ async function runForEngine(engineName) {
         const u = gameState.playerCountry.units.find(u => u.type === 'stormbreaker');
         return { x: u.x, y: u.y };
     });
-    const unitScreen2 = worldToScreen(unitNowWorld, geo.camera, geo.canvasSize);
+    const unitScreen2 = worldToScreen(unitNowWorld, geo.camera, geo.canvasSize, geo.rect);
     // Re-select via drag first (scenario 2 left nothing selected).
     await page.mouse.move(unitScreen2.x - 40, unitScreen2.y - 40);
     await page.mouse.down();
@@ -333,7 +358,7 @@ async function runForEngine(engineName) {
 
     let touchGeo = await getCanvasGeometry(touchPage);
     const touchUnitWorld = { x: touchGeo.camera.x + 400, y: touchGeo.camera.y };
-    const touchUnitScreen = worldToScreen(touchUnitWorld, touchGeo.camera, touchGeo.canvasSize);
+    const touchUnitScreen = worldToScreen(touchUnitWorld, touchGeo.camera, touchGeo.canvasSize, touchGeo.rect);
 
     // ---- Scenario 7: a quick tap (no hold, no drag) on your own unit selects it ----
     await touchPage.evaluate(({ x, y }) => {
@@ -372,7 +397,7 @@ async function runForEngine(engineName) {
         const u = gameState.playerCountry.units.find(u => u.type === 'stormbreaker');
         return { x: u.x, y: u.y };
     });
-    const holdUnitScreen = worldToScreen(holdUnitWorld, touchGeo.camera, touchGeo.canvasSize);
+    const holdUnitScreen = worldToScreen(holdUnitWorld, touchGeo.camera, touchGeo.canvasSize, touchGeo.rect);
     await touchPage.evaluate(({ x, y }) => window.__fireTouch('touchstart', x, y), { x: holdUnitScreen.x - 40, y: holdUnitScreen.y - 40 });
     await touchPage.waitForTimeout(500); // real elapsed time, past the game's own 400ms long-press threshold
     await touchPage.evaluate(({ x, y }) => window.__fireTouch('touchmove', x, y), { x: holdUnitScreen.x + 40, y: holdUnitScreen.y + 40 });
