@@ -495,16 +495,31 @@
                a 2026-09-05 change had pushed it down below the minimap's
                bottom edge to avoid the two ever overlapping, but covering the
                minimap while the menu is open is the intended behavior, not a
-               bug. Back to its original top:60px/max-height:85vh box. */
+               bug. Back to its original top/max-height box. */
             position: fixed;
-            top: 60px;
+            /* Direct report: "the instructions button at the bottom of the
+               menu is partly visible, needs to move up a little" - moved up
+               from 60px, plus see max-height below for the actual root cause. */
+            top: 50px;
             right: 10px;
             background: rgba(0, 0, 0, 0.95);
             color: #00ff00;
             padding: 15px;
             border-radius: 8px;
             width: 340px;
-            max-height: 85vh;
+            /* `vh` is computed against the LARGEST possible viewport (address
+               bar hidden), same root cause already documented on #legend
+               below - on a real phone with the address bar still showing,
+               that overestimates how much room is actually visible, so a tall
+               INFO tab (country info + pause/save/load/instructions buttons)
+               could render past the real bottom edge with nothing able to
+               scroll it back into view (this is a position:fixed box, not
+               page content - overflow-y:auto only helps once the box's OWN
+               height already fits on-screen). `dvh` tracks the real, current
+               visible viewport instead; the plain `vh` line is a fallback for
+               browsers old enough not to support `dvh` at all. */
+            max-height: 82vh;
+            max-height: 82dvh;
             overflow-y: auto;
             display: none;
             border: 2px solid #00ff00;
@@ -748,6 +763,42 @@
             margin: 2px;
             font-size: 10px;
         }
+        /* Direct report: "the home and view all button needs to be half the
+           size because it overlaps with the timer dropdown in the bottom
+           left." On a narrow phone screen, #legend (bottom-left, up to 250px
+           wide with its full text expanded) and #controls (bottom-right) are
+           each wide enough on their own that they collide in the middle -
+           measured directly at a 390px-wide viewport: #legend's right edge
+           landed at 260px from the left while #controls' left edge (2 side-
+           by-side buttons) started at only 182px, a real ~78px overlap.
+           Stacking the buttons in a column instead of a side-by-side row,
+           plus roughly half the padding/font-size, keeps #controls to a
+           single button's width - comfortably clear of #legend even with
+           the 3rd EXIT button (see confirmExitGame()) added alongside HOME/
+           VIEW ALL. Scoped to mobile widths only so the desktop layout (and
+           its visual-test baseline) is untouched. */
+        @media (max-width: 560px) {
+            /* #controls.visible (higher specificity than a plain #controls
+               selector - ID+class beats ID alone) is what actually makes this
+               panel visible during gameplay (see the display:none/.visible
+               convention above) - matching that same specificity here is
+               required, or `display: flex` below would silently lose to
+               that rule's `display: block` regardless of source order. */
+            #controls.visible {
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
+            }
+            #controls {
+                padding: 6px;
+                gap: 3px;
+            }
+            #controls button {
+                padding: 4px 8px;
+                margin: 0;
+                font-size: 9px;
+            }
+        }
         .ground-unit-badge {
             display: inline-block;
             background: #ff6600;
@@ -965,7 +1016,18 @@
             <div id="infoTab" class="tab-content active">
                 <div id="countryInfo"></div>
                 <div id="pauseControls" style="margin-top: 15px;">
-                    <button onclick="togglePause()">⏸️ PAUSE TIMER</button>
+                    <!-- Direct, repeated report: "the pause button says pause
+                         timer and it only pauses the timer" - togglePause()
+                         itself has for a while now frozen the entire live
+                         simulation (unit movement, mining/research, the turn
+                         clock, and every order-issuing action - see
+                         togglePause()'s own comment and the pause checks
+                         scattered through gameLoop()/the click handlers), but
+                         the button's OWN label never stopped saying "PAUSE
+                         TIMER", so a player reasonably kept assuming that's
+                         literally all it did. Renamed to describe what it
+                         actually does. -->
+                    <button onclick="togglePause()">⏸️ PAUSE GAME</button>
                 </div>
                 <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #00ff00;">
                     <h3 style="color: #ffff00;">GAME CONTROLS:</h3>
@@ -1064,6 +1126,7 @@
         <div id="controls">
             <button onclick="centerOnPlayer()">🏠 HOME</button>
             <button onclick="viewAll()">🗺️ VIEW ALL</button>
+            <button onclick="confirmExitGame()" id="exitGameBtn">🚪 EXIT</button>
         </div>
         
         <div id="campaignObjectivesPanel">
@@ -6800,6 +6863,31 @@
             }
             gameState.paused = !gameState.paused;
             updateUI();
+        }
+
+        // Direct request: "put a safety button on mobile and desktop that
+        // asks the user if they really want to exit... when someone
+        // accidentally goes out of the game." The 'beforeunload' listener
+        // further down already catches an accidental tab close/refresh/
+        // navigation, but that's the browser's OWN prompt - it only fires on
+        // those specific browser-level actions, mobile support for it is
+        // inherently inconsistent (see that listener's own comment), and it
+        // does nothing for an in-page "I meant to tap something else and hit
+        // this instead" accidental exit. This is a real in-game button
+        // (#controls, always visible during gameplay on both desktop and
+        // mobile) with its own explicit confirm(), so leaving is deliberate
+        // and consistent everywhere, independent of any browser/OS quirk.
+        //
+        // Deliberately does NOT clearAutosave() (unlike newGame(), which
+        // explicitly abandons progress) - nextTurn() already autosaves
+        // periodically, so a confirmed exit leaves that autosave in place to
+        // continue from later, same as closing the tab would.
+        function confirmExitGame() {
+            if (!confirm('Are you sure you want to exit the game? Your progress is autosaved, but any changes since the last autosave will be lost.')) {
+                return;
+            }
+            gameState.gameOver = true; // deliberate exit - don't also show the native leave-page prompt
+            location.reload();
         }
 
         function buildUnit(type) {
