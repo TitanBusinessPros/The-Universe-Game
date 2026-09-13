@@ -87,11 +87,15 @@ async function getCanvasGeometry(page) {
 async function runForEngine(engineName) {
     const engine = playwright[engineName];
     const browser = await engine.launch();
-    // hasTouch is required for the browser to expose the real Touch/TouchEvent
-    // constructors the mobile touch scenarios below rely on - without it,
-    // `new TouchEvent(...)` doesn't exist even though nothing else here needs
-    // an actual touchscreen or mobile viewport.
-    const context = await browser.newContext({ viewport: VIEWPORT, hasTouch: true });
+    // hasTouch is deliberately NOT set on this context - it's only needed by
+    // the dedicated touch-gesture context created further down for scenarios
+    // 7-9, and turning it on here as well was observed to make WebKit's
+    // handling of plain page.mouse.click() unreliable (a real CI failure:
+    // scenario 0 intermittently saw selectedUnits.length stay 0 on WebKit
+    // once hasTouch was enabled on this shared context, despite passing
+    // consistently locally) - keeping the two input models on separate
+    // contexts avoids that cross-contamination entirely.
+    const context = await browser.newContext({ viewport: VIEWPORT });
     const page = await context.newPage();
 
     await page.route('**://raw.githubusercontent.com/**', route => {
@@ -255,16 +259,36 @@ async function runForEngine(engineName) {
     }
     check(tag('Load From File restores game state from the chosen file'), loadScenarioOk, loadScenarioDetail);
 
+    await context.close();
+
     // ---- Mobile touch scenarios ----
-    // Real Touch/TouchEvent objects dispatched at the canvas, exactly like a
-    // phone browser would deliver them - not mouse events with a "touch"
-    // label. Each one is classified by the game's own touchstart/touchmove/
-    // touchend handlers (index.html), which then replay it as a synthetic
-    // MouseEvent via dispatchSyntheticMouseEvent() into the exact same
-    // mousedown/mousemove/mouseup/click logic scenarios 0-4 above already
-    // exercise directly - so what's actually new here is proving the GESTURE
-    // CLASSIFICATION itself (tap vs. immediate-drag-pan vs. long-press-then-
-    // drag-select), not re-testing the underlying click/drag behavior twice.
+    // Deliberately a brand-new browser context (and fresh game session) with
+    // hasTouch:true, rather than reusing the context above - hasTouch is
+    // required for the real Touch/TouchEvent constructors these scenarios
+    // rely on, but was observed to make WebKit's handling of plain
+    // page.mouse.click() unreliable (a real CI failure on scenario 0) when
+    // turned on for the same context as the mouse-based scenarios above.
+    // Keeping the two input models fully isolated avoids that entirely.
+    //
+    // Real Touch/TouchEvent objects are dispatched at the canvas, exactly
+    // like a phone browser would deliver them - not mouse events with a
+    // "touch" label. Each one is classified by the game's own
+    // touchstart/touchmove/touchend handlers (index.html), which then
+    // replay it as a synthetic MouseEvent via dispatchSyntheticMouseEvent()
+    // into the exact same mousedown/mousemove/mouseup/click logic scenarios
+    // 0-4 above already exercise directly - so what's actually new here is
+    // proving the GESTURE CLASSIFICATION itself (tap vs. immediate-drag-pan
+    // vs. long-press-then-drag-select), not re-testing the underlying
+    // click/drag behavior twice.
+    const touchContext = await browser.newContext({ viewport: VIEWPORT, hasTouch: true });
+    const touchPage = await touchContext.newPage();
+    await touchPage.route('**://raw.githubusercontent.com/**', route => {
+        route.fulfill({ status: 200, contentType: 'image/png', body: PLACEHOLDER_PNG });
+    });
+    touchPage.on('dialog', d => { if (d.type() === 'alert') d.accept(); else d.dismiss(); });
+    await touchPage.goto('file:///' + absoluteGamePath.replace(/\\/g, '/'));
+    await setupGame(touchPage);
+
     // WebKit's actual Safari never implemented the spec's constructible
     // Touch/TouchEvent (`new Touch(...)`/`new TouchEvent(...)` both throw
     // "Illegal constructor") - a genuine, documented engine gap, not a game
@@ -275,7 +299,7 @@ async function runForEngine(engineName) {
     // run on chromium/firefox (both fully support construction) and are
     // skipped with a clear reason on webkit rather than failing on a tooling
     // limitation that has nothing to do with index.html's own code.
-    const canConstructTouchEvents = await page.evaluate(() => {
+    const canConstructTouchEvents = await touchPage.evaluate(() => {
         try {
             const t = new Touch({ identifier: 1, target: canvas, clientX: 0, clientY: 0 });
             new TouchEvent('touchstart', { touches: [t], targetTouches: [t], changedTouches: [t] });
@@ -291,7 +315,7 @@ async function runForEngine(engineName) {
         return;
     }
 
-    await page.evaluate(() => {
+    await touchPage.evaluate(() => {
         function fireTouch(type, x, y) {
             const touch = new Touch({
                 identifier: 1, target: canvas, clientX: x, clientY: y,
@@ -307,43 +331,30 @@ async function runForEngine(engineName) {
         window.__fireTouch = fireTouch;
     });
 
-    // Reuses the same session the scenarios above already ran in (a second
-    // newGame() call here would pop another confirm() dialog which - same as
-    // every other one in this suite - gets dismissed rather than accepted, so
-    // it would NOT actually reset anything and would just leave stale state
-    // behind). A single fresh, uniquely-tagged unit at a known offset from
-    // the CURRENT camera position is all these gesture-classification
-    // scenarios need.
-    await page.evaluate(() => {
-        deselectAllUnits();
-        const u = new Unit(camera.x + 400, camera.y, 'stormbreaker', gameState.playerCountry.id);
-        u.isTouchTestUnit = true;
-        gameState.playerCountry.units.push(u);
-    });
-    geo = await getCanvasGeometry(page);
-    const touchUnitWorld = { x: geo.camera.x + 400, y: geo.camera.y };
-    const touchUnitScreen = worldToScreen(touchUnitWorld, geo.camera, geo.canvasSize);
+    let touchGeo = await getCanvasGeometry(touchPage);
+    const touchUnitWorld = { x: touchGeo.camera.x + 400, y: touchGeo.camera.y };
+    const touchUnitScreen = worldToScreen(touchUnitWorld, touchGeo.camera, touchGeo.canvasSize);
 
     // ---- Scenario 7: a quick tap (no hold, no drag) on your own unit selects it ----
-    await page.evaluate(({ x, y }) => {
+    await touchPage.evaluate(({ x, y }) => {
         window.__fireTouch('touchstart', x, y);
         window.__fireTouch('touchend', x, y);
     }, { x: touchUnitScreen.x, y: touchUnitScreen.y });
-    const touchTapSelectedCount = await page.evaluate(() => gameState.selectedUnits.length);
+    const touchTapSelectedCount = await touchPage.evaluate(() => gameState.selectedUnits.length);
     check(tag('a quick tap directly on your own unit selects it (touch)'), touchTapSelectedCount === 1, `selectedUnits.length = ${touchTapSelectedCount}`);
     // Clean slate (a real right-click has no touch equivalent, so deselect via the API directly).
-    await page.evaluate(() => deselectAllUnits());
+    await touchPage.evaluate(() => deselectAllUnits());
 
     // ---- Scenario 8: pressing and dragging RIGHT AWAY (no hold) pans the camera ----
     const touchPanStart = { x: 500, y: 400 };
     const touchPanDelta = { x: -120, y: 60 };
-    const beforeTouchPan = await getCanvasGeometry(page);
-    await page.evaluate(({ sx, sy, dx, dy }) => {
+    const beforeTouchPan = await getCanvasGeometry(touchPage);
+    await touchPage.evaluate(({ sx, sy, dx, dy }) => {
         window.__fireTouch('touchstart', sx, sy);
         window.__fireTouch('touchmove', sx + dx, sy + dy); // fires well within the long-press delay - no real wait here
         window.__fireTouch('touchend', sx + dx, sy + dy);
     }, { sx: touchPanStart.x, sy: touchPanStart.y, dx: touchPanDelta.x, dy: touchPanDelta.y });
-    const afterTouchPan = await getCanvasGeometry(page);
+    const afterTouchPan = await getCanvasGeometry(touchPage);
     const expectedTouchPanX = beforeTouchPan.camera.x - touchPanDelta.x / beforeTouchPan.camera.zoom;
     const expectedTouchPanY = beforeTouchPan.camera.y - touchPanDelta.y / beforeTouchPan.camera.zoom;
     check(
@@ -353,20 +364,20 @@ async function runForEngine(engineName) {
     );
 
     // ---- Scenario 9: press and HOLD past the long-press delay, then drag, box-selects ----
-    // Scenario 8 just panned the camera, so the touch-test unit's screen
-    // position has to be recomputed from its own actual (fixed) world
-    // coordinates, not re-derived from an offset off the now-moved camera.
-    geo = await getCanvasGeometry(page);
-    const holdUnitWorld = await page.evaluate(() => {
-        const u = gameState.playerCountry.units.find(u => u.isTouchTestUnit);
+    // Scenario 8 just panned the camera, so the unit's screen position has
+    // to be recomputed from its own actual (fixed) world coordinates, not
+    // re-derived from an offset off the now-moved camera.
+    touchGeo = await getCanvasGeometry(touchPage);
+    const holdUnitWorld = await touchPage.evaluate(() => {
+        const u = gameState.playerCountry.units.find(u => u.type === 'stormbreaker');
         return { x: u.x, y: u.y };
     });
-    const holdUnitScreen = worldToScreen(holdUnitWorld, geo.camera, geo.canvasSize);
-    await page.evaluate(({ x, y }) => window.__fireTouch('touchstart', x, y), { x: holdUnitScreen.x - 40, y: holdUnitScreen.y - 40 });
-    await page.waitForTimeout(500); // real elapsed time, past the game's own 400ms long-press threshold
-    await page.evaluate(({ x, y }) => window.__fireTouch('touchmove', x, y), { x: holdUnitScreen.x + 40, y: holdUnitScreen.y + 40 });
-    await page.evaluate(({ x, y }) => window.__fireTouch('touchend', x, y), { x: holdUnitScreen.x + 40, y: holdUnitScreen.y + 40 });
-    const touchHoldSelectedCount = await page.evaluate(() => gameState.selectedUnits.length);
+    const holdUnitScreen = worldToScreen(holdUnitWorld, touchGeo.camera, touchGeo.canvasSize);
+    await touchPage.evaluate(({ x, y }) => window.__fireTouch('touchstart', x, y), { x: holdUnitScreen.x - 40, y: holdUnitScreen.y - 40 });
+    await touchPage.waitForTimeout(500); // real elapsed time, past the game's own 400ms long-press threshold
+    await touchPage.evaluate(({ x, y }) => window.__fireTouch('touchmove', x, y), { x: holdUnitScreen.x + 40, y: holdUnitScreen.y + 40 });
+    await touchPage.evaluate(({ x, y }) => window.__fireTouch('touchend', x, y), { x: holdUnitScreen.x + 40, y: holdUnitScreen.y + 40 });
+    const touchHoldSelectedCount = await touchPage.evaluate(() => gameState.selectedUnits.length);
     check(tag('press-and-hold past the long-press delay, then drag, box-selects a unit (touch)'), touchHoldSelectedCount === 1, `selectedUnits.length = ${touchHoldSelectedCount}`);
 
     await browser.close();
