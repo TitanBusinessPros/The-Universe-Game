@@ -127,7 +127,7 @@ if (failures.length > 0) {
 }
 
 vm.runInContext(
-    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, getHomeDefenseVisionRange, HOME_DEFENSE_VISION_RANGE, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage, assignAttackTargets, guaranteeNearestAttackersForHumans, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS, randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER, nearestMinimapLandmark, spawnHotsun, damageNearHotsun, HOTSUN_IMAGE_URL, HOTSUN_SIZE, HOTSUN_RADIATION_RANGE, HOTSUN_DAMAGE_PERCENT, PLANET_SCALE, updateFogOfWar, toggleFogOfWar, drawMinimap, isPointRevealed, revealRegion, drawFogOfWarOverlay, isGroundUnitInCargo, BUILDING_ATTACKER_TYPES, ctx, MAP_CONFIGS, openMapSelect, closeMapSelect, chooseMap, populateMapGrid, showMapDetails, closeMapDetails, applyMapBackground, spaceBackgroundImage, SPACE_BACKGROUND_URL, MAP_IMAGE_URLS, RAIDER_PACK_TYPES, RAIDER_PACK_SIZE, RAIDER_PACK_BASE_ID, spawnAlienRaiderPacks, clearAlienRaiderPacks, ALIEN_ONLY_UNIT_TYPES, FELISGATHER_COUNT, FELISGATHER_HP, FELISGATHER_CONVERT_RANGE, FELISGATHER_ID, spawnFelisgathers, clearFelisgathers, MAP_PLANET_LAYOUTS, MAP_LAYOUT_LABELS, sampleLayoutCandidate, spreadPositionForLayout, repositionPlanetsForMap, GALAXY_LANDMARK_MAX_SCREEN_FRACTION, isNamedNationId, getCannonTier, initiateCannonPlacement, blendToward, LASER_CORE_COLORS, CANNON_COST, CANNON_BASE_RANGE, CANNON_RANGE_STEP, CANNON_RANGE_TIERS, CANNON_BASE_HP, CANNON_HP_STEP, CANNON_DAMAGE_PERCENT, CANNON_PLACEMENT_MAX_RANGE, CANNON_VISIBILITY_RANGE };',
+    'this.__test = { Country, Island, Unit, Building, gameState, setDifficulty, DIFFICULTY_PRESETS, checkGameOver, switchToNextHumanSeat, ResourceDeposit, resourceDeposits, updateMiningAndResearch, spawnResourceDeposits, TECH_TREE, UNIT_TECH_REQUIREMENTS, UNIT_BUILDING_REQUIREMENTS, PRODUCTION_BUILDING_LABELS, DEPOSIT_INCOME_PER_HOUR, GalaxyCore, galaxyCores, spawnGalaxyCore, healNearGalaxyCores, GALAXY_CORE_SIZE, GALAXY_CORE_HEAL_RANGE, GALAXY_CORE_HEAL_PERCENT, spawnGalaxyBounty, awardGalaxyBounty, GALAXY_BOUNTY_SIZE, GALAXY_BOUNTY_GOLD_PER_ROUND, GALAXY_BOUNTY_MIN_SHIPS, GALAXY_BOUNTY_QUALIFY_RANGE, introMusic, INTRO_MUSIC_URL, setSoundEnabled, enableSoundAutomatically, enterGameplay, toggleSound, playLaserAttackSound, LASER_SOUND_URL, playHomeUnderAttackSound, HOME_UNDER_ATTACK_SOUND_URL, playEndgameSound, ENDGAME_SOUND_URL, showGameOver, BlackHole, blackHoles, spawnBlackHole, updateBlackHoles, BLACK_HOLE_SIZE, BLACK_HOLE_MAX_HP, BLACK_HOLE_SPEED, BLACK_HOLE_CAPTURE_RANGE, BLACK_HOLE_IMAGE_URL, DEPOSIT_STARTING_RESOURCES, DEPOSIT_COLLECT_RANGE, DEPOSIT_SIZE_RATIO, MINING_SHIP_COLLECT_AMOUNT, MINING_SHIP_COLLECT_INTERVAL_SECONDS, MINING_SHIP_MAX_CARGO, MINING_SHIP_SPREAD_RADIUS, GALAXY_SPACING_SCALE, MAP_WIDTH, MAP_HEIGHT, canvas, canPause, togglePause, buildUnit, researchTech, COUNTRY_BONUSES, updateUI, UNIT_SPEEDS, AUTOSAVE_KEY, openSingleMapSetup, closeSingleMapSetup, startGame, closeVideo, buildCampaignStages, buildStageObjectives, selectCampaignNation, startCampaignStage, showCampaignStageComplete, saveCampaignProgress, clearCampaignProgress, resumeCampaign, campaignCountryName, CAMPAIGN_KEY, lifetimeStats, saveLifetimeStats, applySaveData, buildSaveData, autoSaveGame, spaceMines, missiles, laserEffects, camera, TURN_TIME_SECONDS, COUNTRY_NAMES, COUNTRY_COLORS, openCampaignNationSelect, closeCampaignNationSelect, CAMPAIGN_ALIEN_WAVES, CAMPAIGN_OUTPOST_COUNTS, continueFromAutosave, startHotSeatGame, switchTab, selectUnit, deselectAllUnits, selectMultipleUnits, setActionMode, cancelAction, centerOnPlayer, chooseDifficulty, isOnMinimap, minimapToWorld, worldToMinimap, getGalaxyBounds, minimapBounds, MINIMAP_WIDTH, MINIMAP_HEIGHT, MINIMAP_MARGIN_TOP, MINIMAP_MARGIN_RIGHT, HARBOR_LOAD_RANGE, HARBOR_UNLOAD_RANGE, TROOP_PICKUP_RANGE, formatTime, updateUnitInspector, hasRadarDetection, queueImageLoad, makeStarLayer, describeCountryBonus, describeCountryBonusHTML, processAttackMoveOrders, toggleUI, viewAll, updateTimer, nextTurn, buildResearchStatusHtml, openInstructions, loadSprites, clearAutosave, showCampaignBriefing, beginCampaignFromBriefing, campaignNationPosition, campaignAlienPosition, campaignOutpostPosition, spawnCampaignGarrison, playUIClickSound, toggleCampaignObjectives, toggleLegend, updateCampaignObjectivesPanel, openStatsScreen, closeStatsScreen, getLaserColor, lightenRgb, fireLaserEffect, LASER_COLORS, DEFAULT_LASER_COLOR, getEffectiveSightRange, getHomeDefenseVisionRange, HOME_DEFENSE_VISION_RANGE, UNIT_SIGHT_RANGE, RADAR_SIGHT_RANGE, createSpaceElements, drawSpaceBackground, whenImagesReady, spaceElements, loadMineImage, mineImage, assignAttackTargets, guaranteeNearestAttackersForHumans, reassignEliminatedAttackTargets, pickAssignedTarget, AI_HUNT_PLAYER_BIAS, AI_HUNT_RADIUS, randomSpreadPosition, PLANET_MIN_SEPARATION, farthestPlanetRadius, GALAXY_LANDMARK_CORNER_DIR, PLANET_SPREAD_MULTIPLIER, nearestMinimapLandmark, spawnHotsun, damageNearHotsun, HOTSUN_IMAGE_URL, HOTSUN_SIZE, HOTSUN_RADIATION_RANGE, HOTSUN_DAMAGE_PERCENT, PLANET_SCALE, updateFogOfWar, toggleFogOfWar, drawMinimap, isPointRevealed, revealRegion, drawFogOfWarOverlay, isGroundUnitInCargo, BUILDING_ATTACKER_TYPES, ctx, MAP_CONFIGS, openMapSelect, closeMapSelect, chooseMap, populateMapGrid, showMapDetails, closeMapDetails, applyMapBackground, spaceBackgroundImage, SPACE_BACKGROUND_URL, MAP_IMAGE_URLS, RAIDER_PACK_TYPES, RAIDER_PACK_SIZE, RAIDER_PACK_BASE_ID, spawnAlienRaiderPacks, clearAlienRaiderPacks, ALIEN_ONLY_UNIT_TYPES, FELISGATHER_COUNT, FELISGATHER_HP, FELISGATHER_CONVERT_RANGE, FELISGATHER_ID, spawnFelisgathers, clearFelisgathers, MAP_PLANET_LAYOUTS, MAP_LAYOUT_LABELS, sampleLayoutCandidate, spreadPositionForLayout, repositionPlanetsForMap, GALAXY_LANDMARK_MAX_SCREEN_FRACTION, isNamedNationId, getCannonTier, initiateCannonPlacement, blendToward, LASER_CORE_COLORS, CANNON_COST, CANNON_BASE_RANGE, CANNON_RANGE_STEP, CANNON_RANGE_TIERS, CANNON_BASE_HP, CANNON_HP_STEP, CANNON_DAMAGE_PERCENT, CANNON_PLACEMENT_MAX_RANGE, CANNON_VISIBILITY_RANGE, gameLoop, confirmExitGame };',
     context,
     { filename: 'grab-refs.js' }
 );
@@ -169,7 +169,8 @@ const {
     MAP_PLANET_LAYOUTS, MAP_LAYOUT_LABELS, sampleLayoutCandidate, spreadPositionForLayout, repositionPlanetsForMap,
     GALAXY_LANDMARK_MAX_SCREEN_FRACTION, isNamedNationId, getCannonTier, initiateCannonPlacement, blendToward,
     LASER_CORE_COLORS, CANNON_COST, CANNON_BASE_RANGE, CANNON_RANGE_STEP, CANNON_RANGE_TIERS, CANNON_BASE_HP,
-    CANNON_HP_STEP, CANNON_DAMAGE_PERCENT, CANNON_PLACEMENT_MAX_RANGE, CANNON_VISIBILITY_RANGE
+    CANNON_HP_STEP, CANNON_DAMAGE_PERCENT, CANNON_PLACEMENT_MAX_RANGE, CANNON_VISIBILITY_RANGE,
+    gameLoop, confirmExitGame,
 } = context.__test;
 
 // ---------- Test data: the full combat unit roster ----------
@@ -7207,6 +7208,169 @@ check('newGame() and the post-campaign "RETURN TO MENU" button both set gameOver
 // behavior that was actually intended - the panel opening on top of the
 // minimap - so #ui was reverted to its original top:60px/max-height:85vh box
 // (see its own CSS comment) and these two checks no longer apply.
+
+// ---------- 33. Pause fully freezes the live simulation, not just the
+//               displayed timer, and is labeled to say so (2026-09-13) ----------
+//    Direct, repeated report: "the pause button says pause timer and it only
+//    pauses the timer." canBuildUnit()/researchTech()/setActionMode()/the
+//    canvas click handler/cannon placement were already independently gated
+//    on gameState.paused in earlier fixes (see the checks above and
+//    interaction-test.js's scenarios 4b/4c) - this section instead proves
+//    the OTHER half end-to-end through the real per-frame loop: unit
+//    movement, mining/research income, and the turn countdown itself all
+//    have to freeze too, not just whatever the player explicitly clicks.
+
+check('gameLoop() freezes unit movement, mining income/research progress, and the turn countdown while paused - then resumes once unpaused', () => {
+    const problems = [];
+    const island = new Island(0, 0, 1);
+    const country = new Country(0, 'FrozenWorld', '#00ff00', island, true);
+    gameState.countries = [country];
+    gameState.playerCountry = country;
+    gameState.humanCountryIds = [0];
+    gameState.campaignActive = false;
+    gameState.gameStarted = true;
+    gameState.selectedUnits = [];
+    gameState.selectedUnit = null;
+    gameState.isSelecting = false;
+    gameState.selectionBox = null;
+    resourceDeposits.length = 0;
+    spaceMines.length = 0;
+    missiles.length = 0;
+
+    const mover = new Unit(0, 0, 'stormbreaker', 0);
+    mover.moveTo(5000, 5000); // already had a standing order before pausing
+    country.units = [mover];
+    country.resources = 1000;
+    country.startResearch('mining_ops');
+    const researchRemainingBefore = country.activeResearch.remaining;
+    gameState.turnTimeRemaining = TURN_TIME_SECONDS;
+    gameState.lastFrameTime = Date.now() - 2000; // pretend 2 real seconds already passed
+
+    gameState.paused = true;
+    for (let i = 0; i < 5; i++) gameLoop();
+
+    if (mover.x !== 0 || mover.y !== 0) problems.push(`expected the unit not to move at all while paused, ended at (${mover.x}, ${mover.y})`);
+    if (!country.activeResearch || country.activeResearch.remaining !== researchRemainingBefore) {
+        problems.push(`expected research's time-remaining unchanged while paused, went from ${researchRemainingBefore} to ${country.activeResearch && country.activeResearch.remaining}`);
+    }
+    if (gameState.turnTimeRemaining !== TURN_TIME_SECONDS) problems.push(`expected the turn countdown frozen while paused, got ${gameState.turnTimeRemaining}`);
+
+    gameState.paused = false;
+    gameState.lastFrameTime = Date.now() - 2000;
+    for (let i = 0; i < 5; i++) gameLoop();
+
+    if (mover.x === 0 && mover.y === 0) problems.push('expected the unit to actually resume moving once unpaused (sanity check the harness can detect movement at all)');
+
+    gameState.paused = false;
+    return problems;
+});
+
+check('the PAUSE button in #ui is no longer mislabeled "PAUSE TIMER" - it freezes the whole simulation, not just the displayed clock', () => {
+    if (/PAUSE TIMER/.test(html)) {
+        return ['found the literal string "PAUSE TIMER" still in the page markup - the button text should describe what togglePause() actually does'];
+    }
+    if (!/onclick="togglePause\(\)">[^<]*PAUSE/.test(html)) {
+        return ['expected a togglePause() button still present and still mentioning PAUSE'];
+    }
+    return [];
+});
+
+// ---------- 34. In-game EXIT button with its own confirmation (2026-09-13) ----------
+//    Direct request: "put a safety button on mobile and desktop that asks
+//    the user if they really want to exit... when someone accidentally goes
+//    out of the game." The existing 'beforeunload' prompt (section 25 above)
+//    only covers a browser-level tab close/refresh/navigation, and is
+//    inherently inconsistent on mobile (see its own comment) - this is a
+//    real, always-visible in-game button instead, independent of any
+//    browser/OS quirk, on both desktop and mobile (#controls has no
+//    separate mobile-only markup - the same button/handler serves both).
+
+check('#controls has a real EXIT button wired to confirmExitGame()', () => {
+    const problems = [];
+    if (!document.getElementById('exitGameBtn')) problems.push('expected an element with id="exitGameBtn" in the real page markup');
+    if (!/id="exitGameBtn"[^>]*onclick="confirmExitGame\(\)"|onclick="confirmExitGame\(\)"[^>]*id="exitGameBtn"/.test(html)) {
+        problems.push('expected #exitGameBtn\'s onclick to call confirmExitGame()');
+    }
+    return problems;
+});
+
+check('confirmExitGame() does nothing if the confirmation is declined', () => {
+    gameState.gameOver = false;
+    gameState.gameStarted = true;
+    confirmExitGame(); // window.confirm() is stubbed to always return false in this harness
+    const problems = gameState.gameOver ? ['expected gameState.gameOver to stay false when the exit confirmation is declined'] : [];
+    gameState.gameOver = false;
+    return problems;
+});
+
+check('confirmExitGame() sets gameOver immediately before reloading, once confirmed - matching newGame()\'s own established pattern so the beforeunload prompt never double-fires on a deliberate exit', () => {
+    if (!/function confirmExitGame\(\)\s*\{\s*if\s*\(!confirm\([^)]*\)\)\s*\{\s*return;\s*\}\s*gameState\.gameOver = true;.*\r?\n\s*location\.reload\(\);/.test(script)) {
+        return ['expected confirmExitGame() to set gameState.gameOver = true immediately before location.reload(), only after confirm() returns true'];
+    }
+    return [];
+});
+
+check('confirmExitGame() does NOT clearAutosave() first, unlike newGame() - exiting deliberately should still leave a resumable autosave behind', () => {
+    const fnMatch = script.match(/function confirmExitGame\(\)\s*\{[\s\S]*?\n {8}\}/);
+    if (!fnMatch) return ['could not find confirmExitGame() in the source to check'];
+    if (/clearAutosave\(\)/.test(fnMatch[0])) {
+        return ['expected confirmExitGame() not to call clearAutosave() - unlike newGame() (which explicitly abandons progress), a confirmed exit should still leave the periodic autosave in place to continue from later'];
+    }
+    return [];
+});
+
+// ---------- 35. Mobile layout: #ui no longer clips past the real visible
+//               viewport, #controls no longer collides with #legend
+//               (2026-09-13) ----------
+//    Direct reports: "the instructions button at the bottom on the menu is
+//    partly visible and needs to move up a little" and "the home and view
+//    all button needs to be half the size because it overlaps with the
+//    timer dropdown in the bottom left." Both are real-device-only failure
+//    modes (see #legend's own 2026-09-12 fix for the same `vh`-vs-real-
+//    viewport root cause) that a fixed-size headless viewport can't always
+//    reproduce pixel-for-pixel - these check the CSS mechanism directly.
+
+check('#ui caps its height against `dvh` (the real, current visible viewport), not just `vh` (computed against the largest possible one) - same root cause as #legend\'s own 2026-09-12 fix', () => {
+    const uiBlockMatch = html.match(/#ui\s*\{[^}]*\}/);
+    if (!uiBlockMatch) return ['could not find the #ui CSS rule'];
+    const problems = [];
+    if (!/max-height:\s*\d+vh/.test(uiBlockMatch[0])) problems.push('expected a `vh` max-height as a fallback for browsers without `dvh` support');
+    if (!/max-height:\s*\d+dvh/.test(uiBlockMatch[0])) problems.push('expected a `dvh` max-height so the panel never renders past the real visible viewport when a mobile browser\'s address bar is showing');
+    return problems;
+});
+
+check('#controls collapses to a narrower, stacked layout on mobile widths, clear of #legend (bottom-left) - direct measurement at 390px wide found a real ~78px overlap before this fix', () => {
+    const problems = [];
+    // Not the first occurrence - #legend.visible, #controls.visible,
+    // #uiToggle.visible { display: block; } (the existing base visibility
+    // rule) also contains this substring, earlier in the file.
+    const anchorIdx = html.lastIndexOf('#controls.visible');
+    if (anchorIdx === -1) {
+        problems.push('expected a "#controls.visible" mobile override (matching the specificity of the existing display:none/.visible convention - a plain "#controls { display: flex }" would silently lose to that higher-specificity rule regardless of source order)');
+        return problems;
+    }
+    // The rest of that same small media query block, not the whole rest of the file.
+    const window_ = html.slice(anchorIdx, anchorIdx + 600);
+    if (!/flex-direction:\s*column/.test(window_)) {
+        problems.push('expected #controls to stack its buttons in a column on mobile, not a side-by-side row, so its total width stays small regardless of how many buttons it holds');
+    }
+    if (!/font-size:\s*[1-9]px/.test(window_)) {
+        problems.push('expected #controls button to use a smaller font-size on mobile than the default 10px');
+    }
+    if (!html.slice(Math.max(0, anchorIdx - 700), anchorIdx).includes('@media (max-width: 560px)')) {
+        problems.push('expected the #controls.visible override to actually be scoped inside a "@media (max-width: 560px)" block, not applied unconditionally to desktop too');
+    }
+    return problems;
+});
+
+check('#exitGameBtn lives inside #controls, alongside HOME/VIEW ALL - always visible during gameplay on both desktop and mobile, not buried in the #ui menu', () => {
+    const controlsDivMatch = html.match(/<div id="controls">[\s\S]*?<\/div>/);
+    if (!controlsDivMatch) return ['could not find the #controls div in the real page markup'];
+    if (!controlsDivMatch[0].includes('id="exitGameBtn"')) {
+        return ['expected #exitGameBtn to be a child of #controls'];
+    }
+    return [];
+});
 
 report();
 process.exit(failures.length > 0 ? 1 : 0);

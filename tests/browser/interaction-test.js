@@ -348,6 +348,63 @@ async function runForEngine(engineName) {
     }
     check(tag('Load From File restores game state from the chosen file'), loadScenarioOk, loadScenarioDetail);
 
+    // ---- Scenario 6b: EXIT button asks for confirmation before leaving ----
+    // Direct request: "put a safety button on mobile and desktop that asks
+    // the user if they really want to exit... when someone accidentally
+    // goes out of the game." Distinct from the 'beforeunload' prompt tested
+    // in regression-test.js - that one only fires on a browser-level tab
+    // close/refresh/navigation (and is inconsistent on mobile by design of
+    // the platform, per its own comment in index.html); this is a real,
+    // always-visible in-game button (#controls) with its own explicit
+    // confirm(), reachable identically on desktop and mobile since it's a
+    // plain click/tap target, not touch-gesture-specific. Placed here (using
+    // the mouse-based `page`/`context`, before either is closed) rather than
+    // after the touch-gesture section below, so it still runs on every
+    // engine even where WebKit's lack of constructible Touch/TouchEvent
+    // skips that section entirely.
+    // The blanket "accept alerts / dismiss everything else" handler
+    // registered at the top of this function is still attached - remove it
+    // first so it can't race the once() handlers below on the same dialog
+    // (both trying to resolve it throws "already handled").
+    page.removeAllListeners('dialog');
+    const turnBeforeExitAttempt = await page.evaluate(() => gameState.turn);
+    let exitDialogMessage = null;
+    page.once('dialog', d => { exitDialogMessage = d.message(); d.dismiss(); }); // simulate tapping Cancel
+    await page.evaluate(() => document.getElementById('exitGameBtn').click());
+    await page.waitForTimeout(100);
+    check(
+        tag('EXIT button shows a confirmation dialog before doing anything'),
+        typeof exitDialogMessage === 'string' && /sure you want to exit/i.test(exitDialogMessage),
+        `dialog message: ${JSON.stringify(exitDialogMessage)}`
+    );
+    const turnAfterDismiss = await page.evaluate(() => gameState.turn);
+    check(
+        tag('dismissing the EXIT confirmation leaves the match running, untouched'),
+        turnAfterDismiss === turnBeforeExitAttempt,
+        `turn before=${turnBeforeExitAttempt}, turn after dismiss=${turnAfterDismiss}`
+    );
+
+    page.once('dialog', d => d.accept()); // simulate tapping OK
+    await page.evaluate(() => document.getElementById('exitGameBtn').click());
+    // Checking for the real observable outcome (back at the start screen)
+    // rather than the 'load' event itself - confirmed flaky on WebKit,
+    // where a file:// location.reload() doesn't reliably fire a 'load'
+    // event Playwright's listener catches in time, even though the actual
+    // navigation/reload does happen.
+    let reachedStartScreen = false;
+    try {
+        await page.waitForFunction(() => {
+            const el = document.getElementById('startScreen');
+            return !!el && getComputedStyle(el).display !== 'none';
+        }, { timeout: 8000 });
+        reachedStartScreen = true;
+    } catch (e) { /* checked via the flag below */ }
+    check(
+        tag('confirming the EXIT dialog actually leaves the match (reloads back to the start screen)'),
+        reachedStartScreen,
+        `start screen visible after confirmed exit: ${reachedStartScreen}`
+    );
+
     await context.close();
 
     // ---- Mobile touch scenarios ----
