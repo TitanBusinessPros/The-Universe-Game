@@ -84,7 +84,50 @@ cd tests/browser
 node interaction-test.js ../../index.html --engines=chromium,firefox,webkit
 ```
 
-Both run automatically in CI (see `.github/workflows/regression-tests.yml`).
+Also covers real touch gestures (tap-to-select, immediate-drag-pan,
+hold-then-drag box-select, two-finger pinch-zoom) via genuine synthetic
+`Touch`/`TouchEvent` objects dispatched at the canvas, on Chromium/Firefox -
+WebKit's real Safari has never implemented constructible `Touch`/
+`TouchEvent` (a documented engine gap, not a game bug), so those scenarios
+are skipped there with a clear reason instead of failing on a tooling
+limitation.
+
+### Deposit visibility (`browser/deposit-visibility-test.js`)
+
+A narrow regression test for a real bug: a `ResourceDeposit`'s own `draw()`
+method does its own manual world-to-screen conversion, so calling it while
+the canvas's world transform is still active double-applies the conversion
+and sends it thousands of pixels off-canvas — permanently invisible, no
+error thrown. Captures the live canvas transform matrix at the actual
+`draw()` call site and confirms the deposit's `arc()` call lands within the
+visible canvas bounds.
+
+```
+cd tests/browser
+node deposit-visibility-test.js ../../index.html
+```
+
+### Asset integrity (`browser/asset-integrity-test.js`)
+
+Drives `testing.html` — a separate, pre-existing browser harness (predates
+this `tests/` suite) — over a throwaway local HTTP server, and lets it hit
+the **real network** to confirm every sprite/map/cannon image URL the game
+references actually resolves. Deliberately not mocked out like the other
+suites; the whole point is catching a real dead link. Slower and less
+deterministic than everything else here (a network hiccup isn't the same
+kind of signal as a real regression) — and structurally can't pass for a
+brand-new image added in the same PR that also references it for the first
+time, since the URL points at `main` and won't resolve until the image is
+actually merged. The established pattern: land the image on `main` by
+itself first (its own PR), then reference it in a following PR/commit.
+
+```
+cd tests/browser
+node asset-integrity-test.js ../..
+```
+
+All four browser-driven suites run automatically in CI (see
+`.github/workflows/regression-tests.yml`).
 
 ## Balance simulation (`balance/`)
 
