@@ -1703,6 +1703,30 @@ check('Vessel Plating research gives +15% HP to vessel-class ships only, applied
 //    human plays under, just gated by AI_RESEARCH_CHANCE/AI_MINING_SHIP_CHANCE
 //    per turn instead of happening the instant it's affordable.
 
+// Direct report: "why aren't the planets and aliens mining and using their
+// mining ships" - a uniform random pick among ~13 available tech nodes made
+// it easy for a nation to spend many, many 60-120-real-second research
+// cycles without ever landing on the one node (Mining Operations) that
+// unlocks the whole mining economy. aiTurn() now prioritizes it, once,
+// whenever it's an available option - checked directly via a live 40-turn
+// simulation (mimicking real elapsed research time, not just calling
+// nextTurn() repeatedly with time frozen): every regular nation ended up
+// with Mining Operations researched and at least one Mining Ship, up from
+// roughly two-thirds before this fix.
+check("aiTurn()'s research pick prioritizes Mining Operations over any other available tech, deterministically (not by chance)", () => {
+    const problems = [];
+    const island = new Island(0, 0, 5);
+    const country = new Country(5, 'MiningPriorityTest', '#ff0000', island, false);
+    gameState.countries = [country];
+    country.resources = 100000; // every node affordable at once, so this isn't gated by cost
+
+    for (let i = 0; i < 20 && !country.activeResearch; i++) country.aiTurn();
+    if (!country.activeResearch || country.activeResearch.id !== 'mining_ops') {
+        problems.push(`expected the first research pick (with every node available) to be mining_ops, got ${country.activeResearch && country.activeResearch.id}`);
+    }
+    return problems;
+});
+
 check('a regular-nation AI eventually researches Mining Operations and builds a Mining Ship', () => {
     const problems = [];
     const island = new Island(0, 0, 5); // id 5: not Cyborg(12-15)/Zoonester(16)/Roufestreal
@@ -4273,20 +4297,29 @@ check('Extended Sensors: +50% vision range, both for a scouting unit and homewor
     return problems;
 });
 
-check('getEffectiveSightRange() scales with PLANET_MIN_SEPARATION outside Campaign Mode, and keeps the original flat UNIT_SIGHT_RANGE/RADAR_SIGHT_RANGE inside it (root cause fix for "minimap looks black / ships never reveal anything" - see that function\'s own comment)', () => {
+// Direct report, twice: "I can see enemy troops when i play a map from far
+// away... at their planet on one planet" (fixed once already, via
+// getHomeDefenseVisionRange() below) and then, still, "I should not be able
+// to see ships at other planets" - the SAME leak via a DIFFERENT path: a
+// mobile unit's own sight range (getEffectiveSightRange(), used for
+// scouting) was still scaled to a fraction of PLANET_MIN_SEPARATION, which
+// several of the 10 sector layout patterns don't actually honor for every
+// pair - checked directly, real inter-planet gaps as low as ~11,000 units
+// exist - so a unit sitting at home (having never traveled anywhere) could
+// already see a neighboring, uninvolved planet's whole garrison. Standard
+// Game/hot-seat now shares the exact same fixed range as
+// getHomeDefenseVisionRange() instead - see both functions' own comments.
+check('getEffectiveSightRange() uses the same fixed range as getHomeDefenseVisionRange() outside Campaign Mode, and keeps the original flat UNIT_SIGHT_RANGE/RADAR_SIGHT_RANGE inside it', () => {
     const country = new Country(0, 'RangeTest', '#ff0000', new Island(0, 0, 0), true);
     const problems = [];
 
     gameState.campaignActive = false;
-    const standardUnit = getEffectiveSightRange(country, false);
-    const standardRadar = getEffectiveSightRange(country, true);
-    if (standardUnit <= UNIT_SIGHT_RANGE) problems.push(`expected Standard Game sight range (${standardUnit}) to be well above the old flat UNIT_SIGHT_RANGE (${UNIT_SIGHT_RANGE})`);
-    if (standardRadar <= standardUnit) problems.push('expected radar sight range to still exceed plain unit sight range in Standard Game');
-    // Big enough that a revealed circle actually spans more than a single minimap
-    // pixel (~MINIMAP_WIDTH/220 world-units-per-pixel at typical galaxy extents) -
-    // otherwise fog-of-war reveals nothing visibly different on the minimap even
-    // once a unit is technically "in range".
-    if (standardUnit < PLANET_MIN_SEPARATION * 0.1) problems.push('Standard Game sight range is too small a fraction of PLANET_MIN_SEPARATION to ever look like meaningful minimap progress');
+    if (getEffectiveSightRange(country, false) !== getHomeDefenseVisionRange(country, false)) {
+        problems.push('expected Standard Game unit sight range to equal getHomeDefenseVisionRange() (no radar)');
+    }
+    if (getEffectiveSightRange(country, true) !== getHomeDefenseVisionRange(country, true)) {
+        problems.push('expected Standard Game unit sight range to equal getHomeDefenseVisionRange() (with radar)');
+    }
 
     gameState.campaignActive = true;
     if (getEffectiveSightRange(country, false) !== UNIT_SIGHT_RANGE) problems.push('expected Campaign Mode to keep the original flat UNIT_SIGHT_RANGE untouched');
@@ -4296,20 +4329,7 @@ check('getEffectiveSightRange() scales with PLANET_MIN_SEPARATION outside Campai
     return problems;
 });
 
-// Direct report: "I can see enemy troops when i play a map from far away...
-// at their planet on one planet... not to see enemy troops unless they come
-// into range." Root cause: Unit.draw()'s and updateFogOfWar()'s "your own
-// homeworld also grants vision around itself" fallback reused
-// getEffectiveSightRange() - correctly scaled for SCOUTING with mobile units
-// relative to how far apart planets are on a Standard Game map (tens of
-// thousands of units), but that's enormous next to any real attack range (a
-// maxed Defense Cannon's 2,500 is the highest) - so two homeworlds landing
-// within that scouting-scale distance of each other (common; checked all 10
-// Standard Game sectors, most have several such pairs) permanently leaked a
-// whole distant, uninvolved nation's static garrison. getHomeDefenseVisionRange()
-// is deliberately a fixed, much smaller, combat-range-based constant instead -
-// see its own comment.
-check('getHomeDefenseVisionRange() is a fixed, combat-range-scaled distance - NOT derived from PLANET_MIN_SEPARATION/getEffectiveSightRange, unlike the (correctly) map-spread-scaled scouting sight range', () => {
+check('getHomeDefenseVisionRange() is a fixed, combat-range-scaled distance, not derived from PLANET_MIN_SEPARATION', () => {
     const problems = [];
     const country = new Country(0, 'HomeDefenseTest', '#ff0000', new Island(0, 0, 0), true);
 
@@ -4320,13 +4340,12 @@ check('getHomeDefenseVisionRange() is a fixed, combat-range-scaled distance - NO
     country.researchedTech.add('extended_sensors');
     if (getHomeDefenseVisionRange(country, false) !== Math.round(HOME_DEFENSE_VISION_RANGE * 1.5)) problems.push('expected Extended Sensors to still apply its usual +50%');
 
-    // The actual bug: this must stay well under the Standard Game scouting
-    // sight range, or two homeworlds that are merely "close enough to scout
-    // between" (not close enough to threaten each other) leak into view again.
-    gameState.campaignActive = false;
-    const scoutingSight = getEffectiveSightRange(country, true); // with radar, the largest scouting figure
-    if (getHomeDefenseVisionRange(country, true) >= scoutingSight) {
-        problems.push(`expected home-defense range (${getHomeDefenseVisionRange(country, true)}) to stay well under the scouting sight range (${scoutingSight}) it used to be conflated with`);
+    // The actual bug (both reports): this - and, since PR fixing the second
+    // report, getEffectiveSightRange() too - must stay well under the
+    // smallest real inter-planet gap on any sector, or a unit/homeworld
+    // reveals a neighboring, uninvolved planet's garrison for free.
+    if (getHomeDefenseVisionRange(country, true) >= 11000) {
+        problems.push(`expected home-defense/scouting range (${getHomeDefenseVisionRange(country, true)}) to stay comfortably under the smallest observed real inter-planet gap (~11,000 units)`);
     }
 
     return problems;

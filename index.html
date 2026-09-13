@@ -2361,27 +2361,38 @@
         //
         // Found 2026-09-05, root cause of the long "minimap looks black / can't see
         // my ships" thread: UNIT_SIGHT_RANGE/RADAR_SIGHT_RANGE (700/1400) were tuned
-        // back when Standard Game planets sat within the original small grid. Every
-        // later "spread the planets out further" request (PLANET_SPREAD_MULTIPLIER,
-        // now 30) grew the actual distance between planets into the hundreds of
-        // thousands of units without anyone touching these - so a scout sent toward
-        // a neighboring planet had to cover ~99.9% of the trip before ever getting
-        // within a sight range that small, and the resulting fog-of-war reveal
-        // circle was tinier than a single minimap pixel besides. None of the fixes
-        // in the previous several PRs could have shown anything different, because
-        // there was genuinely nothing to reveal yet - this wasn't a rendering bug.
-        // Scaled to a fraction of PLANET_MIN_SEPARATION for Standard Game/hot-seat
-        // instead, so vision grows along with however far apart the planets
-        // actually are. Campaign Mode keeps the original flat values untouched -
-        // its own layout is deliberately compact and was never part of this.
+        // back when Standard Game planets sat within the original small grid. At the
+        // time, PLANET_SPREAD_MULTIPLIER had grown to 30 (since brought back down to
+        // 2 - see its own declaration), so a scout sent toward a neighboring planet
+        // had to cover ~99.9% of the trip before ever getting within a sight range
+        // that small. The fix then was scaling sight range to a fraction of
+        // PLANET_MIN_SEPARATION so it grew along with the map.
+        //
+        // Direct report, twice ("I can see enemy troops... at their planet on one
+        // planet" / "I should not be able to see ships at other planets"): that
+        // fraction-of-PLANET_MIN_SEPARATION scaling is now the opposite problem.
+        // PLANET_MIN_SEPARATION is only a soft target several of the 10 sector
+        // layout patterns don't actually honor for every pair - checked directly,
+        // real inter-planet gaps as low as ~11,000 units exist on some maps/layouts -
+        // so a unit sitting at home, having never traveled anywhere, could already
+        // see a neighboring, uninvolved planet's entire garrison purely because the
+        // map happened to place it close by. And PLANET_SPREAD_MULTIPLIER is back
+        // down to 2 now anyway, so the original "hundreds of thousands of units
+        // apart" scale this was tuned for no longer applies.
+        //
+        // Standard Game/hot-seat now share the exact same fixed, combat-appropriate
+        // range getHomeDefenseVisionRange() uses (see its own comment) instead of a
+        // map-spread-scaled one - still real vision as a unit actually travels
+        // somewhere, just not enough to reveal a whole distant, un-traveled-to
+        // planet for free from a standing start. Campaign Mode keeps the original
+        // flat values untouched - its own layout is deliberately compact and was
+        // never part of either of these reports.
         function getEffectiveSightRange(country, hasRadar) {
-            let base;
             if (gameState.campaignActive) {
-                base = hasRadar ? RADAR_SIGHT_RANGE : UNIT_SIGHT_RANGE;
-            } else {
-                base = hasRadar ? PLANET_MIN_SEPARATION * 0.7 : PLANET_MIN_SEPARATION * 0.35;
+                const base = hasRadar ? RADAR_SIGHT_RANGE : UNIT_SIGHT_RANGE;
+                return (country && country.researchedTech.has('extended_sensors')) ? Math.round(base * 1.5) : base;
             }
-            return (country && country.researchedTech.has('extended_sensors')) ? Math.round(base * 1.5) : base;
+            return getHomeDefenseVisionRange(country, hasRadar);
         }
 
         // Direct report: "I can see enemy troops when i play a map from far
@@ -2403,6 +2414,13 @@
         // genuine incoming threat is still spotted with room to spare, but
         // a distant nation that never approaches stays hidden like any
         // other unengaged enemy.
+        //
+        // Now also reused as getEffectiveSightRange()'s own Standard Game/
+        // hot-seat base (see that function's own, later comment) - the exact
+        // same "not enough to see a whole distant planet from a standing
+        // start" reasoning applies equally to a mobile unit's own sight as
+        // it does to home vision, so there's no reason for the two to be
+        // different scales.
         const HOME_DEFENSE_VISION_RANGE = 3000;
         function getHomeDefenseVisionRange(country, hasRadar) {
             const base = hasRadar ? HOME_DEFENSE_VISION_RANGE * 2 : HOME_DEFENSE_VISION_RANGE;
@@ -5321,7 +5339,19 @@
                         this.resources >= TECH_TREE[id].cost
                     );
                     if (available.length > 0) {
-                        this.startResearch(available[Math.floor(Math.random() * available.length)]);
+                        // Direct report: "why aren't the planets and aliens
+                        // mining and using their mining ships" - a uniform
+                        // random pick among ~13 available nodes let a nation
+                        // go many, many research cycles (each 60-120 real
+                        // seconds, one at a time) without ever landing on the
+                        // one node that unlocks their entire mining economy in
+                        // the first place. Prioritized here, once, ahead of
+                        // the still-uniform-random pick among everything
+                        // else - not a separate roll/chance, so this doesn't
+                        // change how OFTEN a nation starts new research, just
+                        // which one it starts first.
+                        const pick = available.includes('mining_ops') ? 'mining_ops' : available[Math.floor(Math.random() * available.length)];
+                        this.startResearch(pick);
                     }
                 }
                 if (this.canBuildUnit('miningship') && this.resources >= 80 && Math.random() < AI_MINING_SHIP_CHANCE) {
@@ -8916,6 +8946,15 @@
             // gameState.selectedUnits.length > 0). Cost is deducted only
             // here, once a valid spot is actually clicked.
             if (gameState.actionMode === 'placeCannon') {
+                // Direct report: "the pause button... does not pause actual
+                // game" - initiateCannonPlacement() (the build button) already
+                // refuses to ARM this mode while paused, but if it was armed
+                // BEFORE the player paused, this actual placement step (spends
+                // resources, creates the cannon) had no pause check of its own.
+                if (gameState.paused) {
+                    alert('Game is paused - unpause to give orders.');
+                    return;
+                }
                 const home = gameState.playerCountry.island;
                 const dist = Math.hypot(worldX - home.x, worldY - home.y);
                 if (dist > CANNON_PLACEMENT_MAX_RANGE) {
