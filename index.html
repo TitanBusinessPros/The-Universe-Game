@@ -42,6 +42,10 @@
             display: block;
             background: #000000;
             cursor: crosshair;
+            /* Without this, a touch drag on mobile also scrolls/pans the
+               browser page itself and can trigger pinch-zoom, fighting the
+               custom touchstart/touchmove/touchend gesture handling below. */
+            touch-action: none;
         }
         #loadingScreen {
             position: fixed;
@@ -61,6 +65,17 @@
         #loadingScreen h1 {
             text-shadow: 0 0 10px #00ff00;
             margin-bottom: 20px;
+            /* #loadingScreen h1 is a flex item inside a flex column
+               container; flex items default to min-width:auto, which
+               equals the text's un-wrapped intrinsic width - on a narrow
+               phone that's wider than the screen, so the browser let it
+               overflow off both edges instead of wrapping. min-width:0
+               lets it shrink to the container and actually wrap;
+               clamp()'d font-size plus a percentage max-width keeps it
+               comfortably inside the screen at any viewport size. */
+            min-width: 0;
+            max-width: 92vw;
+            font-size: clamp(18px, 6vw, 32px);
         }
         #loadingBarOuter {
             width: 420px;
@@ -122,6 +137,20 @@
         }
         @media (max-width: 560px) {
             .modeGrid { grid-template-columns: 1fr; }
+            /* Direct report: the "AFTER EARTH" title overflowed past its own
+               panel's rounded edges on a narrow phone screen - 34px text
+               with 4px letter-spacing simply doesn't fit inside a ~640px
+               panel's own padding once that panel has shrunk to fit a
+               ~390px-wide phone. Smaller text/spacing and tighter side
+               padding (still a real gutter, just not 40px of it) fixes it
+               at the source instead of letting it spill out. */
+            #startScreen, .overlayPanel {
+                padding: 24px 16px;
+            }
+            .brandMark h1 {
+                font-size: 26px;
+                letter-spacing: 2px;
+            }
         }
         .modeCard {
             border: 1px solid rgba(0,255,0,0.35);
@@ -434,6 +463,17 @@
             position: fixed;
             top: 10px;
             right: 10px;
+            /* The generic "button" element-selector rule further down this
+               file sets width: 100% and has no competing width rule to
+               beat here (specificity
+               only matters when two rules touch the same property), so
+               without an explicit width this fixed-position button
+               stretched to the full viewport width instead of hugging its
+               own text - on a narrow phone that meant a yellow-bordered
+               bar spanning almost the entire screen, overlapping whatever
+               screen was open underneath it (start screen included, since
+               #uiToggle has no gameplay-only visibility gating). */
+            width: auto;
             background: rgba(0, 0, 0, 0.9);
             color: #ffff00;
             border: 2px solid #ffff00;
@@ -617,6 +657,23 @@
             font-style: italic;
             text-decoration: line-through;
             opacity: 0.7;
+        }
+        /* Direct report (mobile-friendliness pass): #legend/#controls had no
+           display:none gating at all - unlike #ui, they were visible from
+           the moment the page loaded, bleeding through behind every start/
+           setup screen (the country-select, map-select, and video/ad
+           screens all showed this real gameplay info panel and the HOME/
+           VIEW ALL buttons underneath them). Barely noticeable at a wide
+           desktop resolution where the centered modal never reaches the
+           fixed bottom corners, but a mobile-width modal is nearly full-
+           width and visibly overlaps both. Same .visible-class convention
+           #ui already uses - shown only once enterGameplay() actually runs.
+        */
+        #legend, #controls, #uiToggle {
+            display: none;
+        }
+        #legend.visible, #controls.visible, #uiToggle.visible {
+            display: block;
         }
         #legend {
             position: absolute;
@@ -1156,6 +1213,15 @@
         // alongside enableSoundAutomatically() (2026-09-03) so that new "once the map
         // starts" behavior lives in exactly one place rather than four copies.
         function enterGameplay() {
+            // Direct report: the in-game info/legend panel and HOME/VIEW ALL
+            // buttons had no visibility gating at all - see #legend/#controls'
+            // own CSS comment. This is the one shared entry point every mode
+            // (Standard Game, hot-seat, Campaign, Continue) actually reaches
+            // once real gameplay begins, so it's the right single place to
+            // reveal them.
+            document.getElementById('legend').classList.add('visible');
+            document.getElementById('controls').classList.add('visible');
+            document.getElementById('uiToggle').classList.add('visible');
             startMusic();
             whenImagesReady(() => {
                 enableSoundAutomatically();
@@ -8574,6 +8640,20 @@
                 return;
             }
 
+            // Tap-to-select (direct report: "I can't press on a ship after building it
+            // and click on another part of the map to send it") - previously the only
+            // way to select a single unit was to drag a marquee box around it; a plain
+            // tap/click directly on one of your own units with nothing already selected
+            // did nothing but update the hover inspector. Now a plain click on your own
+            // unit selects it, exactly like clicking it inside a selection box would.
+            if (!gameState.actionMode && gameState.selectedUnits.length === 0) {
+                const ownUnit = gameState.playerCountry.units.find(u => u.isHovered(worldX, worldY));
+                if (ownUnit) {
+                    selectUnit(ownUnit);
+                    return;
+                }
+            }
+
             // Smart-click: if units are selected but no MOVE/ATTACK mode was explicitly armed
             // (via the buttons), decide automatically based on what's under the cursor - click an
             // enemy unit or building to attack it, click empty space to move there. This lets the
@@ -9092,6 +9172,108 @@
             
             camera.x += worldXBefore - worldXAfter;
             camera.y += worldYBefore - worldYAfter;
+        }, { passive: false });
+
+        // ---- Mobile touch controls (2026-09-12, per direct request) ----
+        // "I can't press on a ship after building it and click on another part
+        // of the map to send it. I want to hold down with my finger on mobile
+        // and put a box over my troops and activate all the troops in that
+        // box." Rather than duplicate all the click/drag logic above, a touch
+        // gesture is classified here and then replayed as the exact same
+        // synthetic MouseEvents the handlers above already expect and are
+        // already tested against - so every existing rule (smart-click,
+        // attack-range checks, cannon placement, minimap drag-select, camera
+        // panning) keeps working identically for a finger as for a mouse.
+        //
+        // Gesture rules for a single finger on the canvas:
+        //   - Quick tap (released before the long-press delay, without
+        //     dragging past the move threshold) -> a plain 'click' at that
+        //     spot, same as a mouse click (selects a unit, issues a move/
+        //     attack order, etc.)
+        //   - Press, then drag right away (before the long-press delay) ->
+        //     camera pan, same as a right-mouse-button drag.
+        //   - Press and HOLD still past the long-press delay, THEN drag ->
+        //     marquee box-select, same as a left-mouse-button drag.
+        const TOUCH_LONG_PRESS_MS = 400;
+        const TOUCH_DRAG_THRESHOLD = 10;
+        let touchGestureMode = null; // null | 'pending' | 'select' | 'pan'
+        let touchStartClientX = 0;
+        let touchStartClientY = 0;
+        let touchLongPressTimer = null;
+
+        function dispatchSyntheticMouseEvent(type, clientX, clientY, button) {
+            canvas.dispatchEvent(new MouseEvent(type, {
+                clientX, clientY, button, bubbles: true, cancelable: true,
+            }));
+        }
+
+        canvas.addEventListener('touchstart', (e) => {
+            if (!gameState.gameStarted) return;
+            if (e.touches.length !== 1) return;
+            e.preventDefault();
+
+            const touch = e.touches[0];
+            touchStartClientX = touch.clientX;
+            touchStartClientY = touch.clientY;
+            touchGestureMode = 'pending';
+
+            clearTimeout(touchLongPressTimer);
+            touchLongPressTimer = setTimeout(() => {
+                if (touchGestureMode === 'pending') {
+                    touchGestureMode = 'select';
+                    dispatchSyntheticMouseEvent('mousedown', touchStartClientX, touchStartClientY, 0);
+                }
+            }, TOUCH_LONG_PRESS_MS);
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', (e) => {
+            if (!gameState.gameStarted || touchGestureMode === null) return;
+            if (e.touches.length !== 1) return;
+            e.preventDefault();
+
+            const touch = e.touches[0];
+
+            if (touchGestureMode === 'pending') {
+                const dist = Math.hypot(touch.clientX - touchStartClientX, touch.clientY - touchStartClientY);
+                if (dist > TOUCH_DRAG_THRESHOLD) {
+                    clearTimeout(touchLongPressTimer);
+                    touchGestureMode = 'pan';
+                    // Start the pan drag from the original touch-down point so the
+                    // very first move delta is measured from where the finger
+                    // actually landed, not from wherever it's dragged to already.
+                    dispatchSyntheticMouseEvent('mousedown', touchStartClientX, touchStartClientY, 2);
+                    dispatchSyntheticMouseEvent('mousemove', touch.clientX, touch.clientY, 2);
+                }
+                return;
+            }
+
+            dispatchSyntheticMouseEvent('mousemove', touch.clientX, touch.clientY, touchGestureMode === 'select' ? 0 : 2);
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', (e) => {
+            if (!gameState.gameStarted || touchGestureMode === null) return;
+            e.preventDefault();
+            clearTimeout(touchLongPressTimer);
+
+            const touch = e.changedTouches[0];
+
+            if (touchGestureMode === 'select') {
+                dispatchSyntheticMouseEvent('mouseup', touch.clientX, touch.clientY, 0);
+            } else if (touchGestureMode === 'pan') {
+                dispatchSyntheticMouseEvent('mouseup', touch.clientX, touch.clientY, 2);
+            } else {
+                // Never left 'pending' - a quick tap with no real drag and no
+                // long-press-triggered select. Fire the plain click the mouse
+                // path would have, at the release point.
+                dispatchSyntheticMouseEvent('click', touch.clientX, touch.clientY, 0);
+            }
+
+            touchGestureMode = null;
+        }, { passive: false });
+
+        canvas.addEventListener('touchcancel', () => {
+            clearTimeout(touchLongPressTimer);
+            touchGestureMode = null;
         }, { passive: false });
 
         window.addEventListener('resize', () => {

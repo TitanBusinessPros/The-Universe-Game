@@ -777,7 +777,7 @@ const KNOWN_GLOBALS = new Set([
     'clearInterval', 'requestAnimationFrame', 'cancelAnimationFrame', 'Promise', 'Proxy', 'Map',
     'Set', 'WeakMap', 'WeakSet', 'Symbol', 'fetch', 'alert', 'confirm', 'prompt', 'console',
     'Image', 'Audio', 'Function', 'structuredClone', 'Blob', 'File', 'FileReader', 'URL',
-    'XMLHttpRequest', 'FormData', 'Worker', 'Notification',
+    'XMLHttpRequest', 'FormData', 'Worker', 'Notification', 'MouseEvent', 'TouchEvent',
 ]);
 
 // Persisted snapshot so a future run can report "N functions added" / "these
@@ -3558,6 +3558,36 @@ check('blendToward() blends toward an arbitrary target color, not just white - l
     if (blendToward('0,0,0', '255,0,0', 0) !== '0,0,0') problems.push('expected a zero blend to leave the original color unchanged');
     if (lightenRgb('0,0,0', 1) !== '255,255,255') problems.push('expected lightenRgb() to still blend toward pure white');
     return problems;
+});
+
+// ---------- Mobile-friendliness pass (2026-09-12) ----------
+// Direct report: the in-game info/legend panel and HOME/VIEW ALL buttons had
+// no visibility gating at all, bleeding through behind every start/setup
+// screen. Barely noticeable on a wide desktop screen; visibly overlapping on
+// a narrow mobile one, where the centered modal is nearly full-width.
+
+check('#legend, #controls and #uiToggle are hidden until enterGameplay() actually runs, not visible from page load', () => {
+    const problems = [];
+    document.getElementById('legend').classList.remove('visible');
+    document.getElementById('controls').classList.remove('visible');
+    document.getElementById('uiToggle').classList.remove('visible');
+    if (!html.includes('#legend, #controls, #uiToggle') || !/#legend,\s*#controls,\s*#uiToggle\s*\{\s*display:\s*none;/.test(html)) {
+        problems.push('expected #legend/#controls/#uiToggle to default to display:none in the raw CSS');
+    }
+    enterGameplay();
+    if (!document.getElementById('legend').classList.contains('visible')) problems.push('expected enterGameplay() to reveal #legend');
+    if (!document.getElementById('controls').classList.contains('visible')) problems.push('expected enterGameplay() to reveal #controls');
+    if (!document.getElementById('uiToggle').classList.contains('visible')) problems.push('expected enterGameplay() to reveal #uiToggle');
+    return problems;
+});
+
+check('#uiToggle ("MENU" button) has an explicit width so the generic `button { width: 100%; }` rule cannot stretch this position:fixed button across the whole viewport - direct mobile-friendliness bug: it spanned nearly the full screen width, overlapping the start screen', () => {
+    const uiToggleBlockMatch = html.match(/#uiToggle\s*\{[^}]*\}/);
+    if (!uiToggleBlockMatch) return ['could not find the #uiToggle CSS rule'];
+    if (!/width:\s*auto/.test(uiToggleBlockMatch[0])) {
+        return ['expected #uiToggle to set an explicit width (e.g. width: auto) to override the generic full-width button rule'];
+    }
+    return [];
 });
 
 // ---------- 24. UI selection / mode-switching (2026-08-27) ----------
