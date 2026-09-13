@@ -6864,6 +6864,72 @@ check('applySaveData() falls back to a country\'s existing exploredRegions (not 
     return problems;
 });
 
+// ---------- 25. Exit-confirmation prompt (2026-09-13) ----------
+//    Direct request: "put a button... when you go out of your game on
+//    purpose or accident that pops up and ask if you really want to exit
+//    the game." Implemented as a standard 'beforeunload' listener (the only
+//    web-platform mechanism for this - modern browsers show their own fixed
+//    "leave this page?" wording regardless of what a page sets, so there's
+//    no custom button/text to test beyond arming/disarming it correctly).
+
+check("beforeunload prompts to confirm leaving while a real match is in progress, and doesn't before/after one", () => {
+    const problems = [];
+
+    function firesPrompt() {
+        const event = new window.Event('beforeunload', { cancelable: true });
+        window.dispatchEvent(event);
+        return event.defaultPrevented || event.returnValue === '';
+    }
+
+    gameState.gameStarted = false;
+    gameState.gameOver = false;
+    if (firesPrompt()) problems.push('expected no prompt before a match has even started');
+
+    gameState.gameStarted = true;
+    gameState.gameOver = false;
+    if (!firesPrompt()) problems.push('expected a prompt while a match is genuinely in progress');
+
+    gameState.gameOver = true; // showGameOver() sets this
+    if (firesPrompt()) problems.push('expected no prompt once the match has ended (showGameOver already ran)');
+
+    gameState.gameStarted = false;
+    gameState.gameOver = false;
+    return problems;
+});
+
+check('enterGameplay() resets gameOver to false, so a fresh match after a previous one ended re-arms the exit prompt', () => {
+    gameState.gameOver = true;
+    enterGameplay();
+    const problems = gameState.gameOver ? ['expected enterGameplay() to reset gameState.gameOver to false'] : [];
+    gameState.gameOver = false;
+    return problems;
+});
+
+check('showGameOver() sets gameOver to true, disarming the exit prompt once there\'s nothing left to lose', () => {
+    const island = new Island(0, 0, 0);
+    const country = new Country(0, 'GameOverTest', '#ff0000', island, true);
+    gameState.countries = [country];
+    gameState.playerCountry = country;
+    gameState.humanCountryIds = [0];
+    gameState.campaignActive = false;
+    gameState.gameOver = false;
+    showGameOver(true, 'Test victory');
+    const problems = gameState.gameOver ? [] : ['expected showGameOver() to set gameState.gameOver to true'];
+    gameState.gameOver = false;
+    return problems;
+});
+
+check('newGame() and the post-campaign "RETURN TO MENU" button both set gameOver before reloading, so the already-confirmed exit doesn\'t also trigger the beforeunload prompt', () => {
+    const problems = [];
+    if (!/confirm\('Start a new game[^']*'\)\)\s*\{\s*clearAutosave\(\);\s*gameState\.gameOver = true;.*\r?\n\s*location\.reload\(\);/.test(script)) {
+        problems.push('expected newGame() to set gameState.gameOver = true immediately before location.reload()');
+    }
+    if (!/clearCampaignProgress\(\);\s*gameState\.gameOver = true;.*\r?\n\s*location\.reload\(\);/.test(script)) {
+        problems.push('expected the post-campaign "RETURN TO MENU" handler to set gameState.gameOver = true immediately before location.reload()');
+    }
+    return problems;
+});
+
 // Removed 2026-09-07 per direct report: two 2026-09-05 tests here asserted
 // #ui (the build/unit menu panel) could never overlap the minimap, and must
 // anchor a fixed `bottom` clear of #controls. Both codified a "fix" for

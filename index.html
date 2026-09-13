@@ -1236,6 +1236,12 @@
             document.getElementById('legend').classList.add('visible');
             document.getElementById('controls').classList.add('visible');
             document.getElementById('uiToggle').classList.add('visible');
+            // Direct request: warn before leaving/closing the tab while a
+            // real match is in progress, on purpose or by accident - reset
+            // here (the one shared entry point every mode reaches) so a
+            // fresh match always re-arms it, even right after a previous
+            // one ended (showGameOver() turns it back off).
+            gameState.gameOver = false;
             startMusic();
             whenImagesReady(() => {
                 enableSoundAutomatically();
@@ -3197,6 +3203,12 @@
             actionMode: null,
             hoveredUnit: null,
             gameStarted: false,
+            // Direct request: warn before leaving/closing the tab while a
+            // match is genuinely in progress - see the 'beforeunload'
+            // listener below. False here (not yet game-started at all);
+            // enterGameplay() also resets it false for a fresh match,
+            // showGameOver() sets it true once there's nothing left to lose.
+            gameOver: false,
             selectionBox: null,
             isSelecting: false,
             turnTimeRemaining: TURN_TIME_SECONDS,
@@ -7017,6 +7029,7 @@
 
         function showGameOver(victory, message) {
             gameState.paused = true;
+            gameState.gameOver = true; // stop warning before leaving - there's nothing left to lose
             clearAutosave(); // don't offer "Continue" into a game that's already over
             if (victory) playEndgameSound(); // per direct request - only a real win, never a defeat
 
@@ -7712,6 +7725,7 @@
                 btn.textContent = '🏠 RETURN TO MENU';
                 btn.onclick = () => {
                     clearCampaignProgress();
+                    gameState.gameOver = true; // deliberate exit - don't also show the leave-page prompt
                     location.reload();
                 };
             } else {
@@ -7813,6 +7827,7 @@
         function newGame() {
             if (confirm('Start a new game? Current progress will be lost.')) {
                 clearAutosave();
+                gameState.gameOver = true; // already confirmed above - don't also show the leave-page prompt
                 location.reload();
             }
         }
@@ -9404,6 +9419,29 @@
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
+        });
+
+        // Direct request: "put a button... when you go out of your game on
+        // purpose or accident that pops up and ask if you really want to
+        // exit the game" - closing the tab, refreshing, or navigating away
+        // while a real match is in progress (armed by enterGameplay(),
+        // disarmed by showGameOver() and every deliberate "leave on
+        // purpose" action above that already asked its own confirm()) shows
+        // the browser's own native "leave this page?" confirmation.
+        //
+        // A real, standard-compliant limitation, not a bug here: modern
+        // browsers (desktop and mobile alike) removed the ability for a
+        // page to set its own custom message years ago - `e.returnValue`
+        // just has to be set to something, and the browser always shows
+        // its own fixed wording instead. Desktop Chrome/Firefox/Edge all
+        // honor this reliably; mobile support is inconsistent by design of
+        // the OS/browser, not something fixable from page script - iOS
+        // Safari in particular often won't show it at all for a tab close
+        // or a back-gesture, only for certain in-page reloads/navigations.
+        window.addEventListener('beforeunload', (e) => {
+            if (!gameState.gameStarted || gameState.gameOver) return;
+            e.preventDefault();
+            e.returnValue = '';
         });
 
         // Show a real loading screen instead of dumping the player onto the start screen while
