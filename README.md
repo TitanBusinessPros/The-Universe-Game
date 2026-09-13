@@ -33,12 +33,23 @@ file.
   seconds (AI builds/moves/attacks on its turn), but mining income and
   research both tick continuously in real time (frame-rate independent),
   regardless of whose turn it is.
-- **Pause** — single-player Standard Game and Campaign only (not hot-seat,
-  since mining/research share one real-time clock across every human seat;
-  pausing would freeze it for everyone, not just you). Actually stops the
-  whole simulation, not just the turn clock — movement, mining/research, AI
-  turns, and every order-issuing action (move, attack, cannon placement)
-  all refuse to do anything while paused, not only the auto-turn countdown.
+- **Pause** ("⏸️ PAUSE GAME" button, renamed 2026-09-13 from "PAUSE TIMER"
+  since that label undersold what it does) — single-player Standard Game
+  and Campaign only (not hot-seat, since mining/research share one
+  real-time clock across every human seat; pausing would freeze it for
+  everyone, not just you). Actually stops the whole simulation, not just
+  the turn clock — movement, mining/research, AI turns, and every
+  order-issuing action (move, attack, cannon placement) all refuse to do
+  anything while paused, not only the auto-turn countdown. **Under live
+  investigation as of 2026-09-13**: a direct report ("enemy ships still
+  moving toward my planet, resources keep going up" while paused) has not
+  been reproduced despite extensive testing - jsdom, a real local browser,
+  and the actual deployed production site with real network asset loading
+  and real wall-clock time, including Android-Chrome-emulated touch input -
+  all show the simulation fully frozen. A temporary on-screen diagnostic
+  banner (`#debugHud`/`updateDebugHud()`, called first in `gameLoop()`
+  before any pause gating) is live to capture hard evidence directly from
+  an affected device; remove it once the real cause is found.
 - **Vision/sight range** is deliberately modest in Standard Game/hot-seat
   (`getHomeDefenseVisionRange()`/`getEffectiveSightRange()`) — enough to
   spot a real threat as a unit or homeworld actually gets close to one, but
@@ -153,12 +164,19 @@ file.
   classifying the gesture and replaying it as the exact same synthetic
   `MouseEvent`s the desktop mouse handlers already use, so every existing
   rule works identically for a finger as for a mouse.
-- **Exit confirmation** — closing the tab, refreshing, or navigating away
-  while a match is genuinely in progress triggers the browser's own
-  "leave this page?" prompt (a standard `beforeunload` listener, armed by
-  `enterGameplay()` and disarmed by `showGameOver()`). Browsers control the
-  actual wording; mobile support for this prompt is inherently inconsistent
-  across browsers (a platform limitation, not something a page can fix).
+- **Exit confirmation** — two independent layers. Closing the tab,
+  refreshing, or navigating away while a match is genuinely in progress
+  triggers the browser's own "leave this page?" prompt (a standard
+  `beforeunload` listener, armed by `enterGameplay()` and disarmed by
+  `showGameOver()`); browsers control the actual wording, and mobile
+  support for this specific prompt is inherently inconsistent across
+  browsers (a platform limitation, not something a page can fix). A real
+  in-game **EXIT button** (`#exitGameBtn`, added 2026-09-13, always visible
+  in the bottom-right controls on both desktop and mobile) covers the gap -
+  a plain `confirm()` dialog independent of any browser/OS quirk; declining
+  leaves the match untouched, confirming reloads back to the start screen
+  without clearing the autosave (unlike "NEW GAME", which explicitly
+  abandons progress).
 - Vessel-class ships (`isVessel()`) are the ones that fly through open space
   and collide with planets, as opposed to ground units or aircraft — named
   "vessel" rather than "naval" on purpose, since this is a space game.
@@ -240,9 +258,25 @@ not part of this repo's own folder structure.
 
 ## Known gaps / roadmap
 
+- **Pause reported as still not fully working by at least one player**
+  ("enemy ships still moving toward my planet, resources keep going up"
+  while paused) as of 2026-09-13, not yet reproduced despite testing
+  against the real deployed site with real network/timing on both desktop
+  and Android-Chrome-emulated touch. A temporary `#debugHud` diagnostic
+  banner is live to capture evidence from an affected device - see the
+  Pause bullet above. Remove `#debugHud`/`updateDebugHud()` (and their
+  regression tests) once resolved.
 - No networked multiplayer yet — hot-seat is local-only groundwork for it.
   Firebase/backend work is tracked separately (nothing has actually been set
   up yet — no Firebase files/config exist anywhere in this repo's history).
+  A lightweight, throttled Firestore diagnostic-logging layer (write-only,
+  no realtime listeners, comfortably within the free Spark tier) was
+  discussed as a possible next step for the pause investigation above if
+  the debug HUD doesn't resolve it - not yet built, pending the game owner
+  actually creating a Firebase project. Explicitly NOT the same cost profile
+  as full realtime multiplayer sync (separately estimated at "thousands of
+  dollars monthly" from listener read fan-out) - a write-only heartbeat is
+  orders of magnitude cheaper.
 - Hot-seat has no menu entry point yet (`startHotSeatGame()` exists and is
   tested, but nothing in the UI calls it).
 - "Naval" terminology has been retired from the vessel-class system
