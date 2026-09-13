@@ -8648,6 +8648,15 @@
             // unit selects it, exactly like clicking it inside a selection box would.
             if (!gameState.actionMode && gameState.selectedUnits.length === 0) {
                 const ownUnit = gameState.playerCountry.units.find(u => u.isHovered(worldX, worldY));
+                if (window.__TAP_SELECT_DEBUG) {
+                    console.log('[tap-select-debug]', JSON.stringify({
+                        worldX, worldY, screenX, screenY, clientX: e.clientX, clientY: e.clientY,
+                        camera: { x: camera.x, y: camera.y, zoom: camera.zoom },
+                        canvas: { width: canvas.width, height: canvas.height },
+                        found: !!ownUnit,
+                        units: gameState.playerCountry.units.map(u => ({ type: u.type, x: u.x, y: u.y, size: u.getSize() })),
+                    }));
+                }
                 if (ownUnit) {
                     selectUnit(ownUnit);
                     return;

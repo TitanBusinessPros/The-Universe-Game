@@ -119,9 +119,11 @@ async function runForEngine(engineName) {
     // page reload mid-setup and broke every scenario - caught by running this
     // suite locally before it ever reached CI.
     page.on('dialog', d => { if (d.type() === 'alert') d.accept(); else d.dismiss(); });
+    page.on('console', msg => { if (msg.text().startsWith('[tap-select-debug]')) console.log(`[${engineName}]`, msg.text()); });
 
     const absoluteGamePath = path.resolve(GAME_PATH);
     await page.goto('file:///' + absoluteGamePath.replace(/\\/g, '/'));
+    await page.evaluate(() => { window.__TAP_SELECT_DEBUG = true; });
 
     const tag = (name) => `[${engineName}] ${name}`;
 
