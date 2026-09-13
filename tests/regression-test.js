@@ -5999,6 +5999,28 @@ check('chooseMap() applies the chosen sector\'s planet layout before starting th
     return problems;
 });
 
+check('chooseMap() keeps every resource deposit tied to its planet\'s NEW position, not left behind at the old uniform-scatter spot - direct report: "the Bloodgold mines are gone"', () => {
+    const problems = [];
+    gameState.countries = [];
+    vm.runInContext('initGame();', context, { filename: 'choosemap-deposit-setup.js' });
+    pendingCountryIdx = 0;
+    chooseMap(2); // Sector 3 - ring layout, drastically different from the uniform scatter initGame() seeded
+    gameState.countries.forEach(country => {
+        const nearestDist = resourceDeposits.reduce((best, d) => {
+            const dist = Math.hypot(d.x - country.island.x, d.y - country.island.y);
+            return best === null ? dist : Math.min(best, dist);
+        }, null);
+        if (nearestDist === null) { problems.push(`no resource deposits exist at all after chooseMap()`); return; }
+        // The guaranteed "near home" deposit sits at island.size + 120 from
+        // center (see spawnResourceDeposits()) - a generous multiple of that
+        // catches it without hardcoding the exact formula here.
+        if (nearestDist > country.island.size * 3) {
+            problems.push(`${country.name}'s nearest deposit is ${nearestDist.toFixed(0)} units away (island.size ${country.island.size.toFixed(0)}) - looks left behind at the old pre-reposition spot, not moved with the planet`);
+        }
+    });
+    return problems;
+});
+
 check('spawnResourceDeposits() scatters extra deposits across the real galaxy bounds (getGalaxyBounds()), not a fixed MAP_WIDTH/MAP_HEIGHT box', () => {
     const problems = [];
     // Countries placed well outside the old fixed [0,MAP_WIDTH]x[0,MAP_HEIGHT] box -
@@ -6476,6 +6498,16 @@ check('the old in-game fog-of-war button is gone, replaced by one on the map-sel
         problems.push('expected the fog-of-war toggle button to live inside #mapSelectScreen, before the map grid');
     }
     return problems;
+});
+
+check('a fresh page load defaults fogOfWarEnabled to OFF, per direct follow-up request ("Start the games without fog of war on")', () => {
+    // Source check, not a live value read - every other check in this file
+    // freely reassigns the shared fogOfWarEnabled binding, so by this point
+    // in the suite it no longer reflects what a genuinely fresh page load
+    // would see. The declaration itself is the actual contract.
+    return /let fogOfWarEnabled = false;/.test(script)
+        ? []
+        : ['expected fogOfWarEnabled to be declared defaulting to false'];
 });
 
 check("toggleFogOfWar() updates the map-select screen's own button label", () => {

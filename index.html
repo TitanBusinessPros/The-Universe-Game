@@ -209,8 +209,21 @@
            other toggle in this game - #soundToggle etc.), not a checkbox -
            this page's global user-select:none rule assumes there are no real
            text inputs anywhere to protect. */
+        /* Direct follow-up report: "The fog of war option needs to be big so
+           people see it." Was inheriting the page's default small button
+           style (10px text, thin padding) - easy to miss on a screen full of
+           map cards. Sized and bordered to stand out clearly instead. */
         #fogOfWarPreGameToggle {
-            margin-bottom: 12px;
+            display: block;
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto 18px;
+            padding: 16px 20px;
+            font-size: 18px;
+            letter-spacing: 1px;
+            border: 3px solid #ffff00;
+            border-radius: 8px;
+            box-shadow: 0 0 18px rgba(255,255,0,0.35);
         }
         .mapCard {
             border: 1px solid rgba(0,255,0,0.35);
@@ -807,7 +820,7 @@
         <div id="mapSelectScreen" class="overlayPanel" style="display:none; max-width:900px;">
             <h1>🗺️ CHOOSE YOUR MAP 🗺️</h1>
             <p style="margin-bottom:10px;">Every map is its own galaxy - different odds, different hazards.</p>
-            <button id="fogOfWarPreGameToggle" onclick="toggleFogOfWar()" style="background: #556b2f;">🌫️ FOG OF WAR ON</button>
+            <button id="fogOfWarPreGameToggle" onclick="toggleFogOfWar()" style="background: #556b2f;">🌍 FOG OF WAR OFF</button>
             <div id="mapGrid" class="mapGrid"></div>
             <button class="countryBtn" style="margin-top:10px; text-align:center; background:#888; border-color:#888;" onclick="closeMapSelect()">← Back</button>
         </div>
@@ -1022,11 +1035,12 @@
 
         // Fog of war (2026-09-04, per direct request) - Standard Game/hot-seat only,
         // never Campaign mode (see updateFogOfWar()'s own guard and drawMinimap()'s
-        // rendering checks). Defaults on since it's the feature being added; the
-        // toggle (toggleFogOfWar()) lets a player turn it back off. Harmless to leave
-        // true during Campaign - every check that matters is itself gated on
+        // rendering checks). Direct follow-up request (2026-09-12): "Start the games
+        // without fog of war on" - defaults OFF now; the map-select screen's own
+        // toggle (toggleFogOfWar()) lets a player turn it on for that game. Harmless
+        // either way during Campaign - every check that matters is itself gated on
         // !gameState.campaignActive, so this setting simply has no effect there.
-        let fogOfWarEnabled = true;
+        let fogOfWarEnabled = false;
         // Start-screen intro music (2026-09-03, per direct request, track swapped to
         // "The Last Order Standing.mp3" the same day per a direct follow-up - was
         // "Humanity Does Not Disappear.mp3") - starts as the game loads (initAudio()
@@ -5928,6 +5942,15 @@
             spawnGalaxyBounty();
             spawnHotsun();
             spawnBlackHole();
+            // Direct report: "the Bloodgold mines are gone" - resource
+            // deposits (the guaranteed one near every home planet, plus the
+            // scattered extras) were placed by initGame() relative to the
+            // ORIGINAL uniform-scatter positions and never got moved along
+            // with the planets above - every "near home" deposit was left
+            // sitting exactly where a planet USED to be, tens of thousands of
+            // units from wherever that planet actually ended up in a
+            // non-uniform layout. Same idempotent re-spawn as the landmarks.
+            spawnResourceDeposits();
         }
 
         function initGame() {
