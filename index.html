@@ -690,6 +690,40 @@
         #legend.visible, #controls.visible, #uiToggle.visible {
             display: block;
         }
+        /* TEMPORARY diagnostic tool (2026-09-13) - see updateDebugHud(), called
+           unconditionally at the very top of gameLoop() every single frame,
+           BEFORE the gameState.paused check, so it can never itself be
+           silenced by whatever bug it's trying to catch. Added specifically
+           because a live, repeated report ("enemy ships still moving toward
+           my planet, resources keep going up") directly contradicts every
+           test run against the real deployed site (desktop and Android-
+           Chrome-emulated touch, both against production, both with real
+           wall-clock time) - since remote testing can't reproduce it, this
+           puts hard, live numbers on the player's own screen instead, to
+           screenshot/record at the moment it actually happens. Not a
+           "PAUSE GAME"-adjacent UI element - a separate, own display:none/
+           .visible pair (not folded into #legend/#controls/#uiToggle's
+           shared selector above) so it can be removed later without risking
+           that group's own regression check. Remove once the real cause is found. */
+        #debugHud {
+            display: none;
+        }
+        #debugHud.visible {
+            display: block;
+        }
+        #debugHud {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(80, 0, 0, 0.9);
+            color: #00ff00;
+            font: bold 12px 'Courier New', monospace;
+            padding: 4px 8px;
+            z-index: 100000;
+            text-align: center;
+            pointer-events: none;
+        }
         #legend {
             /* Direct report: "The drop down timer on mobile disappears off
                screen when i minimize it." This box used to be absolutely
@@ -1128,6 +1162,9 @@
             <button onclick="viewAll()">🗺️ VIEW ALL</button>
             <button onclick="confirmExitGame()" id="exitGameBtn">🚪 EXIT</button>
         </div>
+
+        <!-- TEMPORARY diagnostic tool - see its CSS comment and updateDebugHud(). -->
+        <div id="debugHud"></div>
         
         <div id="campaignObjectivesPanel">
             <div id="campaignObjectivesHeader" onclick="toggleCampaignObjectives()">
@@ -1299,6 +1336,7 @@
             document.getElementById('legend').classList.add('visible');
             document.getElementById('controls').classList.add('visible');
             document.getElementById('uiToggle').classList.add('visible');
+            document.getElementById('debugHud').classList.add('visible');
             // Direct request: warn before leaving/closing the tab while a
             // real match is in progress, on purpose or by accident - reset
             // here (the one shared entry point every mode reaches) so a
@@ -8872,9 +8910,55 @@
             ctx.restore();
         }
 
+        // TEMPORARY diagnostic tool (2026-09-13, see #debugHud's own CSS
+        // comment for why) - called unconditionally as the very first thing
+        // in gameLoop(), every single frame, BEFORE the gameState.paused
+        // gate below, so this readout itself can never be silenced by
+        // whatever the real bug turns out to be. Tracks the nearest enemy
+        // unit's distance to the player's own homeworld, resampled once per
+        // real second, so "Δ/s" makes it immediately obvious whether
+        // anything is actually closing the distance right now - if pause is
+        // truly holding, this reads exactly "+0.0" no matter how long you
+        // wait. debugFrameCount incrementing at all proves the loop itself
+        // is alive (rules out "the whole tab froze" as a separate question
+        // from "is the SIMULATION paused").
+        let debugFrameCount = 0;
+        let debugLastSampleTime = 0;
+        let debugLastNearestDist = null;
+        let debugDistDeltaPerSec = 0;
+        function updateDebugHud() {
+            debugFrameCount++;
+            const el = document.getElementById('debugHud');
+            if (!el || !gameState.playerCountry) return;
+            const home = gameState.playerCountry.island;
+            let nearestDist = null;
+            gameState.countries.forEach(c => {
+                if (c.id === gameState.playerCountry.id) return;
+                c.units.forEach(u => {
+                    const d = Math.hypot(u.x - home.x, u.y - home.y);
+                    if (nearestDist === null || d < nearestDist) nearestDist = d;
+                });
+            });
+            const now = Date.now();
+            if (now - debugLastSampleTime > 1000) {
+                if (nearestDist !== null && debugLastNearestDist !== null) {
+                    debugDistDeltaPerSec = nearestDist - debugLastNearestDist;
+                }
+                debugLastNearestDist = nearestDist;
+                debugLastSampleTime = now;
+            }
+            const deltaText = (debugDistDeltaPerSec >= 0 ? '+' : '') + debugDistDeltaPerSec.toFixed(1);
+            el.textContent = `DEBUG  Frame:${debugFrameCount}  PAUSED:${gameState.paused ? 'YES' : 'NO'}  `
+                + `Turn:${gameState.turn} (${Math.ceil(gameState.turnTimeRemaining)}s)  `
+                + `Resources:${Math.floor(gameState.playerCountry.resources)}  `
+                + `NearestEnemy:${nearestDist !== null ? Math.round(nearestDist) : 'n/a'}u (Δ/s:${deltaText})`;
+            el.style.color = gameState.paused ? '#00ff00' : '#ffff00';
+        }
+
         function gameLoop() {
             if (!gameState.gameStarted) return;
-            
+
+            updateDebugHud();
             updateTimer();
             
             ctx.fillStyle = '#000000';

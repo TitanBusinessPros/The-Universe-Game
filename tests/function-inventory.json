@@ -139,6 +139,7 @@
     "toggleUI",
     "updateBlackHoles",
     "updateCampaignObjectivesPanel",
+    "updateDebugHud",
     "updateFogOfWar",
     "updateMiningAndResearch",
     "updateSpaceElements",
