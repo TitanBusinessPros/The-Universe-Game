@@ -2120,13 +2120,15 @@ check('populateMapGrid() renders one clickable card per MAP_CONFIGS entry into #
 });
 
 check('MAP_CONFIGS assigns each sector\'s numbered background image by sector number, not array position', () => {
-    // Direct request: "map-2 goes on stage two and so on" - only sectors 2-9
-    // have art so far; 1 and 10 should render without a thumbnail rather than
+    // Direct request: "map-2 goes on stage two and so on" - sectors 2-10
+    // have art (per direct follow-up request, Sector 10 got its own
+    // map-10.jpg; Sector 1 deliberately stays art-less, same as Campaign
+    // Mode's stages); 1 should render without a thumbnail rather than
     // silently reusing a neighbor's image.
     const problems = [];
     MAP_CONFIGS.forEach(map => {
         const sectorNum = map.id + 1;
-        if (sectorNum >= 2 && sectorNum <= 9) {
+        if (sectorNum >= 2 && sectorNum <= 10) {
             if (!map.imageUrl || !map.imageUrl.endsWith(`map-${sectorNum}.jpg`)) {
                 problems.push(`${map.name} (sector ${sectorNum}) should use map-${sectorNum}.jpg, got ${map.imageUrl}`);
             }
@@ -2528,6 +2530,8 @@ check('applyMapBackground() swaps the real in-game background image to the chose
     const problems = [];
     applyMapBackground(1); // Sector 2 - has art
     if (currentMapBackgroundSrc() !== MAP_IMAGE_URLS[2]) problems.push(`Sector 2 should use map-2.jpg, got ${currentMapBackgroundSrc()}`);
+    applyMapBackground(9); // Sector 10 - has art (added per direct follow-up request)
+    if (currentMapBackgroundSrc() !== MAP_IMAGE_URLS[10]) problems.push(`Sector 10 should use map-10.jpg, got ${currentMapBackgroundSrc()}`);
     applyMapBackground(0); // Sector 1 - no art yet
     if (currentMapBackgroundSrc()) problems.push(`Sector 1 has no art yet - should fall back to the default background, got ${currentMapBackgroundSrc()}`);
     applyMapBackground(1);
