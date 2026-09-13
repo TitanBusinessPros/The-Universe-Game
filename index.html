@@ -2362,6 +2362,31 @@
             return (country && country.researchedTech.has('extended_sensors')) ? Math.round(base * 1.5) : base;
         }
 
+        // Direct report: "I can see enemy troops when i play a map from far
+        // away... at their planet on one planet... not to see enemy troops
+        // unless they come into range." Unit.draw()'s own "your homeworld
+        // also grants vision around itself" fallback (so an enemy actively
+        // attacking your base is never invisible just because you have zero
+        // units built) was reusing getEffectiveSightRange() above - correctly
+        // tuned for SCOUTING with your own mobile units relative to how far
+        // apart planets actually are, but that same scale (13,000-27,000+
+        // units on Standard Game) is enormous next to any real attack range
+        // in the game (a maxed Defense Cannon's 2,500 is the highest). Two
+        // homeworlds landing within that scouting-scale distance of each
+        // other is common - checked all 10 Standard Game sectors, most have
+        // several such pairs - and every one permanently leaked that whole
+        // distant, uninvolved nation's static garrison into view, with zero
+        // player units anywhere near it. This is a separate, much smaller
+        // range sized just above the highest real attack range, so a
+        // genuine incoming threat is still spotted with room to spare, but
+        // a distant nation that never approaches stays hidden like any
+        // other unengaged enemy.
+        const HOME_DEFENSE_VISION_RANGE = 3000;
+        function getHomeDefenseVisionRange(country, hasRadar) {
+            const base = hasRadar ? HOME_DEFENSE_VISION_RANGE * 2 : HOME_DEFENSE_VISION_RANGE;
+            return (country && country.researchedTech.has('extended_sensors')) ? Math.round(base * 1.5) : base;
+        }
+
         // Reverted 2026-08-25 at the user's explicit request, back to the exact values
         // from immediately before the 2026-08-23 balance passes (commits 86ec2cf and
         // 4460bc5 - "Rebalance the 4 weakest nations' bonuses" / "Balance pass round 2:
@@ -4147,7 +4172,7 @@
                     if (!isVisible) {
                         const homeDist = Math.hypot(this.x - gameState.playerCountry.island.x, this.y - gameState.playerCountry.island.y);
                         const radarTower = gameState.playerCountry.island.buildings.find(b => b.name === 'Radar Tower');
-                        const homeSightRange = Math.min(getEffectiveSightRange(gameState.playerCountry, radarTower && !radarTower.destroyed), maxSight);
+                        const homeSightRange = Math.min(getHomeDefenseVisionRange(gameState.playerCountry, radarTower && !radarTower.destroyed), maxSight);
                         if (homeDist <= homeSightRange) isVisible = true;
                     }
 
@@ -8251,7 +8276,12 @@
                     }
                 });
                 const radarTower = human.island.buildings.find(b => b.name === 'Radar Tower');
-                const homeSightRange = getEffectiveSightRange(human, radarTower && !radarTower.destroyed);
+                // Same fix as Unit.draw()'s own home-vision fallback - see
+                // getHomeDefenseVisionRange()'s comment - a home-defense
+                // radius, not a scouting-scale one, so this doesn't uncover a
+                // distant, uninvolved nation's fog just because their
+                // homeworld happens to land within scouting range of yours.
+                const homeSightRange = getHomeDefenseVisionRange(human, radarTower && !radarTower.destroyed);
                 revealRegion(human, human.island.x, human.island.y, homeSightRange);
             });
         }

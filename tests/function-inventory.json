@@ -54,6 +54,7 @@
     "getColorForRaiderPack",
     "getEffectiveSightRange",
     "getGalaxyBounds",
+    "getHomeDefenseVisionRange",
     "getLaserColor",
     "guaranteeNearestAttackersForHumans",
     "hasRadarDetection",
