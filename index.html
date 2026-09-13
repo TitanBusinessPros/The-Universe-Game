@@ -6606,7 +6606,16 @@
                 alert('Select a unit first!');
                 return;
             }
-            
+            // Direct report: "the pause button only pauses the timer and not
+            // the game functions" - buildUnit()/initiateCannonPlacement() both
+            // already refused to act while paused, but this (the MOVE/ATTACK/
+            // LOAD/etc. button handler) didn't, so a paused game could still
+            // fight and move units - only the turn clock itself was frozen.
+            if (gameState.paused) {
+                alert('Game is paused - unpause to give orders.');
+                return;
+            }
+
             // Check if trying to move a unit that has already attacked
             if (mode === 'move' && gameState.selectedUnits.some(u => u.hasAttacked)) {
                 alert('Units that have attacked cannot move until next turn!');
@@ -8654,6 +8663,18 @@
                 }
             }
 
+            // Direct report: "the pause button only pauses the timer and not the
+            // game functions" - a paused game could still be fully played by
+            // clicking to move/attack (only setActionMode()'s explicit MOVE/
+            // ATTACK buttons were guarded). Selecting a unit (above) stays
+            // allowed while paused - it doesn't change any game state - but
+            // nothing past this point may, so it bails out before the
+            // smart-click detection and the move/attack execution below.
+            if (gameState.paused && gameState.selectedUnits.length > 0) {
+                alert('Game is paused - unpause to give orders.');
+                return;
+            }
+
             // Smart-click: if units are selected but no MOVE/ATTACK mode was explicitly armed
             // (via the buttons), decide automatically based on what's under the cursor - click an
             // enemy unit or building to attack it, click empty space to move there. This lets the
@@ -9099,6 +9120,8 @@
                         const selected = gameState.playerCountry.units.filter(u =>
                             u.x >= minX && u.x <= maxX && u.y >= minY && u.y <= maxY);
                         if (selected.length > 0) selectMultipleUnits(selected);
+                    } else if (gameState.selectedUnits.length > 0 && gameState.paused) {
+                        alert('Game is paused - unpause to give orders.');
                     } else if (gameState.selectedUnits.length > 0) {
                         // Plain click on the minimap with units already selected - send them
                         // there, then release the selection (same as a main-map move click).
@@ -9196,10 +9219,19 @@
         //     marquee box-select, same as a left-mouse-button drag.
         const TOUCH_LONG_PRESS_MS = 400;
         const TOUCH_DRAG_THRESHOLD = 10;
-        let touchGestureMode = null; // null | 'pending' | 'select' | 'pan'
+        let touchGestureMode = null; // null | 'pending' | 'select' | 'pan' | 'pinch'
         let touchStartClientX = 0;
         let touchStartClientY = 0;
         let touchLongPressTimer = null;
+        // Two-finger pinch-to-zoom (direct report: "Can't zoom in and out on
+        // mobile version" - touch-action:none above also blocks the browser's
+        // own native pinch-zoom, so without this there was no way to zoom on
+        // a touch device at all). Tracks the distance between the two fingers
+        // between move events and applies each step's change ratio to
+        // camera.zoom, same clamped range and "zoom toward a fixed point"
+        // math as the wheel handler above - here that point is the pinch
+        // midpoint instead of the mouse cursor.
+        let pinchLastDist = 0;
 
         function dispatchSyntheticMouseEvent(type, clientX, clientY, button) {
             canvas.dispatchEvent(new MouseEvent(type, {
@@ -9209,6 +9241,20 @@
 
         canvas.addEventListener('touchstart', (e) => {
             if (!gameState.gameStarted) return;
+
+            if (e.touches.length === 2) {
+                e.preventDefault();
+                clearTimeout(touchLongPressTimer);
+                // A second finger landing while a single-finger gesture was
+                // still pending/panning/selecting cancels that gesture
+                // cleanly (closing out whatever mousedown state it left
+                // open) before pinch-zoom takes over.
+                if (touchGestureMode === 'select') dispatchSyntheticMouseEvent('mouseup', touchStartClientX, touchStartClientY, 0);
+                else if (touchGestureMode === 'pan') dispatchSyntheticMouseEvent('mouseup', touchStartClientX, touchStartClientY, 2);
+                touchGestureMode = 'pinch';
+                pinchLastDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                return;
+            }
             if (e.touches.length !== 1) return;
             e.preventDefault();
 
@@ -9228,6 +9274,31 @@
 
         canvas.addEventListener('touchmove', (e) => {
             if (!gameState.gameStarted || touchGestureMode === null) return;
+
+            if (touchGestureMode === 'pinch') {
+                if (e.touches.length !== 2) return;
+                e.preventDefault();
+                const [t0, t1] = e.touches;
+                const dist = Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
+                const midClientX = (t0.clientX + t1.clientX) / 2;
+                const midClientY = (t0.clientY + t1.clientY) / 2;
+                const rect = canvas.getBoundingClientRect();
+                const midX = midClientX - rect.left;
+                const midY = midClientY - rect.top;
+
+                const worldXBefore = (midX - canvas.width / 2) / camera.zoom + camera.x;
+                const worldYBefore = (midY - canvas.height / 2) / camera.zoom + camera.y;
+                const zoomFactor = dist / pinchLastDist;
+                camera.zoom = Math.max(0.1, Math.min(3, camera.zoom * zoomFactor));
+                const worldXAfter = (midX - canvas.width / 2) / camera.zoom + camera.x;
+                const worldYAfter = (midY - canvas.height / 2) / camera.zoom + camera.y;
+                camera.x += worldXBefore - worldXAfter;
+                camera.y += worldYBefore - worldYAfter;
+
+                pinchLastDist = dist;
+                return;
+            }
+
             if (e.touches.length !== 1) return;
             e.preventDefault();
 
@@ -9254,6 +9325,15 @@
             if (!gameState.gameStarted || touchGestureMode === null) return;
             e.preventDefault();
             clearTimeout(touchLongPressTimer);
+
+            if (touchGestureMode === 'pinch') {
+                // Gesture ends as soon as either finger lifts - the remaining
+                // finger (if any) needs a fresh touchstart to begin a new,
+                // ordinary single-finger gesture, rather than silently
+                // continuing as a pan/select from wherever the pinch left off.
+                if (e.touches.length < 2) touchGestureMode = null;
+                return;
+            }
 
             const touch = e.changedTouches[0];
 
