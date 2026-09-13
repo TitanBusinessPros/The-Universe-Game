@@ -676,7 +676,21 @@
             display: block;
         }
         #legend {
-            position: absolute;
+            /* Direct report: "The drop down timer on mobile disappears off
+               screen when i minimize it." This box used to be absolutely
+               positioned against #gameContainer's height:100vh, while its
+               sibling #controls (same bottom-corner pattern, never reported
+               buggy) already used the OTHER scheme below. On real mobile
+               browsers, 100vh is computed against the LARGEST possible
+               viewport (address bar hidden), not whatever's actually
+               visible at that moment - a bottom-anchored element sized
+               against it can end up positioned below the currently-visible
+               screen (worse once collapsing shrinks the box and shifts its
+               top edge upward within it). The scheme below instead
+               positions directly against the browser's real viewport,
+               matching #controls' already-working behavior.
+            */
+            position: fixed;
             bottom: 10px;
             left: 10px;
             background: rgba(0, 0, 0, 0.8);

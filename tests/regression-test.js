@@ -3590,6 +3590,15 @@ check('#uiToggle ("MENU" button) has an explicit width so the generic `button { 
     return [];
 });
 
+check('#legend uses position:fixed, not position:absolute - direct report: "The drop down timer on mobile disappears off screen when i minimize it"', () => {
+    const legendBlockMatch = html.match(/#legend\s*\{[^}]*\}/);
+    if (!legendBlockMatch) return ['could not find the #legend CSS rule'];
+    if (!/position:\s*fixed/.test(legendBlockMatch[0])) {
+        return ['expected #legend to use position:fixed (like its sibling #controls already does) instead of position:absolute against #gameContainer\'s height:100vh, which real mobile browsers compute against the largest possible viewport (address bar hidden) rather than what\'s actually visible'];
+    }
+    return [];
+});
+
 // ---------- 24. UI selection / mode-switching (2026-08-27) ----------
 
 check('switchTab() shows the chosen tab content and highlights the clicked tab button', () => {
