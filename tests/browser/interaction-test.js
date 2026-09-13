@@ -254,6 +254,44 @@ async function runForEngine(engineName) {
     );
     await page.evaluate(() => { togglePause(); }); // unpause so later scenarios aren't affected
 
+    // ---- Scenario 4c: placing a Defense Cannon while paused does nothing ----
+    // Direct report (repeated): "the pause button... does not pause actual
+    // game" - initiateCannonPlacement() (the build button) already refuses to
+    // ARM placeCannon mode while paused, but if it was armed BEFORE the
+    // player paused, the actual placement click (spends resources, creates
+    // the cannon) had no pause check of its own - a real gap distinct from
+    // scenario 4b's move/attack path, needing its own real click to prove.
+    const cannonPauseScenario = await page.evaluate(() => {
+        gameState.playerCountry.resources = 1000;
+        initiateCannonPlacement();
+        togglePause();
+        return {
+            armed: gameState.actionMode === 'placeCannon',
+            paused: gameState.paused,
+            resourcesBefore: gameState.playerCountry.resources,
+            unitCountBefore: gameState.playerCountry.units.length,
+            homeWorld: { x: gameState.playerCountry.island.x, y: gameState.playerCountry.island.y },
+        };
+    });
+    geo = await getCanvasGeometry(page);
+    const cannonSpot = worldToScreen(
+        { x: cannonPauseScenario.homeWorld.x + 200, y: cannonPauseScenario.homeWorld.y },
+        geo.camera, geo.canvasSize, geo.rect
+    );
+    await page.mouse.click(cannonSpot.x, cannonSpot.y);
+    const afterCannonClick = await page.evaluate(() => ({
+        resources: gameState.playerCountry.resources,
+        unitCount: gameState.playerCountry.units.length,
+    }));
+    check(
+        tag('clicking to place a Defense Cannon while paused does not spend resources or create it'),
+        cannonPauseScenario.armed && cannonPauseScenario.paused
+            && afterCannonClick.resources === cannonPauseScenario.resourcesBefore
+            && afterCannonClick.unitCount === cannonPauseScenario.unitCountBefore,
+        `armed=${cannonPauseScenario.armed}, paused=${cannonPauseScenario.paused}, resources ${cannonPauseScenario.resourcesBefore} -> ${afterCannonClick.resources}, units ${cannonPauseScenario.unitCountBefore} -> ${afterCannonClick.unitCount}`
+    );
+    await page.evaluate(() => { togglePause(); cancelAction(); }); // unpause and clear the still-armed mode for later scenarios
+
     // ---- Scenario 5: Save to File downloads a real file matching live state ----
     // Exercises the actual button (Blob, object URL, synthetic <a download>
     // click) - not just buildSaveData() underneath it, which regression-test.js
